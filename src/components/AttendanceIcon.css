@@ -1,0 +1,9 @@
+.attendance-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  font-size: 14px;
+  line-height: 1;
+  color: var(--color-ink);
+}
