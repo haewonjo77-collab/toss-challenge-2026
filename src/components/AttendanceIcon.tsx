@@ -4,7 +4,7 @@ import './AttendanceIcon.css';
 const ICON_BY_STATUS: Record<AttendanceStatus, string> = {
   full: '●',
   none: '○',
-  partial: '▲',
+  partial: '◐',
 };
 
 const LABEL_BY_STATUS: Record<AttendanceStatus, string> = {
