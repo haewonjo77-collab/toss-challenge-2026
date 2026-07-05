@@ -1,10 +1,13 @@
 import { CreateMeeting } from './components/CreateMeeting';
+import { WaitingRoom } from './components/WaitingRoom';
 import { RecommendationCard } from './components/RecommendationCard';
 import {
   case1RequiredAttendees,
   case1OptionalAttendees,
   case2RequiredAttendees,
   case2OptionalAttendees,
+  responsesInProgress,
+  responsesComplete,
 } from './data/mockAttendees';
 import './App.css';
 
@@ -14,6 +17,22 @@ export function App() {
       <section className="app__screen">
         <p className="app__label text-caption">화면 ① — 회의 만들기</p>
         <CreateMeeting onSubmit={(title) => alert(`'${title}' 회의의 초대 링크를 보냈습니다`)} />
+      </section>
+
+      <section className="app__screen">
+        <p className="app__label text-caption">화면 ② — 대기 · 응답 진행 중</p>
+        <WaitingRoom
+          attendees={responsesInProgress}
+          onViewRecommendation={() => alert('추천 시간으로 이동합니다')}
+        />
+      </section>
+
+      <section className="app__screen">
+        <p className="app__label text-caption">화면 ② — 대기 · 전원 응답 완료</p>
+        <WaitingRoom
+          attendees={responsesComplete}
+          onViewRecommendation={() => alert('추천 시간으로 이동합니다')}
+        />
       </section>
 
       <section className="app__screen">
