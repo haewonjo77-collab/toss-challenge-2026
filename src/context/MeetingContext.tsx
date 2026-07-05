@@ -11,9 +11,10 @@ export interface ConfirmedResult {
 interface MeetingContextValue {
   title: string;
   attendees: InvitedAttendee[];
+  durationMinutes: number;
   responses: ResponseStatus[];
   confirmed: ConfirmedResult | null;
-  createMeeting: (title: string, attendees: InvitedAttendee[]) => void;
+  createMeeting: (title: string, attendees: InvitedAttendee[], durationMinutes: number) => void;
   markNextResponded: () => void;
   confirmMeeting: (result: ConfirmedResult) => void;
 }
@@ -23,12 +24,14 @@ const MeetingContext = createContext<MeetingContextValue | null>(null);
 export function MeetingProvider({ children }: { children: ReactNode }) {
   const [title, setTitle] = useState('');
   const [attendees, setAttendees] = useState<InvitedAttendee[]>([]);
+  const [durationMinutes, setDurationMinutes] = useState(60);
   const [responses, setResponses] = useState<ResponseStatus[]>([]);
   const [confirmed, setConfirmed] = useState<ConfirmedResult | null>(null);
 
-  const createMeeting = (newTitle: string, newAttendees: InvitedAttendee[]) => {
+  const createMeeting = (newTitle: string, newAttendees: InvitedAttendee[], newDuration: number) => {
     setTitle(newTitle);
     setAttendees(newAttendees);
+    setDurationMinutes(newDuration);
     // 참석자 플로우가 범위 밖이라 마지막 2명을 미응답으로 시작, 화면 ②에서 도착을 시뮬레이션
     setResponses(
       newAttendees.map((attendee, index) => ({
@@ -56,7 +59,16 @@ export function MeetingProvider({ children }: { children: ReactNode }) {
 
   return (
     <MeetingContext.Provider
-      value={{ title, attendees, responses, confirmed, createMeeting, markNextResponded, confirmMeeting }}
+      value={{
+        title,
+        attendees,
+        durationMinutes,
+        responses,
+        confirmed,
+        createMeeting,
+        markNextResponded,
+        confirmMeeting,
+      }}
     >
       {children}
     </MeetingContext.Provider>

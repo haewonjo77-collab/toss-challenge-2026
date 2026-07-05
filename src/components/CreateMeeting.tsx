@@ -3,15 +3,17 @@ import { Avatar } from './Avatar';
 import { RoleToggle } from './RoleToggle';
 import { initialInvitedAttendees } from '../data/mockAttendees';
 import type { AttendeeRole, InvitedAttendee } from '../data/mockAttendees';
+import { DURATION_OPTIONS } from '../data/time';
 import './CreateMeeting.css';
 
 interface CreateMeetingProps {
-  onSubmit: (title: string, attendees: InvitedAttendee[]) => void;
+  onSubmit: (title: string, attendees: InvitedAttendee[], durationMinutes: number) => void;
 }
 
 export function CreateMeeting({ onSubmit }: CreateMeetingProps) {
   const [title, setTitle] = useState('');
   const [attendees, setAttendees] = useState<InvitedAttendee[]>(initialInvitedAttendees);
+  const [durationMinutes, setDurationMinutes] = useState(60);
   const [newName, setNewName] = useState('');
 
   const requiredCount = attendees.filter((attendee) => attendee.role === 'required').length;
@@ -50,9 +52,21 @@ export function CreateMeeting({ onSubmit }: CreateMeetingProps) {
       </div>
 
       <div className="create-meeting__field">
-        <span className="create-meeting__label text-caption">회의 시간</span>
-        <div className="create-meeting__fixed text-body-md">1시간</div>
-        <p className="create-meeting__hint text-body-sm">회의 시간은 1시간으로 고정돼요</p>
+        <label className="create-meeting__label text-caption" htmlFor="meeting-duration">
+          회의 시간
+        </label>
+        <select
+          id="meeting-duration"
+          className="text-input create-meeting__input"
+          value={durationMinutes}
+          onChange={(event) => setDurationMinutes(Number(event.target.value))}
+        >
+          {DURATION_OPTIONS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="create-meeting__field">
@@ -101,7 +115,7 @@ export function CreateMeeting({ onSubmit }: CreateMeetingProps) {
         type="button"
         className="button button--primary create-meeting__cta"
         disabled={title.trim() === '' || attendees.length === 0}
-        onClick={() => onSubmit(title.trim(), attendees)}
+        onClick={() => onSubmit(title.trim(), attendees, durationMinutes)}
       >
         초대 링크 보내기
       </button>

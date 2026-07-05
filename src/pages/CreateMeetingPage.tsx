@@ -8,8 +8,8 @@ export function CreateMeetingPage() {
 
   return (
     <CreateMeeting
-      onSubmit={(title, attendees) => {
-        createMeeting(title, attendees);
+      onSubmit={(title, attendees, durationMinutes) => {
+        createMeeting(title, attendees, durationMinutes);
         navigate('/waiting');
       }}
     />

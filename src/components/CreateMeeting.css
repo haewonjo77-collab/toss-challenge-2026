@@ -27,18 +27,6 @@
   width: 100%;
 }
 
-.create-meeting__fixed {
-  padding: 10px 14px;
-  background: var(--color-surface-soft);
-  border-radius: var(--radius-md);
-  color: var(--color-body);
-}
-
-.create-meeting__hint {
-  color: var(--color-muted);
-  margin: var(--space-xxs) 0 0;
-}
-
 .create-meeting__section-head {
   display: flex;
   align-items: baseline;

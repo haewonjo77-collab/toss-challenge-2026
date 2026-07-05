@@ -1,4 +1,5 @@
 import type { AttendanceStatus, Attendee, InvitedAttendee } from './mockAttendees';
+import { formatTimeRange } from './time';
 
 export interface Recommendation {
   timeLabel: string;
@@ -8,18 +9,21 @@ export interface Recommendation {
 }
 
 interface CandidateSlot {
-  timeLabel: string;
+  day: string;
+  startMinutes: number;
   // 참석자 id → 해당 슬롯에서의 참석 상태. 테이블에 없는 인물(새로 추가된 참석자)은 full로 간주.
   availability: Record<string, AttendanceStatus>;
 }
 
 const CANDIDATE_SLOTS: CandidateSlot[] = [
   {
-    timeLabel: '화요일 오후 2:00 - 3:00',
+    day: '화요일',
+    startMinutes: 14 * 60,
     availability: { 'opt-2': 'partial', 'opt-3': 'none' },
   },
   {
-    timeLabel: '목요일 오전 10:00 - 11:00',
+    day: '목요일',
+    startMinutes: 10 * 60,
     availability: { 'req-4': 'none', 'opt-2': 'none', 'opt-3': 'none' },
   },
 ];
@@ -31,7 +35,7 @@ function statusAt(slot: CandidateSlot, attendee: InvitedAttendee): AttendanceSta
   return raw;
 }
 
-export function recommendTime(attendees: InvitedAttendee[]): Recommendation {
+export function recommendTime(attendees: InvitedAttendee[], durationMinutes: number): Recommendation {
   const scored = CANDIDATE_SLOTS.map((slot) => {
     const toAttendee = (attendee: InvitedAttendee): Attendee => ({
       id: attendee.id,
@@ -43,7 +47,7 @@ export function recommendTime(attendees: InvitedAttendee[]): Recommendation {
     const requiredFull = requiredAttendees.filter((a) => a.status === 'full').length;
     const optionalFull = optionalAttendees.filter((a) => a.status === 'full').length;
     return {
-      timeLabel: slot.timeLabel,
+      timeLabel: formatTimeRange(slot.day, slot.startMinutes, durationMinutes),
       requiredAttendees,
       optionalAttendees,
       allRequired: requiredFull === requiredAttendees.length,

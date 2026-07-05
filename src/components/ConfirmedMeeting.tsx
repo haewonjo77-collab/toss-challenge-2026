@@ -6,6 +6,7 @@ import './ConfirmedMeeting.css';
 interface ConfirmedMeetingProps {
   meetingTitle: string;
   timeLabel: string;
+  durationText: string;
   requiredAttendees: Attendee[];
   optionalAttendees: Attendee[];
   onShare: () => void;
@@ -18,6 +19,7 @@ function countAvailable(attendees: Attendee[]): number {
 export function ConfirmedMeeting({
   meetingTitle,
   timeLabel,
+  durationText,
   requiredAttendees,
   optionalAttendees,
   onShare,
@@ -26,7 +28,9 @@ export function ConfirmedMeeting({
     <div className="confirmed-meeting">
       <p className="confirmed-meeting__message text-title-md">회의가 확정되었어요</p>
       <p className="confirmed-meeting__time text-title-lg">{timeLabel}</p>
-      <p className="confirmed-meeting__summary text-body-sm">{meetingTitle} · 1시간</p>
+      <p className="confirmed-meeting__summary text-body-sm">
+        {meetingTitle} · {durationText}
+      </p>
 
       <div className="confirmed-meeting__badges">
         <Badge

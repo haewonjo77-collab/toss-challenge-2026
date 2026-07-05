@@ -5,13 +5,13 @@ import { useMeeting } from '../context/MeetingContext';
 import { recommendTime } from '../data/recommendation';
 
 export function RecommendationPage() {
-  const { title, attendees, confirmMeeting } = useMeeting();
+  const { title, attendees, durationMinutes, confirmMeeting } = useMeeting();
   const navigate = useNavigate();
   const { show } = useToast();
 
   if (!title) return <Navigate to="/" replace />;
 
-  const recommendation = recommendTime(attendees);
+  const recommendation = recommendTime(attendees, durationMinutes);
 
   const handleConfirm = () => {
     confirmMeeting({
