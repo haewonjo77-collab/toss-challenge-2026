@@ -1,3 +1,4 @@
+import { CreateMeeting } from './components/CreateMeeting';
 import { RecommendationCard } from './components/RecommendationCard';
 import {
   case1RequiredAttendees,
@@ -11,7 +12,12 @@ export function App() {
   return (
     <main className="app">
       <section className="app__screen">
-        <p className="app__label text-caption">CASE 1 — 필수 전원가능</p>
+        <p className="app__label text-caption">화면 ① — 회의 만들기</p>
+        <CreateMeeting onSubmit={(title) => alert(`'${title}' 회의의 초대 링크를 보냈습니다`)} />
+      </section>
+
+      <section className="app__screen">
+        <p className="app__label text-caption">화면 ③ — 추천 결과 · CASE 1 (필수 전원가능)</p>
         <RecommendationCard
           timeLabel="화요일 오후 2:00 - 3:00"
           requiredAttendees={case1RequiredAttendees}
@@ -22,7 +28,7 @@ export function App() {
       </section>
 
       <section className="app__screen">
-        <p className="app__label text-caption">CASE 2 — 차선책</p>
+        <p className="app__label text-caption">화면 ③ — 추천 결과 · CASE 2 (차선책)</p>
         <RecommendationCard
           timeLabel="목요일 오전 10:00 - 11:00"
           requiredAttendees={case2RequiredAttendees}

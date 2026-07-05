@@ -33,8 +33,33 @@ body {
   background: var(--color-accent-active);
 }
 
+.button--primary:disabled {
+  background: var(--color-accent-disabled);
+  cursor: default;
+}
+
 .button--secondary {
   background: var(--color-canvas);
   color: var(--color-ink);
   border: 1px solid var(--color-hairline);
+}
+
+.text-input {
+  height: 44px;
+  padding: 10px 14px;
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-md);
+  font-family: var(--font-family);
+  font-size: 15px;
+  color: var(--color-ink);
+  background: var(--color-canvas);
+}
+
+.text-input:focus {
+  outline: none;
+  border-color: var(--color-ink);
+}
+
+.text-input::placeholder {
+  color: var(--color-muted);
 }

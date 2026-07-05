@@ -1,0 +1,31 @@
+.role-toggle {
+  display: inline-flex;
+  padding: 2px;
+  background: var(--color-surface-soft);
+  border-radius: var(--radius-pill);
+  flex-shrink: 0;
+}
+
+.role-toggle__option {
+  padding: 4px 10px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-muted);
+  font-family: var(--font-family);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+.role-toggle__option--selected {
+  background: var(--color-canvas);
+  border-color: var(--color-hairline);
+  color: var(--color-ink);
+}
+
+/* 필수가 선택된 경우 배지와 동일하게 굵기로 강조 (badge-required의 700) */
+.role-toggle__option--selected:first-child {
+  font-weight: 700;
+}
