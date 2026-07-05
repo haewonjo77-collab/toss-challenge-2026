@@ -85,6 +85,8 @@ export function CreateMeeting({ onSubmit }: CreateMeetingProps) {
             value={newName}
             onChange={(event) => setNewName(event.target.value)}
             onKeyDown={(event) => {
+              // 한글 IME 조합 중 Enter는 조합 확정 키이므로 무시 (조합 미종료 상태에서 추가되면 이름이 분리됨)
+              if (event.nativeEvent.isComposing) return;
               if (event.key === 'Enter') addAttendee();
             }}
             placeholder="이름 입력"
