@@ -25,6 +25,7 @@ export function CreateMeeting({
   );
   const [durationMinutes, setDurationMinutes] = useState(initialDuration ?? 60);
   const [newName, setNewName] = useState('');
+  const [newTeam, setNewTeam] = useState('');
 
   const requiredCount = attendees.filter((attendee) => attendee.role === 'required').length;
   const optionalCount = attendees.length - requiredCount;
@@ -40,8 +41,19 @@ export function CreateMeeting({
   const addAttendee = () => {
     const name = newName.trim();
     if (!name) return;
-    setAttendees([...attendees, { id: `new-${Date.now()}`, name, role: 'optional' }]);
+    const team = newTeam.trim();
+    setAttendees([
+      ...attendees,
+      { id: `new-${Date.now()}`, name, role: 'optional', team: team || undefined },
+    ]);
     setNewName('');
+    setNewTeam('');
+  };
+
+  const handleAddKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    // 한글 IME 조합 중 Enter는 조합 확정 키이므로 무시 (조합 미종료 상태에서 추가되면 이름이 분리됨)
+    if (event.nativeEvent.isComposing) return;
+    if (event.key === 'Enter') addAttendee();
   };
 
   return (
@@ -90,7 +102,10 @@ export function CreateMeeting({
         {attendees.map((attendee) => (
           <div key={attendee.id} className="create-meeting__row">
             <Avatar name={attendee.name} />
-            <span className="create-meeting__name text-body-md">{attendee.name}</span>
+            <span className="create-meeting__person">
+              <span className="create-meeting__name text-body-md">{attendee.name}</span>
+              {attendee.team && <span className="create-meeting__team text-caption">{attendee.team}</span>}
+            </span>
             <RoleToggle value={attendee.role} onChange={(role) => changeRole(attendee.id, role)} />
             <button
               type="button"
@@ -105,15 +120,18 @@ export function CreateMeeting({
 
         <div className="create-meeting__add">
           <input
-            className="text-input create-meeting__input"
+            className="text-input create-meeting__add-name"
             value={newName}
             onChange={(event) => setNewName(event.target.value)}
-            onKeyDown={(event) => {
-              // 한글 IME 조합 중 Enter는 조합 확정 키이므로 무시 (조합 미종료 상태에서 추가되면 이름이 분리됨)
-              if (event.nativeEvent.isComposing) return;
-              if (event.key === 'Enter') addAttendee();
-            }}
-            placeholder="이름 입력"
+            onKeyDown={handleAddKeyDown}
+            placeholder="이름"
+          />
+          <input
+            className="text-input create-meeting__add-team"
+            value={newTeam}
+            onChange={(event) => setNewTeam(event.target.value)}
+            onKeyDown={handleAddKeyDown}
+            placeholder="부서/팀 (선택)"
           />
           <button type="button" className="button button--secondary" onClick={addAttendee}>
             추가

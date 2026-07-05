@@ -45,9 +45,19 @@
   padding: var(--space-xs) 0;
 }
 
-.create-meeting__name {
+.create-meeting__person {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.create-meeting__name {
   color: var(--color-ink);
+}
+
+.create-meeting__team {
+  color: var(--color-muted);
 }
 
 .create-meeting__remove {
@@ -66,8 +76,14 @@
   margin-top: var(--space-xs);
 }
 
-.create-meeting__add .create-meeting__input {
+.create-meeting__add-name,
+.create-meeting__add-team {
   flex: 1;
+  min-width: 0;
+}
+
+.create-meeting__add .button {
+  flex-shrink: 0;
 }
 
 .create-meeting__cta {
