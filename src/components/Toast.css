@@ -1,0 +1,11 @@
+.toast {
+  position: absolute;
+  left: 50%;
+  bottom: var(--space-lg);
+  transform: translateX(-50%);
+  padding: 10px 16px;
+  background: var(--color-ink);
+  color: var(--color-canvas);
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+}
