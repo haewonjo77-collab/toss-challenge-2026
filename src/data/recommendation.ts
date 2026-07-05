@@ -22,9 +22,19 @@ const CANDIDATE_SLOTS: CandidateSlot[] = [
     availability: { 'opt-2': 'partial', 'opt-3': 'none' },
   },
   {
+    day: '수요일',
+    startMinutes: 11 * 60,
+    availability: { 'req-2': 'none', 'opt-3': 'none' },
+  },
+  {
     day: '목요일',
     startMinutes: 10 * 60,
     availability: { 'req-4': 'none', 'opt-2': 'none', 'opt-3': 'none' },
+  },
+  {
+    day: '금요일',
+    startMinutes: 16 * 60,
+    availability: { 'opt-1': 'none', 'opt-2': 'none', 'opt-3': 'none' },
   },
 ];
 
@@ -35,7 +45,8 @@ function statusAt(slot: CandidateSlot, attendee: InvitedAttendee): AttendanceSta
   return raw;
 }
 
-export function recommendTime(attendees: InvitedAttendee[], durationMinutes: number): Recommendation {
+// 정렬 1위가 메인 추천, 나머지는 "다른 시간 보기" 대안 후보
+export function recommendTimes(attendees: InvitedAttendee[], durationMinutes: number): Recommendation[] {
   const scored = CANDIDATE_SLOTS.map((slot) => {
     const toAttendee = (attendee: InvitedAttendee): Attendee => ({
       id: attendee.id,
@@ -62,11 +73,10 @@ export function recommendTime(attendees: InvitedAttendee[], durationMinutes: num
     return b.optionalFull - a.optionalFull;
   });
 
-  const best = scored[0];
-  return {
-    timeLabel: best.timeLabel,
-    requiredAttendees: best.requiredAttendees,
-    optionalAttendees: best.optionalAttendees,
-    isFallback: !best.allRequired,
-  };
+  return scored.map((slot) => ({
+    timeLabel: slot.timeLabel,
+    requiredAttendees: slot.requiredAttendees,
+    optionalAttendees: slot.optionalAttendees,
+    isFallback: !slot.allRequired,
+  }));
 }
