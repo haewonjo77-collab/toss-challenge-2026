@@ -7,13 +7,23 @@ import { DURATION_OPTIONS } from '../data/time';
 import './CreateMeeting.css';
 
 interface CreateMeetingProps {
+  initialTitle?: string;
+  initialAttendees?: InvitedAttendee[];
+  initialDuration?: number;
   onSubmit: (title: string, attendees: InvitedAttendee[], durationMinutes: number) => void;
 }
 
-export function CreateMeeting({ onSubmit }: CreateMeetingProps) {
-  const [title, setTitle] = useState('');
-  const [attendees, setAttendees] = useState<InvitedAttendee[]>(initialInvitedAttendees);
-  const [durationMinutes, setDurationMinutes] = useState(60);
+export function CreateMeeting({
+  initialTitle,
+  initialAttendees,
+  initialDuration,
+  onSubmit,
+}: CreateMeetingProps) {
+  const [title, setTitle] = useState(initialTitle ?? '');
+  const [attendees, setAttendees] = useState<InvitedAttendee[]>(
+    initialAttendees ?? initialInvitedAttendees,
+  );
+  const [durationMinutes, setDurationMinutes] = useState(initialDuration ?? 60);
   const [newName, setNewName] = useState('');
 
   const requiredCount = attendees.filter((attendee) => attendee.role === 'required').length;
