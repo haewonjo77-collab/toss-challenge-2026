@@ -1,6 +1,7 @@
 import { CreateMeeting } from './components/CreateMeeting';
 import { WaitingRoom } from './components/WaitingRoom';
 import { RecommendationCard } from './components/RecommendationCard';
+import { ConfirmedMeeting } from './components/ConfirmedMeeting';
 import {
   case1RequiredAttendees,
   case1OptionalAttendees,
@@ -55,6 +56,17 @@ export function App() {
           variant="fallback"
           onConfirm={() => alert('이대로 확정되었습니다')}
           onRequestRecheck={() => alert('재확인 요청을 보냈습니다')}
+        />
+      </section>
+
+      <section className="app__screen">
+        <p className="app__label text-caption">화면 ④ — 확정</p>
+        <ConfirmedMeeting
+          meetingTitle="주간 제품 리뷰"
+          timeLabel="화요일 오후 2:00 - 3:00"
+          requiredAttendees={case1RequiredAttendees}
+          optionalAttendees={case1OptionalAttendees}
+          onShare={() => alert('참석자에게 확정된 일정을 공유했습니다')}
         />
       </section>
     </main>

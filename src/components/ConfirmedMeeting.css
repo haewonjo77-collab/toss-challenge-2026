@@ -1,0 +1,46 @@
+.confirmed-meeting {
+  width: 100%;
+  max-width: 361px;
+  padding: var(--space-lg);
+  background: var(--color-canvas);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-lg);
+  box-sizing: border-box;
+}
+
+.confirmed-meeting__message {
+  color: var(--color-ink);
+  margin: 0 0 var(--space-xs);
+}
+
+.confirmed-meeting__time {
+  color: var(--color-ink);
+  margin: 0 0 var(--space-xxs);
+}
+
+.confirmed-meeting__summary {
+  color: var(--color-muted);
+  margin: 0 0 var(--space-sm);
+}
+
+.confirmed-meeting__badges {
+  display: flex;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-lg);
+}
+
+.confirmed-meeting__section-title {
+  color: var(--color-ink);
+  margin: 0 0 var(--space-xs);
+}
+
+.confirmed-meeting__divider {
+  border: none;
+  border-top: 1px solid var(--color-hairline);
+  margin: var(--space-md) 0;
+}
+
+.confirmed-meeting__cta {
+  width: 100%;
+  margin-top: var(--space-lg);
+}
