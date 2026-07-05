@@ -8,6 +8,21 @@
   box-sizing: border-box;
 }
 
+/* 확정 완료 상태 마커 — 공유 버튼이 secondary로 내려가면서 이 화면의 accent 1군데를 담당 */
+.confirmed-meeting__check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  font-size: 20px;
+  line-height: 1;
+  margin-bottom: var(--space-sm);
+}
+
 .confirmed-meeting__message {
   color: var(--color-ink);
   margin: 0 0 var(--space-xs);

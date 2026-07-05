@@ -26,6 +26,9 @@ export function ConfirmedMeeting({
 }: ConfirmedMeetingProps) {
   return (
     <div className="confirmed-meeting">
+      <div className="confirmed-meeting__check" aria-hidden="true">
+        ✓
+      </div>
       <p className="confirmed-meeting__message text-title-md">회의가 확정되었어요</p>
       <p className="confirmed-meeting__time text-title-lg">{timeLabel}</p>
       <p className="confirmed-meeting__summary text-body-sm">
@@ -61,7 +64,7 @@ export function ConfirmedMeeting({
         ))}
       </div>
 
-      <button type="button" className="button button--primary confirmed-meeting__cta" onClick={onShare}>
+      <button type="button" className="button button--secondary confirmed-meeting__cta" onClick={onShare}>
         참석자에게 공유하기
       </button>
     </div>
