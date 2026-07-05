@@ -1,0 +1,18 @@
+.app {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xl);
+  padding: var(--space-xl);
+  background: var(--color-surface-soft);
+  min-height: 100vh;
+}
+
+.app__screen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.app__label {
+  color: var(--color-muted);
+}

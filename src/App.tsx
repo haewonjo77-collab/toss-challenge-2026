@@ -1,3 +1,37 @@
+import { RecommendationCard } from './components/RecommendationCard';
+import {
+  case1RequiredAttendees,
+  case1OptionalAttendees,
+  case2RequiredAttendees,
+  case2OptionalAttendees,
+} from './data/mockAttendees';
+import './App.css';
+
 export function App() {
-  return <main className="app">추천 결과 확인 화면 준비 중</main>;
+  return (
+    <main className="app">
+      <section className="app__screen">
+        <p className="app__label text-caption">CASE 1 — 필수 전원가능</p>
+        <RecommendationCard
+          timeLabel="화요일 오후 2:00 - 3:00"
+          requiredAttendees={case1RequiredAttendees}
+          optionalAttendees={case1OptionalAttendees}
+          variant="primary"
+          onConfirm={() => alert('확정되었습니다')}
+        />
+      </section>
+
+      <section className="app__screen">
+        <p className="app__label text-caption">CASE 2 — 차선책</p>
+        <RecommendationCard
+          timeLabel="목요일 오전 10:00 - 11:00"
+          requiredAttendees={case2RequiredAttendees}
+          optionalAttendees={case2OptionalAttendees}
+          variant="fallback"
+          onConfirm={() => alert('이대로 확정되었습니다')}
+          onRequestRecheck={() => alert('재확인 요청을 보냈습니다')}
+        />
+      </section>
+    </main>
+  );
 }
