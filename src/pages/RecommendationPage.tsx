@@ -32,6 +32,18 @@ export function RecommendationPage() {
     navigate('/confirmed');
   };
 
+  // 재확인 요청은 필수 참석자 중 불가 응답자에게만 전송된다는 것을 토스트로 명시
+  const requestRecheck = () => {
+    const missingRequired = active.requiredAttendees
+      .filter((attendee) => attendee.status === 'none')
+      .map((attendee) => attendee.name);
+    show(
+      missingRequired.length > 0
+        ? `${missingRequired.join(', ')}님에게 재확인 요청을 보냈어요`
+        : '재확인 요청을 보냈어요',
+    );
+  };
+
   return (
     <>
       {ranked.length > 1 && (
@@ -47,7 +59,7 @@ export function RecommendationPage() {
         optionalAttendees={active.optionalAttendees}
         variant={active.isFallback ? 'fallback' : 'primary'}
         onConfirm={confirm}
-        onRequestRecheck={() => show('재확인 요청을 보냈어요')}
+        onRequestRecheck={requestRecheck}
       />
     </>
   );

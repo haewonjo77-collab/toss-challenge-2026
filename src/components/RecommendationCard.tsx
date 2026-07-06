@@ -15,12 +15,6 @@ function countAvailable(attendees: Attendee[]): number {
   return attendees.filter((attendee) => attendee.status === 'full').length;
 }
 
-function missingWithRole(attendees: Attendee[], roleLabel: string): { name: string; role: string }[] {
-  return attendees
-    .filter((attendee) => attendee.status === 'none')
-    .map((attendee) => ({ name: attendee.name, role: roleLabel }));
-}
-
 export function RecommendationCard({
   timeLabel,
   requiredAttendees,
@@ -31,11 +25,8 @@ export function RecommendationCard({
 }: RecommendationCardProps) {
   const requiredAvailable = countAvailable(requiredAttendees);
   const optionalAvailable = countAvailable(optionalAttendees);
-  const missingAttendees = [
-    ...missingWithRole(requiredAttendees, '필수'),
-    ...missingWithRole(optionalAttendees, '선택'),
-  ];
-  const hasMissingRequired = missingAttendees.some((missing) => missing.role === '필수');
+  // 선택 참석자의 불참은 회의 시간 결정에 영향이 없으므로, 상단 안내는 필수 불참만 다룬다
+  const missingRequired = requiredAttendees.filter((attendee) => attendee.status === 'none');
 
   return (
     <div className="recommendation-card">
@@ -47,19 +38,14 @@ export function RecommendationCard({
         {optionalAttendees.length}
       </p>
 
-      {/* 탭 전환 중에도 항상 보이도록 참석자 목록 위에 배치 — 필수 불참만 danger, 그 외는 차분한 톤 */}
-      {missingAttendees.length === 0 ? (
+      {/* 탭 전환 중에도 항상 보이도록 참석자 목록 위에 배치 — 필수 불참만 표시 (선택 불참은 시간 결정에 영향 X) */}
+      {missingRequired.length === 0 ? (
         <p className="recommendation-card__notice recommendation-card__notice--calm text-body-sm">
-          전원 참석 가능해요
+          필수 참석자 전원 참석 가능해요
         </p>
       ) : (
-        <p
-          className={`recommendation-card__notice text-body-sm${
-            hasMissingRequired ? '' : ' recommendation-card__notice--calm'
-          }`}
-        >
-          {missingAttendees.map((missing) => `${missing.name}님(${missing.role})`).join(', ')}이 참석하지
-          못해요
+        <p className="recommendation-card__notice text-body-sm">
+          {missingRequired.map((attendee) => `${attendee.name}님(필수)`).join(', ')}이 참석하지 못해요
         </p>
       )}
 
