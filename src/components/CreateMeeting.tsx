@@ -111,6 +111,15 @@ export function CreateMeeting({
     setAttendees(initialInvitedAttendees);
   };
 
+  // 부서/팀 자동완성 — 이미 등록된 참석자들의 부서명 중 입력값과 겹치는 것을 추천 (보조, 강제 아님)
+  const teamSuggestions = showTeamField
+    ? Array.from(
+        new Set(attendees.map((attendee) => attendee.team).filter((team): team is string => !!team)),
+      )
+        .filter((team) => team !== newTeam.trim() && team.includes(newTeam.trim()))
+        .slice(0, 4)
+    : [];
+
   return (
     <div className="create-meeting">
       <p className="create-meeting__title text-title-lg">회의 만들기</p>
@@ -210,13 +219,29 @@ export function CreateMeeting({
             placeholder="이름"
           />
           {showTeamField ? (
-            <input
-              className="text-input create-meeting__add-input"
-              value={newTeam}
-              onChange={(event) => setNewTeam(event.target.value)}
-              onKeyDown={handleAddKeyDown}
-              placeholder="부서/팀 (선택)"
-            />
+            <>
+              <input
+                className="text-input create-meeting__add-input"
+                value={newTeam}
+                onChange={(event) => setNewTeam(event.target.value)}
+                onKeyDown={handleAddKeyDown}
+                placeholder="부서/팀 (선택)"
+              />
+              {teamSuggestions.length > 0 && (
+                <div className="create-meeting__chips">
+                  {teamSuggestions.map((team) => (
+                    <button
+                      key={team}
+                      type="button"
+                      className="create-meeting__chip text-caption"
+                      onClick={() => setNewTeam(team)}
+                    >
+                      {team}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </>
           ) : (
             <button
               type="button"
