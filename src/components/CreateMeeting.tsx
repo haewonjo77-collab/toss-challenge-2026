@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Avatar } from './Avatar';
 import { RoleToggle } from './RoleToggle';
 import { WeekScopeToggle } from './WeekScopeToggle';
@@ -39,8 +39,44 @@ export function CreateMeeting({
   const requiredCount = attendees.filter((attendee) => attendee.role === 'required').length;
   const optionalCount = attendees.length - requiredCount;
 
+  // 함수형 업데이트 — 드래그 중 연속 이벤트가 리렌더보다 빠를 때 이전 변경 유실 방지
   const changeRole = (id: string, role: AttendeeRole) => {
-    setAttendees(attendees.map((attendee) => (attendee.id === id ? { ...attendee, role } : attendee)));
+    setAttendees((prev) =>
+      prev.map((attendee) => (attendee.id === id ? { ...attendee, role } : attendee)),
+    );
+  };
+
+  // 세그먼트 드래그: 누른 세그먼트의 값을 목표값으로 고정하고 지나가는 행에 일괄 적용
+  const dragRoleRef = useRef<AttendeeRole | null>(null);
+
+  useEffect(() => {
+    const stopDrag = () => {
+      dragRoleRef.current = null;
+    };
+    window.addEventListener('mouseup', stopDrag);
+    window.addEventListener('touchend', stopDrag);
+    return () => {
+      window.removeEventListener('mouseup', stopDrag);
+      window.removeEventListener('touchend', stopDrag);
+    };
+  }, []);
+
+  const beginRoleDrag = (id: string, role: AttendeeRole) => {
+    dragRoleRef.current = role;
+    changeRole(id, role);
+  };
+
+  const applyDragToRow = (id: string) => {
+    if (dragRoleRef.current) changeRole(id, dragRoleRef.current);
+  };
+
+  const handleRoleDragMove = (clientX: number, clientY: number) => {
+    if (!dragRoleRef.current) return;
+    const row = (document.elementFromPoint(clientX, clientY) as HTMLElement | null)?.closest(
+      '[data-attendee-id]',
+    ) as HTMLElement | null;
+    const id = row?.dataset.attendeeId;
+    if (id) changeRole(id, dragRoleRef.current);
   };
 
   const removeAttendee = (id: string) => {
@@ -131,13 +167,23 @@ export function CreateMeeting({
         </div>
 
         {attendees.map((attendee) => (
-          <div key={attendee.id} className="create-meeting__row">
+          <div
+            key={attendee.id}
+            className="create-meeting__row"
+            data-attendee-id={attendee.id}
+            onMouseEnter={() => applyDragToRow(attendee.id)}
+          >
             <Avatar name={attendee.name} />
             <span className="create-meeting__person">
               <span className="create-meeting__name text-body-md">{attendee.name}</span>
               {attendee.team && <span className="create-meeting__team text-caption">{attendee.team}</span>}
             </span>
-            <RoleToggle value={attendee.role} onChange={(role) => changeRole(attendee.id, role)} />
+            <RoleToggle
+              value={attendee.role}
+              onChange={(role) => changeRole(attendee.id, role)}
+              onBeginDrag={(role) => beginRoleDrag(attendee.id, role)}
+              onDragMove={handleRoleDragMove}
+            />
             <button
               type="button"
               className="create-meeting__remove"
