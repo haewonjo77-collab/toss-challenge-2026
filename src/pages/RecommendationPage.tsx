@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { RecommendationCard } from '../components/RecommendationCard';
 import { AlternativeTimes } from '../components/AlternativeTimes';
@@ -14,7 +14,15 @@ export function RecommendationPage() {
   const navigate = useNavigate();
   const { show } = useToast();
   const [selectedLabel, setSelectedLabel] = useState<string | null>(null);
+  const mainCardRef = useRef<HTMLDivElement>(null);
   useScreenMeasure('화면③ 추천 결과');
+
+  // 대안 카드를 최상단 자리로 교체했을 때, 교체된 카드가 보이도록 스크롤을 따라 올린다
+  useEffect(() => {
+    if (selectedLabel) {
+      mainCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [selectedLabel]);
 
   if (!title) return <Navigate to="/" replace />;
 
@@ -40,16 +48,18 @@ export function RecommendationPage() {
 
   return (
     <>
-      <RecommendationCard
-        timeLabel={main.timeLabel}
-        requiredAttendees={main.requiredAttendees}
-        optionalAttendees={main.optionalAttendees}
-        variant={main.isFallback ? 'fallback' : 'primary'}
-        rankLabel={main.rankLabel}
-        mode={mode}
-        onConfirm={confirm}
-        onRequestRecheck={() => show('재확인 요청을 보냈어요')}
-      />
+      <div ref={mainCardRef}>
+        <RecommendationCard
+          timeLabel={main.timeLabel}
+          requiredAttendees={main.requiredAttendees}
+          optionalAttendees={main.optionalAttendees}
+          variant={main.isFallback ? 'fallback' : 'primary'}
+          rankLabel={main.rankLabel}
+          mode={mode}
+          onConfirm={confirm}
+          onRequestRecheck={() => show('재확인 요청을 보냈어요')}
+        />
+      </div>
       <AlternativeTimes
         options={alternatives}
         onPreview={(option) => setSelectedLabel(option.timeLabel)}
