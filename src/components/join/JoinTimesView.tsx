@@ -57,9 +57,7 @@ export function JoinTimesView({ onAdvance }: JoinTimesViewProps) {
         {abbreviate(days)}
       </p>
       <p className="join__title text-title-md">안 되는 시간을 표시해주세요</p>
-      <p className="join__hint text-body-sm">
-        {participantName}님, 되는 시간이 아니라 안 되는 시간만 누르면 돼요 (드래그로 여러 칸 한번에 선택 가능)
-      </p>
+      <p className="join__hint text-body-sm">{participantName}님, 안 되는 시간만 눌러주세요</p>
 
       <TimeGrid
         days={days}
