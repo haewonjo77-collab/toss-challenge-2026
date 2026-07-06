@@ -22,6 +22,22 @@
   width: 100%;
 }
 
+.join__stage-dots {
+  display: flex;
+  gap: var(--space-xxs);
+  margin-bottom: var(--space-xs);
+  font-size: 10px;
+  line-height: 1;
+}
+
+.join__stage-dot {
+  color: var(--color-hairline);
+}
+
+.join__stage-dot--active {
+  color: var(--color-ink);
+}
+
 .join__step {
   color: var(--color-muted);
   margin: 0 0 var(--space-xxs);

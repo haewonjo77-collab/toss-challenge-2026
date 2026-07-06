@@ -22,9 +22,10 @@
   height: 40px;
   padding: 0;
   background: var(--color-canvas);
-  border: 1px solid var(--color-hairline-soft);
+  border: 1px solid var(--color-hairline);
   border-radius: var(--radius-md);
   cursor: pointer;
+  touch-action: none;
 }
 
 .time-grid__cell--unavailable {
