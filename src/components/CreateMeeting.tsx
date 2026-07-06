@@ -35,6 +35,8 @@ export function CreateMeeting({
   const [weekScope, setWeekScope] = useState<WeekScope>(initialWeekScope ?? 'next');
   const [newName, setNewName] = useState('');
   const [newTeam, setNewTeam] = useState('');
+  // 부서/팀은 선택 입력이라 기본 숨김 — 한 번 펼치면 연속 입력을 위해 계속 열어둔다
+  const [showTeamField, setShowTeamField] = useState(false);
 
   const requiredCount = attendees.filter((attendee) => attendee.role === 'required').length;
   const optionalCount = attendees.length - requiredCount;
@@ -215,20 +217,34 @@ export function CreateMeeting({
 
         <div className="create-meeting__add">
           <input
-            className="text-input create-meeting__add-name"
+            className="text-input create-meeting__add-input"
             value={newName}
             onChange={(event) => setNewName(event.target.value)}
             onKeyDown={handleAddKeyDown}
             placeholder="이름"
           />
-          <input
-            className="text-input create-meeting__add-team"
-            value={newTeam}
-            onChange={(event) => setNewTeam(event.target.value)}
-            onKeyDown={handleAddKeyDown}
-            placeholder="부서/팀 (선택)"
-          />
-          <button type="button" className="button button--secondary" onClick={addAttendee}>
+          {showTeamField ? (
+            <input
+              className="text-input create-meeting__add-input"
+              value={newTeam}
+              onChange={(event) => setNewTeam(event.target.value)}
+              onKeyDown={handleAddKeyDown}
+              placeholder="부서/팀 (선택)"
+            />
+          ) : (
+            <button
+              type="button"
+              className="create-meeting__team-toggle text-caption"
+              onClick={() => setShowTeamField(true)}
+            >
+              + 부서/팀 추가
+            </button>
+          )}
+          <button
+            type="button"
+            className="button button--secondary create-meeting__add-button"
+            onClick={addAttendee}
+          >
             추가
           </button>
         </div>
