@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { TimeGrid } from '../TimeGrid';
 import { useMeeting } from '../../context/MeetingContext';
 import { useJoin } from '../../context/JoinContext';
-import { JOIN_DAY_STAGES, slotsForDuration } from '../../data/schedule';
+import { JOIN_DAY_STAGES, WEEK_SCOPE_LABEL, slotsForDuration } from '../../data/schedule';
 import './join.css';
 
 interface JoinTimesViewProps {
@@ -20,7 +20,7 @@ function abbreviate(days: string[]): string {
 const TOTAL_DAYS = JOIN_DAY_STAGES.reduce((sum, stage) => sum + stage.length, 0);
 
 export function JoinTimesView({ onAdvance }: JoinTimesViewProps) {
-  const { durationMinutes } = useMeeting();
+  const { durationMinutes, weekScope } = useMeeting();
   const { participantName, unavailable, setUnavailable, submitResponse } = useJoin();
   const [stageIndex, setStageIndex] = useState(0);
 
@@ -51,7 +51,8 @@ export function JoinTimesView({ onAdvance }: JoinTimesViewProps) {
         ))}
       </div>
       <p className="join__step text-caption">
-        {stageIndex + 1}/{JOIN_DAY_STAGES.length} 단계 · 이번 주 {TOTAL_DAYS}일 중 {abbreviate(days)}
+        {stageIndex + 1}/{JOIN_DAY_STAGES.length} 단계 · {WEEK_SCOPE_LABEL[weekScope]} {TOTAL_DAYS}일 중{' '}
+        {abbreviate(days)}
       </p>
       <p className="join__title text-title-md">안 되는 시간을 표시해주세요</p>
       <p className="join__hint text-body-sm">

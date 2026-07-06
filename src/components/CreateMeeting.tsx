@@ -1,27 +1,38 @@
 import { useState } from 'react';
 import { Avatar } from './Avatar';
 import { RoleToggle } from './RoleToggle';
+import { WeekScopeToggle } from './WeekScopeToggle';
 import { initialInvitedAttendees, recentAttendees } from '../data/mockAttendees';
 import type { AttendeeRole, InvitedAttendee } from '../data/mockAttendees';
 import { DURATION_OPTIONS } from '../data/time';
+import type { WeekScope } from '../data/schedule';
 import './CreateMeeting.css';
 
 interface CreateMeetingProps {
   initialTitle?: string;
   initialAttendees?: InvitedAttendee[];
   initialDuration?: number;
-  onSubmit: (title: string, attendees: InvitedAttendee[], durationMinutes: number) => void;
+  initialWeekScope?: WeekScope;
+  onSubmit: (
+    title: string,
+    attendees: InvitedAttendee[],
+    durationMinutes: number,
+    weekScope: WeekScope,
+  ) => void;
 }
 
 export function CreateMeeting({
   initialTitle,
   initialAttendees,
   initialDuration,
+  initialWeekScope,
   onSubmit,
 }: CreateMeetingProps) {
   const [title, setTitle] = useState(initialTitle ?? '');
   const [attendees, setAttendees] = useState<InvitedAttendee[]>(initialAttendees ?? []);
   const [durationMinutes, setDurationMinutes] = useState(initialDuration ?? 60);
+  // SPEC.md 시나리오("1주일 내 회의를 잡는다")와 일치하도록 기본값은 '다음 주'
+  const [weekScope, setWeekScope] = useState<WeekScope>(initialWeekScope ?? 'next');
   const [newName, setNewName] = useState('');
   const [newTeam, setNewTeam] = useState('');
 
@@ -107,6 +118,11 @@ export function CreateMeeting({
       </div>
 
       <div className="create-meeting__field">
+        <span className="create-meeting__label text-caption">회의 가능 기간</span>
+        <WeekScopeToggle value={weekScope} onChange={setWeekScope} />
+      </div>
+
+      <div className="create-meeting__field">
         <div className="create-meeting__section-head">
           <span className="text-title-sm">참석자</span>
           <span className="create-meeting__count text-caption">
@@ -180,7 +196,7 @@ export function CreateMeeting({
         type="button"
         className="button button--primary create-meeting__cta"
         disabled={title.trim() === '' || attendees.length === 0}
-        onClick={() => onSubmit(title.trim(), attendees, durationMinutes)}
+        onClick={() => onSubmit(title.trim(), attendees, durationMinutes, weekScope)}
       >
         초대 링크 보내기
       </button>
