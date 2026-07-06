@@ -5,10 +5,6 @@
   gap: var(--space-xs);
 }
 
-.week-scope__weeks {
-  width: 100%;
-}
-
 .week-scope-toggle {
   display: inline-flex;
   padding: 2px;

@@ -1,7 +1,4 @@
-// 화면 ①의 "회의 가능 기간" — 주 단위 오프셋 (0=이번 주, 1=다음 주, 2 이상=직접 선택한 N주 후).
-// 달력 피커 대신 세그먼트 토글 + 주 단위 select만으로 유지 (익숙한 패턴, 새 UI 발명 없음)
-export const CUSTOM_WEEKS_OPTIONS = [2, 3, 4, 5, 6, 7, 8];
-
+// 화면 ①의 "회의 가능 기간" — 주 단위 오프셋 (0=이번 주, 1=다음 주, 2 이상=직접 선택한 N주 후)
 export function weeksAheadLabel(weeksAhead: number): string {
   if (weeksAhead === 0) return '이번 주';
   if (weeksAhead === 1) return '다음 주';

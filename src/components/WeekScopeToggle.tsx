@@ -1,11 +1,11 @@
-import { CUSTOM_WEEKS_OPTIONS, weeksAheadLabel } from '../data/schedule';
+import { WeekCalendar } from './WeekCalendar';
 import './WeekScopeToggle.css';
 
-// 세그먼트 3개: 이번 주(0) / 다음 주(1) / 직접 선택(2 이상 — 아래 주 단위 select로 지정)
+// 세그먼트 3개: 이번 주(0) / 다음 주(1) / 직접 선택(2 이상 — 아래 주 단위 캘린더로 지정)
 const SEGMENTS = [
   { label: '이번 주', isActive: (value: number) => value === 0, select: () => 0 },
   { label: '다음 주', isActive: (value: number) => value === 1, select: () => 1 },
-  { label: '직접 선택', isActive: (value: number) => value >= 2, select: () => CUSTOM_WEEKS_OPTIONS[0] },
+  { label: '직접 선택', isActive: (value: number) => value >= 2, select: () => 2 },
 ];
 
 interface WeekScopeToggleProps {
@@ -33,20 +33,7 @@ export function WeekScopeToggle({ value, onChange }: WeekScopeToggleProps) {
         ))}
       </div>
 
-      {value >= 2 && (
-        <select
-          className="text-input week-scope__weeks"
-          aria-label="몇 주 후"
-          value={value}
-          onChange={(event) => onChange(Number(event.target.value))}
-        >
-          {CUSTOM_WEEKS_OPTIONS.map((weeks) => (
-            <option key={weeks} value={weeks}>
-              {weeksAheadLabel(weeks)}
-            </option>
-          ))}
-        </select>
-      )}
+      {value >= 2 && <WeekCalendar weeksAhead={value} onSelect={onChange} />}
     </div>
   );
 }
