@@ -25,10 +25,9 @@
   margin: 0 0 var(--space-sm);
 }
 
-.recommendation-card__badges {
-  display: flex;
-  gap: var(--space-xs);
-  margin-bottom: var(--space-lg);
+.recommendation-card__counts {
+  color: var(--color-body);
+  margin: 0 0 var(--space-lg);
 }
 
 .recommendation-card__section-title {

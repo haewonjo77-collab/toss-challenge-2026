@@ -38,10 +38,9 @@
   margin: 0 0 var(--space-sm);
 }
 
-.confirmed-meeting__badges {
-  display: flex;
-  gap: var(--space-xs);
-  margin-bottom: var(--space-lg);
+.confirmed-meeting__counts {
+  color: var(--color-body);
+  margin: 0 0 var(--space-lg);
 }
 
 .confirmed-meeting__section-title {

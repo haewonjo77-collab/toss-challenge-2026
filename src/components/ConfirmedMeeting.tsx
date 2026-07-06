@@ -1,4 +1,3 @@
-import { Badge } from './Badge';
 import { AttendeeRow } from './AttendeeRow';
 import type { Attendee } from '../data/mockAttendees';
 import './ConfirmedMeeting.css';
@@ -37,18 +36,11 @@ export function ConfirmedMeeting({
         {meetingTitle} · {durationText}
       </p>
 
-      <div className="confirmed-meeting__badges">
-        <Badge
-          variant="required"
-          available={countAvailable(requiredAttendees)}
-          total={requiredAttendees.length}
-        />
-        <Badge
-          variant="optional"
-          available={countAvailable(optionalAttendees)}
-          total={optionalAttendees.length}
-        />
-      </div>
+      {/* 읽기 전용 요약 — 화면 ①의 세그먼트 토글과 형태가 겹치지 않도록 pill 없이 일반 텍스트 */}
+      <p className="confirmed-meeting__counts text-caption">
+        필수 {countAvailable(requiredAttendees)}/{requiredAttendees.length} · 선택{' '}
+        {countAvailable(optionalAttendees)}/{optionalAttendees.length}
+      </p>
 
       <div className="confirmed-meeting__section">
         <p className="confirmed-meeting__section-title text-title-sm">필수 참석자</p>

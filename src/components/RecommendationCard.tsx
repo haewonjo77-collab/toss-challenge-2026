@@ -1,4 +1,3 @@
-import { Badge } from './Badge';
 import { AttendeeRow } from './AttendeeRow';
 import type { Attendee } from '../data/mockAttendees';
 import './RecommendationCard.css';
@@ -39,10 +38,11 @@ export function RecommendationCard({
       {rankLabel && <span className="recommendation-card__rank text-caption">{rankLabel}</span>}
       <p className="recommendation-card__time text-title-lg">{timeLabel}</p>
 
-      <div className="recommendation-card__badges">
-        <Badge variant="required" available={requiredAvailable} total={requiredAttendees.length} />
-        <Badge variant="optional" available={optionalAvailable} total={optionalAttendees.length} />
-      </div>
+      {/* 읽기 전용 요약 — 화면 ①의 세그먼트 토글과 형태가 겹치지 않도록 pill 없이 일반 텍스트 */}
+      <p className="recommendation-card__counts text-caption">
+        필수 {requiredAvailable}/{requiredAttendees.length} · 선택 {optionalAvailable}/
+        {optionalAttendees.length}
+      </p>
 
       <div className="recommendation-card__section">
         <p className="recommendation-card__section-title text-title-sm">필수 참석자</p>
