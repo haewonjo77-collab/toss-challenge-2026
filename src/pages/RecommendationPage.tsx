@@ -14,9 +14,13 @@ export function RecommendationPage() {
 
   if (!title) return <Navigate to="/" replace />;
 
-  const options = recommendTimes(attendees, durationMinutes);
-  const main = options.find((option) => option.timeLabel === selectedLabel) ?? options[0];
-  const alternatives = options.filter((option) => option.timeLabel !== main.timeLabel).slice(0, 3);
+  // 순위는 정렬 위치에서 파생 — 대안을 미리보기로 올려도 자기 순위 라벨을 유지한다
+  const ranked = recommendTimes(attendees, durationMinutes).map((option, index) => ({
+    ...option,
+    rankLabel: index === 0 ? '추천' : `대안 ${index}`,
+  }));
+  const main = ranked.find((option) => option.timeLabel === selectedLabel) ?? ranked[0];
+  const alternatives = ranked.filter((option) => option.timeLabel !== main.timeLabel).slice(0, 3);
 
   const confirm = () => {
     confirmMeeting({
@@ -34,6 +38,7 @@ export function RecommendationPage() {
         requiredAttendees={main.requiredAttendees}
         optionalAttendees={main.optionalAttendees}
         variant={main.isFallback ? 'fallback' : 'primary'}
+        rankLabel={main.rankLabel}
         onConfirm={confirm}
         onRequestRecheck={() => show('재확인 요청을 보냈어요')}
       />

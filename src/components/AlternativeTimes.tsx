@@ -3,10 +3,14 @@ import type { Attendee } from '../data/mockAttendees';
 import type { Recommendation } from '../data/recommendation';
 import './AlternativeTimes.css';
 
+export interface AlternativeOption extends Recommendation {
+  rankLabel: string; // 정렬 순위에서 파생 ("대안 1", "대안 2", …)
+}
+
 interface AlternativeTimesProps {
-  options: Recommendation[];
+  options: AlternativeOption[];
   // 확정이 아니라 이 카드를 최상단 자리로 올려 세부 내역을 먼저 보여주기 위한 콜백
-  onPreview: (option: Recommendation) => void;
+  onPreview: (option: AlternativeOption) => void;
 }
 
 function countFull(attendees: Attendee[]): number {
@@ -37,6 +41,7 @@ export function AlternativeTimes({ options, onPreview }: AlternativeTimesProps) 
             className="alternative-times__option"
             onClick={() => onPreview(option)}
           >
+            <span className="alternative-times__rank text-caption">{option.rankLabel}</span>
             <span className="alternative-times__time text-title-sm">{option.timeLabel}</span>
             <span className="alternative-times__counts text-caption">
               필수 {countFull(option.requiredAttendees)}/{option.requiredAttendees.length} · 선택{' '}
