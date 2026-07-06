@@ -70,7 +70,10 @@ export function TimeGrid({ days, slots, isUnavailable, onSetUnavailable }: TimeG
                 onPointerDown={(event) => handlePointerDown(event, day, slot)}
                 onPointerMove={drag.movePress}
                 onClick={() => handleClick(day, slot)}
-              />
+              >
+                {/* "선택 = 되는 시간" 습관과의 혼동을 막기 위해 형태(✕)로 '안 됨'을 명시 */}
+                {unavailable ? '✕' : ''}
+              </button>
             );
           })}
         </Fragment>
