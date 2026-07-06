@@ -39,6 +39,7 @@ export function CreateMeeting({
   const [showTeamField, setShowTeamField] = useState(false);
   const [titleError, setTitleError] = useState(false);
   const titleInputRef = useRef<HTMLInputElement>(null);
+  const nameInputRef = useRef<HTMLInputElement>(null);
 
   // 제목 미입력 시 disabled로 침묵하는 대신, 클릭에 반응해 이유를 보여주고 입력 위치로 데려간다
   const handleSubmit = () => {
@@ -99,6 +100,9 @@ export function CreateMeeting({
     ]);
     setNewName('');
     setNewTeam('');
+    // 연속 입력 편의 — 추가 버튼 클릭으로 빠진 포커스를 이름 입력으로 되돌려
+    // 리스트가 길어져도 다시 스크롤해 입력창을 찾지 않아도 되게 한다
+    nameInputRef.current?.focus();
   };
 
   const handleAddKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -230,6 +234,7 @@ export function CreateMeeting({
 
         <div className="create-meeting__add">
           <input
+            ref={nameInputRef}
             className="text-input create-meeting__add-input"
             value={newName}
             onChange={(event) => setNewName(event.target.value)}
