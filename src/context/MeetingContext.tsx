@@ -24,6 +24,7 @@ interface MeetingContextValue {
   ) => void;
   markNextResponded: () => void;
   confirmMeeting: (result: ConfirmedResult) => void;
+  resetMeeting: () => void;
 }
 
 const MeetingContext = createContext<MeetingContextValue | null>(null);
@@ -72,6 +73,16 @@ export function MeetingProvider({ children }: { children: ReactNode }) {
     setConfirmed(result);
   };
 
+  // 화면 ④ "새 회의 만들기" — 화면 ①이 빈 상태(기본값)에서 다시 시작하도록 전부 초기화
+  const resetMeeting = () => {
+    setTitle('');
+    setAttendees([]);
+    setDurationMinutes(60);
+    setWeekScope('next');
+    setResponses([]);
+    setConfirmed(null);
+  };
+
   return (
     <MeetingContext.Provider
       value={{
@@ -84,6 +95,7 @@ export function MeetingProvider({ children }: { children: ReactNode }) {
         createMeeting,
         markNextResponded,
         confirmMeeting,
+        resetMeeting,
       }}
     >
       {children}

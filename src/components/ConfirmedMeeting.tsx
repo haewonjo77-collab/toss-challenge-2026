@@ -10,6 +10,7 @@ interface ConfirmedMeetingProps {
   requiredAttendees: Attendee[];
   optionalAttendees: Attendee[];
   onShare: () => void;
+  onNewMeeting: () => void;
 }
 
 function countAvailable(attendees: Attendee[]): number {
@@ -23,6 +24,7 @@ export function ConfirmedMeeting({
   requiredAttendees,
   optionalAttendees,
   onShare,
+  onNewMeeting,
 }: ConfirmedMeetingProps) {
   return (
     <div className="confirmed-meeting">
@@ -66,6 +68,14 @@ export function ConfirmedMeeting({
 
       <button type="button" className="button button--secondary confirmed-meeting__cta" onClick={onShare}>
         참석자에게 공유하기
+      </button>
+      {/* accent는 상단 확정 체크 마커 1군데 유지 — 새 플로우 진입 버튼도 secondary */}
+      <button
+        type="button"
+        className="button button--secondary confirmed-meeting__new"
+        onClick={onNewMeeting}
+      >
+        새 회의 만들기
       </button>
     </div>
   );
