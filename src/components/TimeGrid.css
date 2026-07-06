@@ -1,0 +1,31 @@
+.time-grid {
+  display: grid;
+  gap: var(--space-xxs);
+  margin-top: var(--space-xs);
+}
+
+.time-grid__day {
+  text-align: center;
+  color: var(--color-muted);
+  padding-bottom: var(--space-xxs);
+}
+
+.time-grid__time {
+  display: flex;
+  align-items: center;
+  color: var(--color-muted);
+}
+
+.time-grid__cell {
+  height: 40px;
+  padding: 0;
+  background: var(--color-canvas);
+  border: 1px solid var(--color-hairline-soft);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.time-grid__cell--unavailable {
+  background: var(--color-surface-strong);
+  border-color: var(--color-surface-strong);
+}

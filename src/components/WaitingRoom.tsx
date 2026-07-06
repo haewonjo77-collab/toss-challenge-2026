@@ -1,4 +1,4 @@
-import { Avatar } from './Avatar';
+import { ResponseList } from './ResponseList';
 import type { ResponseStatus } from '../data/mockAttendees';
 import './WaitingRoom.css';
 
@@ -23,21 +23,7 @@ export function WaitingRoom({ attendees, onViewRecommendation }: WaitingRoomProp
           : `${remainingCount}명이 응답하면 추천 시간을 볼 수 있어요`}
       </p>
 
-      <div className="waiting-room__list">
-        {attendees.map((attendee) => (
-          <div key={attendee.id} className="waiting-room__row">
-            <Avatar name={attendee.name} />
-            <span className="waiting-room__name text-body-md">{attendee.name}</span>
-            <span
-              className={`waiting-room__status text-caption${
-                attendee.responded ? '' : ' waiting-room__status--pending'
-              }`}
-            >
-              {attendee.responded ? '응답완료' : '대기중'}
-            </span>
-          </div>
-        ))}
-      </div>
+      <ResponseList responses={attendees} />
 
       <button
         type="button"

@@ -17,6 +17,11 @@ export function WaitingPage() {
   if (!title) return <Navigate to="/" replace />;
 
   return (
-    <WaitingRoom attendees={responses} onViewRecommendation={() => navigate('/recommendation')} />
+    <>
+      <WaitingRoom attendees={responses} onViewRecommendation={() => navigate('/recommendation')} />
+      <button type="button" className="link-button text-caption" onClick={() => navigate('/join')}>
+        참석자 응답 화면 미리보기 →
+      </button>
+    </>
   );
 }

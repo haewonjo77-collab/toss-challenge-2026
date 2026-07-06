@@ -1,0 +1,68 @@
+.join__eyebrow {
+  color: var(--color-muted);
+  margin: 0 0 var(--space-xxs);
+}
+
+.join__title {
+  color: var(--color-ink);
+  margin: 0 0 var(--space-xs);
+}
+
+.join__hint {
+  color: var(--color-muted);
+  margin: 0 0 var(--space-lg);
+}
+
+.join__name-input {
+  width: 100%;
+  margin-bottom: var(--space-lg);
+}
+
+.join__cta {
+  width: 100%;
+}
+
+.join__step {
+  color: var(--color-muted);
+  margin: 0 0 var(--space-xxs);
+}
+
+.join__count {
+  color: var(--color-muted);
+  margin: var(--space-sm) 0 0;
+}
+
+.join__actions {
+  display: flex;
+  gap: var(--space-sm);
+  margin-top: var(--space-lg);
+}
+
+.join__actions .button {
+  flex: 1;
+}
+
+/* 제출 완료 상태 마커 — 이 화면엔 CTA가 없어 accent 1군데를 담당 (화면 ④와 동일 패턴) */
+.join__check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  font-size: 20px;
+  line-height: 1;
+  margin-bottom: var(--space-sm);
+}
+
+.join__headline {
+  color: var(--color-ink);
+  margin: 0 0 var(--space-sm);
+}
+
+.join__footer-hint {
+  color: var(--color-muted);
+  margin: var(--space-md) 0 0;
+}

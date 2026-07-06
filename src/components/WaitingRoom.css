@@ -18,26 +18,6 @@
   margin: 0 0 var(--space-lg);
 }
 
-.waiting-room__row {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  padding: var(--space-xs) 0;
-}
-
-.waiting-room__name {
-  flex: 1;
-  color: var(--color-ink);
-}
-
-.waiting-room__status {
-  color: var(--color-ink);
-}
-
-.waiting-room__status--pending {
-  color: var(--color-muted);
-}
-
 .waiting-room__cta {
   width: 100%;
   margin-top: var(--space-lg);
