@@ -245,7 +245,7 @@ export function CreateMeeting({
             className="button button--secondary create-meeting__add-button"
             onClick={addAttendee}
           >
-            추가
+            참석자 추가
           </button>
         </div>
       </div>
