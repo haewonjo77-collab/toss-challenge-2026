@@ -1,7 +1,6 @@
 import { createContext, useContext, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { Attendee, InvitedAttendee, ResponseStatus } from '../data/mockAttendees';
-import type { WeekScope } from '../data/schedule';
 
 export interface ConfirmedResult {
   timeLabel: string;
@@ -13,14 +12,14 @@ interface MeetingContextValue {
   title: string;
   attendees: InvitedAttendee[];
   durationMinutes: number;
-  weekScope: WeekScope;
+  weeksAhead: number; // 0=이번 주, 1=다음 주, 2 이상=직접 선택한 N주 후
   responses: ResponseStatus[];
   confirmed: ConfirmedResult | null;
   createMeeting: (
     title: string,
     attendees: InvitedAttendee[],
     durationMinutes: number,
-    weekScope: WeekScope,
+    weeksAhead: number,
   ) => void;
   markNextResponded: () => void;
   confirmMeeting: (result: ConfirmedResult) => void;
@@ -33,8 +32,8 @@ export function MeetingProvider({ children }: { children: ReactNode }) {
   const [title, setTitle] = useState('');
   const [attendees, setAttendees] = useState<InvitedAttendee[]>([]);
   const [durationMinutes, setDurationMinutes] = useState(60);
-  // SPEC.md 시나리오("1주일 내 회의를 잡는다")와 일치하도록 기본값은 '다음 주'
-  const [weekScope, setWeekScope] = useState<WeekScope>('next');
+  // SPEC.md 시나리오("1주일 내 회의를 잡는다")와 일치하도록 기본값은 '다음 주'(1)
+  const [weeksAhead, setWeeksAhead] = useState(1);
   const [responses, setResponses] = useState<ResponseStatus[]>([]);
   const [confirmed, setConfirmed] = useState<ConfirmedResult | null>(null);
 
@@ -42,12 +41,12 @@ export function MeetingProvider({ children }: { children: ReactNode }) {
     newTitle: string,
     newAttendees: InvitedAttendee[],
     newDuration: number,
-    newWeekScope: WeekScope,
+    newWeeksAhead: number,
   ) => {
     setTitle(newTitle);
     setAttendees(newAttendees);
     setDurationMinutes(newDuration);
-    setWeekScope(newWeekScope);
+    setWeeksAhead(newWeeksAhead);
     // 참석자 플로우가 범위 밖이라 마지막 2명을 미응답으로 시작, 화면 ②에서 도착을 시뮬레이션
     setResponses(
       newAttendees.map((attendee, index) => ({
@@ -78,7 +77,7 @@ export function MeetingProvider({ children }: { children: ReactNode }) {
     setTitle('');
     setAttendees([]);
     setDurationMinutes(60);
-    setWeekScope('next');
+    setWeeksAhead(1);
     setResponses([]);
     setConfirmed(null);
   };
@@ -89,7 +88,7 @@ export function MeetingProvider({ children }: { children: ReactNode }) {
         title,
         attendees,
         durationMinutes,
-        weekScope,
+        weeksAhead,
         responses,
         confirmed,
         createMeeting,

@@ -5,7 +5,6 @@ import { WeekScopeToggle } from './WeekScopeToggle';
 import { initialInvitedAttendees, recentAttendees } from '../data/mockAttendees';
 import type { AttendeeRole, InvitedAttendee } from '../data/mockAttendees';
 import { DURATION_OPTIONS } from '../data/time';
-import type { WeekScope } from '../data/schedule';
 import { useLongPressDrag } from '../utils/useLongPressDrag';
 import './CreateMeeting.css';
 
@@ -13,12 +12,12 @@ interface CreateMeetingProps {
   initialTitle?: string;
   initialAttendees?: InvitedAttendee[];
   initialDuration?: number;
-  initialWeekScope?: WeekScope;
+  initialWeeksAhead?: number;
   onSubmit: (
     title: string,
     attendees: InvitedAttendee[],
     durationMinutes: number,
-    weekScope: WeekScope,
+    weeksAhead: number,
   ) => void;
 }
 
@@ -26,14 +25,14 @@ export function CreateMeeting({
   initialTitle,
   initialAttendees,
   initialDuration,
-  initialWeekScope,
+  initialWeeksAhead,
   onSubmit,
 }: CreateMeetingProps) {
   const [title, setTitle] = useState(initialTitle ?? '');
   const [attendees, setAttendees] = useState<InvitedAttendee[]>(initialAttendees ?? []);
   const [durationMinutes, setDurationMinutes] = useState(initialDuration ?? 60);
-  // SPEC.md 시나리오("1주일 내 회의를 잡는다")와 일치하도록 기본값은 '다음 주'
-  const [weekScope, setWeekScope] = useState<WeekScope>(initialWeekScope ?? 'next');
+  // SPEC.md 시나리오("1주일 내 회의를 잡는다")와 일치하도록 기본값은 '다음 주'(1)
+  const [weeksAhead, setWeeksAhead] = useState(initialWeeksAhead ?? 1);
   const [newName, setNewName] = useState('');
   const [newTeam, setNewTeam] = useState('');
   // 부서/팀은 선택 입력이라 기본 숨김 — 한 번 펼치면 연속 입력을 위해 계속 열어둔다
@@ -149,7 +148,7 @@ export function CreateMeeting({
 
       <div className="create-meeting__field">
         <span className="create-meeting__label text-caption">회의 가능 기간</span>
-        <WeekScopeToggle value={weekScope} onChange={setWeekScope} />
+        <WeekScopeToggle value={weeksAhead} onChange={setWeeksAhead} />
       </div>
 
       <div className="create-meeting__field">
@@ -245,7 +244,7 @@ export function CreateMeeting({
         type="button"
         className="button button--primary create-meeting__cta"
         disabled={title.trim() === '' || attendees.length === 0}
-        onClick={() => onSubmit(title.trim(), attendees, durationMinutes, weekScope)}
+        onClick={() => onSubmit(title.trim(), attendees, durationMinutes, weeksAhead)}
       >
         초대 링크 보내기
       </button>
