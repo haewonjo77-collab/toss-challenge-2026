@@ -7,7 +7,6 @@ interface RecommendationCardProps {
   requiredAttendees: Attendee[];
   optionalAttendees: Attendee[];
   variant: 'primary' | 'fallback';
-  rankLabel?: string; // "추천" 또는 "대안 N" — 정렬 순위에서 파생, 미리보기로 올라와도 자기 순위 유지
   onConfirm: () => void;
   onRequestRecheck?: () => void;
 }
@@ -25,7 +24,6 @@ export function RecommendationCard({
   requiredAttendees,
   optionalAttendees,
   variant,
-  rankLabel,
   onConfirm,
   onRequestRecheck,
 }: RecommendationCardProps) {
@@ -35,7 +33,6 @@ export function RecommendationCard({
 
   return (
     <div className="recommendation-card">
-      {rankLabel && <span className="recommendation-card__rank text-caption">{rankLabel}</span>}
       <p className="recommendation-card__time text-title-lg">{timeLabel}</p>
 
       {/* 읽기 전용 요약 — 화면 ①의 세그먼트 토글과 형태가 겹치지 않도록 pill 없이 일반 텍스트 */}

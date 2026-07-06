@@ -8,18 +8,6 @@
   box-sizing: border-box;
 }
 
-/* badge-required 톤과 통일 — 최상단 카드의 순위 표시 */
-.recommendation-card__rank {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 8px;
-  border-radius: var(--radius-pill);
-  background: var(--color-surface-strong);
-  color: var(--color-ink);
-  font-weight: 700;
-  margin-bottom: var(--space-xs);
-}
-
 .recommendation-card__time {
   color: var(--color-ink);
   margin: 0 0 var(--space-sm);

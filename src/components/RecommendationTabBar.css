@@ -1,0 +1,32 @@
+/* 스크롤 시에도 항상 보이도록 화면 상단에 고정 */
+.recommendation-tabs {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  gap: var(--space-xs);
+  overflow-x: auto;
+  background: var(--color-surface-soft);
+  padding: var(--space-xs) 0 var(--space-sm);
+  margin-bottom: var(--space-xs);
+}
+
+.recommendation-tabs__tab {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-pill);
+  background: var(--color-canvas);
+  color: var(--color-muted);
+  font-family: var(--font-family);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.recommendation-tabs__tab--active {
+  background: var(--color-surface-strong);
+  border-color: var(--color-surface-strong);
+  color: var(--color-ink);
+  font-weight: 700;
+}
