@@ -3,10 +3,12 @@ import { ConfirmedMeeting } from '../components/ConfirmedMeeting';
 import { useToast } from '../components/Toast';
 import { useMeeting } from '../context/MeetingContext';
 import { durationLabel } from '../data/time';
+import { useScreenMeasure } from '../utils/measure';
 
 export function ConfirmedPage() {
   const { title, durationMinutes, confirmed } = useMeeting();
   const { show } = useToast();
+  useScreenMeasure('화면④ 확정');
 
   if (!confirmed) return <Navigate to="/" replace />;
 

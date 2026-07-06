@@ -31,6 +31,17 @@
   margin-bottom: var(--space-lg);
 }
 
+/* AS-IS(headcount) 모드의 단일 인원수 배지 — badge-required 토큰과 동일 톤 */
+.recommendation-card__headcount {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-strong);
+  color: var(--color-ink);
+  font-weight: 700;
+}
+
 .recommendation-card__section-title {
   color: var(--color-ink);
   margin: 0 0 var(--space-xs);

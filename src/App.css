@@ -24,8 +24,42 @@
   height: 48px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   padding: 0 var(--space-md);
   flex-shrink: 0;
+}
+
+.back-bar__left {
+  display: flex;
+  align-items: center;
+}
+
+/* 테스트 진행자용 AS-IS/TO-BE 스위치 — 실사용자 UI 아님 */
+.variant-switch {
+  display: inline-flex;
+  padding: 2px;
+  background: var(--color-surface-soft);
+  border-radius: var(--radius-pill);
+}
+
+.variant-switch__option {
+  padding: 3px 8px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-muted);
+  font-family: var(--font-family);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+}
+
+.variant-switch__option--selected {
+  background: var(--color-canvas);
+  border-color: var(--color-hairline);
+  color: var(--color-ink);
 }
 
 .back-bar__button {

@@ -45,8 +45,15 @@ function statusAt(slot: CandidateSlot, attendee: InvitedAttendee): AttendanceSta
   return raw;
 }
 
+// AS-IS(가설 C 비교군)는 필수/선택을 무시하고 전체 참석 가능 수로만 정렬 — 기존 도구 재현
+export type RecommendMode = 'priority' | 'headcount';
+
 // 정렬 1위가 메인 추천, 나머지는 "다른 시간 보기" 대안 후보
-export function recommendTimes(attendees: InvitedAttendee[], durationMinutes: number): Recommendation[] {
+export function recommendTimes(
+  attendees: InvitedAttendee[],
+  durationMinutes: number,
+  mode: RecommendMode = 'priority',
+): Recommendation[] {
   const scored = CANDIDATE_SLOTS.map((slot) => {
     const toAttendee = (attendee: InvitedAttendee): Attendee => ({
       id: attendee.id,
@@ -68,6 +75,9 @@ export function recommendTimes(attendees: InvitedAttendee[], durationMinutes: nu
   });
 
   scored.sort((a, b) => {
+    if (mode === 'headcount') {
+      return b.requiredFull + b.optionalFull - (a.requiredFull + a.optionalFull);
+    }
     if (a.allRequired !== b.allRequired) return a.allRequired ? -1 : 1;
     if (a.requiredFull !== b.requiredFull) return b.requiredFull - a.requiredFull;
     return b.optionalFull - a.optionalFull;
@@ -77,6 +87,7 @@ export function recommendTimes(attendees: InvitedAttendee[], durationMinutes: nu
     timeLabel: slot.timeLabel,
     requiredAttendees: slot.requiredAttendees,
     optionalAttendees: slot.optionalAttendees,
-    isFallback: !slot.allRequired,
+    // 차선책(필수 빠짐 경고) 개념 자체가 TO-BE 기능 — headcount 모드에서는 항상 일반 추천으로 취급
+    isFallback: mode === 'priority' && !slot.allRequired,
   }));
 }
