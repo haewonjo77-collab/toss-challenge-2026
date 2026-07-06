@@ -111,6 +111,14 @@
   flex-shrink: 0;
 }
 
+.create-meeting__fill {
+  display: block;
+  width: 100%;
+  text-align: center;
+  margin-top: var(--space-lg);
+}
+
 .create-meeting__cta {
   width: 100%;
+  margin-top: var(--space-xs);
 }

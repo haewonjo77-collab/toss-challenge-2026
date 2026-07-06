@@ -20,9 +20,7 @@ export function CreateMeeting({
   onSubmit,
 }: CreateMeetingProps) {
   const [title, setTitle] = useState(initialTitle ?? '');
-  const [attendees, setAttendees] = useState<InvitedAttendee[]>(
-    initialAttendees ?? initialInvitedAttendees,
-  );
+  const [attendees, setAttendees] = useState<InvitedAttendee[]>(initialAttendees ?? []);
   const [durationMinutes, setDurationMinutes] = useState(initialDuration ?? 60);
   const [newName, setNewName] = useState('');
   const [newTeam, setNewTeam] = useState('');
@@ -66,6 +64,11 @@ export function CreateMeeting({
       ...attendees,
       { id: `recent-${recent.name}`, name: recent.name, role: 'optional', team: recent.team },
     ]);
+  };
+
+  // 개발/시연 중 화면 ②③④를 빠르게 확인하기 위한 단축 — 실제 시연은 빈 화면에서 시작
+  const fillWithMockData = () => {
+    setAttendees(initialInvitedAttendees);
   };
 
   return (
@@ -168,6 +171,10 @@ export function CreateMeeting({
           </button>
         </div>
       </div>
+
+      <button type="button" className="link-button text-caption create-meeting__fill" onClick={fillWithMockData}>
+        예시 데이터로 빠르게 채우기
+      </button>
 
       <button
         type="button"
