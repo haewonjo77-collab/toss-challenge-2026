@@ -15,8 +15,10 @@ function countAvailable(attendees: Attendee[]): number {
   return attendees.filter((attendee) => attendee.status === 'full').length;
 }
 
-function getMissingNames(attendees: Attendee[]): string[] {
-  return attendees.filter((attendee) => attendee.status === 'none').map((attendee) => attendee.name);
+function missingWithRole(attendees: Attendee[], roleLabel: string): { name: string; role: string }[] {
+  return attendees
+    .filter((attendee) => attendee.status === 'none')
+    .map((attendee) => ({ name: attendee.name, role: roleLabel }));
 }
 
 export function RecommendationCard({
@@ -29,7 +31,11 @@ export function RecommendationCard({
 }: RecommendationCardProps) {
   const requiredAvailable = countAvailable(requiredAttendees);
   const optionalAvailable = countAvailable(optionalAttendees);
-  const missingRequiredNames = getMissingNames(requiredAttendees);
+  const missingAttendees = [
+    ...missingWithRole(requiredAttendees, '필수'),
+    ...missingWithRole(optionalAttendees, '선택'),
+  ];
+  const hasMissingRequired = missingAttendees.some((missing) => missing.role === '필수');
 
   return (
     <div className="recommendation-card">
@@ -40,6 +46,22 @@ export function RecommendationCard({
         필수 {requiredAvailable}/{requiredAttendees.length} · 선택 {optionalAvailable}/
         {optionalAttendees.length}
       </p>
+
+      {/* 탭 전환 중에도 항상 보이도록 참석자 목록 위에 배치 — 필수 불참만 danger, 그 외는 차분한 톤 */}
+      {missingAttendees.length === 0 ? (
+        <p className="recommendation-card__notice recommendation-card__notice--calm text-body-sm">
+          전원 참석 가능해요
+        </p>
+      ) : (
+        <p
+          className={`recommendation-card__notice text-body-sm${
+            hasMissingRequired ? '' : ' recommendation-card__notice--calm'
+          }`}
+        >
+          {missingAttendees.map((missing) => `${missing.name}님(${missing.role})`).join(', ')}이 참석하지
+          못해요
+        </p>
+      )}
 
       <div className="recommendation-card__section">
         <p className="recommendation-card__section-title text-title-sm">필수 참석자</p>
@@ -56,12 +78,6 @@ export function RecommendationCard({
           <AttendeeRow key={attendee.id} name={attendee.name} status={attendee.status} />
         ))}
       </div>
-
-      {variant === 'fallback' && (
-        <p className="recommendation-card__notice text-body-sm">
-          {missingRequiredNames.join(', ')}님이 참석하지 못해요
-        </p>
-      )}
 
       <div className="recommendation-card__actions">
         {variant === 'fallback' && (

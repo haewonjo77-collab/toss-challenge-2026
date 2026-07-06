@@ -31,7 +31,12 @@
 
 .recommendation-card__notice {
   color: var(--color-danger);
-  margin: var(--space-md) 0 0;
+  margin: 0 0 var(--space-md);
+}
+
+/* 필수 불참이 아닌 경우(선택만 불참·전원 가능) — 경고가 아닌 정보 톤 */
+.recommendation-card__notice--calm {
+  color: var(--color-body);
 }
 
 .recommendation-card__actions {
