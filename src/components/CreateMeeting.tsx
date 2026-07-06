@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Avatar } from './Avatar';
 import { RoleToggle } from './RoleToggle';
-import { initialInvitedAttendees } from '../data/mockAttendees';
+import { initialInvitedAttendees, recentAttendees } from '../data/mockAttendees';
 import type { AttendeeRole, InvitedAttendee } from '../data/mockAttendees';
 import { DURATION_OPTIONS } from '../data/time';
 import './CreateMeeting.css';
@@ -54,6 +54,18 @@ export function CreateMeeting({
     // 한글 IME 조합 중 Enter는 조합 확정 키이므로 무시 (조합 미종료 상태에서 추가되면 이름이 분리됨)
     if (event.nativeEvent.isComposing) return;
     if (event.key === 'Enter') addAttendee();
+  };
+
+  // 이미 목록에 있는 이름은 칩에서 숨긴다
+  const availableRecent = recentAttendees.filter(
+    (recent) => !attendees.some((attendee) => attendee.name === recent.name),
+  );
+
+  const addRecent = (recent: { name: string; team?: string }) => {
+    setAttendees([
+      ...attendees,
+      { id: `recent-${recent.name}`, name: recent.name, role: 'optional', team: recent.team },
+    ]);
   };
 
   return (
@@ -117,6 +129,24 @@ export function CreateMeeting({
             </button>
           </div>
         ))}
+
+        {availableRecent.length > 0 && (
+          <div className="create-meeting__recent">
+            <span className="create-meeting__recent-label text-caption">최근 참석자</span>
+            <div className="create-meeting__chips">
+              {availableRecent.map((recent) => (
+                <button
+                  key={recent.name}
+                  type="button"
+                  className="create-meeting__chip text-caption"
+                  onClick={() => addRecent(recent)}
+                >
+                  + {recent.name}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="create-meeting__add">
           <input

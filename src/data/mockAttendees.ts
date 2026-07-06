@@ -30,3 +30,11 @@ export interface ResponseStatus {
   name: string;
   responded: boolean;
 }
+
+// 이전 회의에서 함께했던 참석자 — 화면 ①의 "최근 참석자" 빠른 추가용 (localStorage 대신 정적 mock)
+export const recentAttendees: { name: string; team?: string }[] = [
+  { name: '한지민', team: '플랫폼' },
+  { name: '서준혁', team: '재무' },
+  { name: '문가영', team: '법무' },
+  { name: '임현서' },
+];
