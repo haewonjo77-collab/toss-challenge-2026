@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Avatar } from './Avatar';
 import { RoleToggle } from './RoleToggle';
 import { WeekScopeToggle } from './WeekScopeToggle';
@@ -37,6 +37,19 @@ export function CreateMeeting({
   const [newTeam, setNewTeam] = useState('');
   // 부서/팀은 선택 입력이라 기본 숨김 — 한 번 펼치면 연속 입력을 위해 계속 열어둔다
   const [showTeamField, setShowTeamField] = useState(false);
+  const [titleError, setTitleError] = useState(false);
+  const titleInputRef = useRef<HTMLInputElement>(null);
+
+  // 제목 미입력 시 disabled로 침묵하는 대신, 클릭에 반응해 이유를 보여주고 입력 위치로 데려간다
+  const handleSubmit = () => {
+    if (title.trim() === '') {
+      setTitleError(true);
+      titleInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      titleInputRef.current?.focus({ preventScroll: true });
+      return;
+    }
+    onSubmit(title.trim(), attendees, durationMinutes, weeksAhead);
+  };
 
   const requiredCount = attendees.filter((attendee) => attendee.role === 'required').length;
   const optionalCount = attendees.length - requiredCount;
@@ -130,11 +143,16 @@ export function CreateMeeting({
         </label>
         <input
           id="meeting-title"
-          className="text-input create-meeting__input"
+          ref={titleInputRef}
+          className={`text-input create-meeting__input${titleError ? ' text-input--error' : ''}`}
           value={title}
-          onChange={(event) => setTitle(event.target.value)}
+          onChange={(event) => {
+            setTitle(event.target.value);
+            if (titleError) setTitleError(false);
+          }}
           placeholder="예: 주간 제품 리뷰"
         />
+        {titleError && <p className="create-meeting__error text-body-sm">회의 제목을 입력해주세요</p>}
       </div>
 
       <div className="create-meeting__field">
@@ -268,8 +286,8 @@ export function CreateMeeting({
       <button
         type="button"
         className="button button--primary create-meeting__cta"
-        disabled={title.trim() === '' || attendees.length === 0}
-        onClick={() => onSubmit(title.trim(), attendees, durationMinutes, weeksAhead)}
+        disabled={attendees.length === 0}
+        onClick={handleSubmit}
       >
         초대 링크 보내기
       </button>

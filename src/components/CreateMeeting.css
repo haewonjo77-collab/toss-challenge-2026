@@ -27,6 +27,11 @@
   width: 100%;
 }
 
+.create-meeting__error {
+  color: var(--color-danger);
+  margin: var(--space-xxs) 0 0;
+}
+
 .create-meeting__section-head {
   display: flex;
   align-items: baseline;

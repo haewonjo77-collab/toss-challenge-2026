@@ -72,6 +72,10 @@ body {
   color: var(--color-muted);
 }
 
+.text-input--error {
+  border-color: var(--color-danger);
+}
+
 .card {
   width: 100%;
   max-width: 361px;
