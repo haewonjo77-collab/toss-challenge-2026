@@ -2,6 +2,8 @@
   display: grid;
   gap: var(--space-xxs);
   margin-top: var(--space-xs);
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .time-grid__day {

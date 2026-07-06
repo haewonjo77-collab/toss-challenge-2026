@@ -6,7 +6,7 @@ interface JoinContextValue {
   unavailable: string[]; // "요일|시작분" 슬롯 키 목록
   submitted: boolean;
   startJoin: (name: string) => void;
-  toggleUnavailable: (key: string) => void;
+  setUnavailable: (key: string, value: boolean) => void;
   submitResponse: () => void;
 }
 
@@ -14,19 +14,22 @@ const JoinContext = createContext<JoinContextValue | null>(null);
 
 export function JoinProvider({ children }: { children: ReactNode }) {
   const [participantName, setParticipantName] = useState('');
-  const [unavailable, setUnavailable] = useState<string[]>([]);
+  const [unavailableSlots, setUnavailableSlots] = useState<string[]>([]);
   const [submitted, setSubmitted] = useState(false);
 
   const startJoin = (name: string) => {
     setParticipantName(name);
-    setUnavailable([]);
+    setUnavailableSlots([]);
     setSubmitted(false);
   };
 
-  const toggleUnavailable = (key: string) => {
-    setUnavailable((prev) =>
-      prev.includes(key) ? prev.filter((existing) => existing !== key) : [...prev, key],
-    );
+  // 드래그로 여러 셀을 지나갈 때 토글이 아니라 목표값을 그대로 적용하기 위한 명시적 설정
+  const setUnavailable = (key: string, value: boolean) => {
+    setUnavailableSlots((prev) => {
+      const has = prev.includes(key);
+      if (has === value) return prev;
+      return value ? [...prev, key] : prev.filter((existing) => existing !== key);
+    });
   };
 
   const submitResponse = () => {
@@ -35,7 +38,14 @@ export function JoinProvider({ children }: { children: ReactNode }) {
 
   return (
     <JoinContext.Provider
-      value={{ participantName, unavailable, submitted, startJoin, toggleUnavailable, submitResponse }}
+      value={{
+        participantName,
+        unavailable: unavailableSlots,
+        submitted,
+        startJoin,
+        setUnavailable,
+        submitResponse,
+      }}
     >
       {children}
     </JoinContext.Provider>
