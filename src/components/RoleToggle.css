@@ -7,7 +7,7 @@
 }
 
 .role-toggle__option {
-  touch-action: none;
+  /* touch-action은 기본값(스크롤 허용) 유지 — 드래그 모드 진입 시에만 JS로 none 전환 */
   padding: 4px 10px;
   border: 1px solid transparent;
   border-radius: var(--radius-pill);

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { Avatar } from './Avatar';
 import { RoleToggle } from './RoleToggle';
 import { WeekScopeToggle } from './WeekScopeToggle';
@@ -6,6 +6,7 @@ import { initialInvitedAttendees, recentAttendees } from '../data/mockAttendees'
 import type { AttendeeRole, InvitedAttendee } from '../data/mockAttendees';
 import { DURATION_OPTIONS } from '../data/time';
 import type { WeekScope } from '../data/schedule';
+import { useLongPressDrag } from '../utils/useLongPressDrag';
 import './CreateMeeting.css';
 
 interface CreateMeetingProps {
@@ -48,37 +49,27 @@ export function CreateMeeting({
     );
   };
 
-  // 세그먼트 드래그: 누른 세그먼트의 값을 목표값으로 고정하고 지나가는 행에 일괄 적용
-  const dragRoleRef = useRef<AttendeeRole | null>(null);
+  // 세그먼트 드래그: 300ms 이상 눌러야 진입(useLongPressDrag), 그 전엔 스크롤 제스처로 간주.
+  // 누른 세그먼트의 값 자체가 목표값이라 별도 토글이 아니므로(단순 클릭과 결과가 같음)
+  // 클릭 억제가 필요 없다 — TimeGrid와 달리 드래그 후 클릭이 다시 발생해도 같은 값이 적용될 뿐.
+  const roleDrag = useLongPressDrag();
 
-  useEffect(() => {
-    const stopDrag = () => {
-      dragRoleRef.current = null;
-    };
-    window.addEventListener('mouseup', stopDrag);
-    window.addEventListener('touchend', stopDrag);
-    return () => {
-      window.removeEventListener('mouseup', stopDrag);
-      window.removeEventListener('touchend', stopDrag);
-    };
-  }, []);
-
-  const beginRoleDrag = (id: string, role: AttendeeRole) => {
-    dragRoleRef.current = role;
-    changeRole(id, role);
-  };
-
-  const applyDragToRow = (id: string) => {
-    if (dragRoleRef.current) changeRole(id, dragRoleRef.current);
-  };
-
-  const handleRoleDragMove = (clientX: number, clientY: number) => {
-    if (!dragRoleRef.current) return;
-    const row = (document.elementFromPoint(clientX, clientY) as HTMLElement | null)?.closest(
-      '[data-attendee-id]',
-    ) as HTMLElement | null;
-    const id = row?.dataset.attendeeId;
-    if (id) changeRole(id, dragRoleRef.current);
+  const handleOptionPointerDown = (
+    id: string,
+    role: AttendeeRole,
+    event: React.PointerEvent<HTMLButtonElement>,
+  ) => {
+    roleDrag.startPress(
+      event,
+      () => changeRole(id, role),
+      (moveEvent) => {
+        const row = (
+          document.elementFromPoint(moveEvent.clientX, moveEvent.clientY) as HTMLElement | null
+        )?.closest('[data-attendee-id]') as HTMLElement | null;
+        const rowId = row?.dataset.attendeeId;
+        if (rowId) changeRole(rowId, role);
+      },
+    );
   };
 
   const removeAttendee = (id: string) => {
@@ -169,12 +160,7 @@ export function CreateMeeting({
         </div>
 
         {attendees.map((attendee) => (
-          <div
-            key={attendee.id}
-            className="create-meeting__row"
-            data-attendee-id={attendee.id}
-            onMouseEnter={() => applyDragToRow(attendee.id)}
-          >
+          <div key={attendee.id} className="create-meeting__row" data-attendee-id={attendee.id}>
             <Avatar name={attendee.name} />
             <span className="create-meeting__person">
               <span className="create-meeting__name text-body-md">{attendee.name}</span>
@@ -183,8 +169,8 @@ export function CreateMeeting({
             <RoleToggle
               value={attendee.role}
               onChange={(role) => changeRole(attendee.id, role)}
-              onBeginDrag={(role) => beginRoleDrag(attendee.id, role)}
-              onDragMove={handleRoleDragMove}
+              onOptionPointerDown={(role, event) => handleOptionPointerDown(attendee.id, role, event)}
+              onOptionPointerMove={roleDrag.movePress}
             />
             <button
               type="button"

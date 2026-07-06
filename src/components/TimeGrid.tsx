@@ -1,5 +1,6 @@
-import { Fragment, useEffect, useRef } from 'react';
+import { Fragment, useRef } from 'react';
 import { formatClockLabel } from '../data/time';
+import { useLongPressDrag } from '../utils/useLongPressDrag';
 import './TimeGrid.css';
 
 interface TimeGridProps {
@@ -10,41 +11,38 @@ interface TimeGridProps {
 }
 
 export function TimeGrid({ days, slots, isUnavailable, onSetUnavailable }: TimeGridProps) {
-  const draggingRef = useRef(false);
-  const dragValueRef = useRef(false);
+  const drag = useLongPressDrag();
+  // 드래그로 값이 적용된 직후의 click은 무시 — 아니면 클릭 토글이 드래그 결과를 다시 뒤집는다
+  const suppressClickRef = useRef(false);
 
-  useEffect(() => {
-    const stopDrag = () => {
-      draggingRef.current = false;
-    };
-    window.addEventListener('mouseup', stopDrag);
-    window.addEventListener('touchend', stopDrag);
-    return () => {
-      window.removeEventListener('mouseup', stopDrag);
-      window.removeEventListener('touchend', stopDrag);
-    };
-  }, []);
-
-  const startDrag = (day: string, slotStart: number) => {
+  const handlePointerDown = (
+    event: React.PointerEvent<HTMLButtonElement>,
+    day: string,
+    slotStart: number,
+  ) => {
     const target = !isUnavailable(day, slotStart);
-    draggingRef.current = true;
-    dragValueRef.current = target;
-    onSetUnavailable(day, slotStart, target);
+    drag.startPress(
+      event,
+      () => {
+        suppressClickRef.current = true;
+        onSetUnavailable(day, slotStart, target);
+      },
+      (moveEvent) => {
+        const el = document.elementFromPoint(moveEvent.clientX, moveEvent.clientY) as HTMLElement | null;
+        const cell = el?.closest('[data-day]') as HTMLElement | null;
+        const d = cell?.dataset.day;
+        const s = cell?.dataset.slot;
+        if (d && s) onSetUnavailable(d, Number(s), target);
+      },
+    );
   };
 
-  const dragOver = (day: string, slotStart: number) => {
-    if (!draggingRef.current) return;
-    onSetUnavailable(day, slotStart, dragValueRef.current);
-  };
-
-  const handleTouchMove = (event: React.TouchEvent) => {
-    if (!draggingRef.current) return;
-    event.preventDefault();
-    const touch = event.touches[0];
-    const target = document.elementFromPoint(touch.clientX, touch.clientY) as HTMLElement | null;
-    const day = target?.dataset.day;
-    const slot = target?.dataset.slot;
-    if (day && slot) onSetUnavailable(day, Number(slot), dragValueRef.current);
+  const handleClick = (day: string, slotStart: number) => {
+    if (suppressClickRef.current) {
+      suppressClickRef.current = false;
+      return;
+    }
+    onSetUnavailable(day, slotStart, !isUnavailable(day, slotStart));
   };
 
   return (
@@ -69,10 +67,9 @@ export function TimeGrid({ days, slots, isUnavailable, onSetUnavailable }: TimeG
                 className={`time-grid__cell${unavailable ? ' time-grid__cell--unavailable' : ''}`}
                 aria-pressed={unavailable}
                 aria-label={`${day} ${formatClockLabel(slot)} ${unavailable ? '안 됨' : '가능'}`}
-                onMouseDown={() => startDrag(day, slot)}
-                onMouseEnter={() => dragOver(day, slot)}
-                onTouchStart={() => startDrag(day, slot)}
-                onTouchMove={handleTouchMove}
+                onPointerDown={(event) => handlePointerDown(event, day, slot)}
+                onPointerMove={drag.movePress}
+                onClick={() => handleClick(day, slot)}
               />
             );
           })}
