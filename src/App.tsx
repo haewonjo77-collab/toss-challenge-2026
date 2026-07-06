@@ -30,7 +30,7 @@ function BackBar() {
 
 export function App() {
   return (
-    <BrowserRouter basename={import.meta.env.BASE_URL}>
+    <BrowserRouter>
       <MeetingProvider>
         <JoinProvider>
           <div className="app">
