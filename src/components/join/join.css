@@ -13,6 +13,11 @@
   margin: 0 0 var(--space-lg);
 }
 
+.join__progress {
+  color: var(--color-muted);
+  margin: calc(-1 * var(--space-md)) 0 var(--space-lg);
+}
+
 .join__name-input {
   width: 100%;
   margin-bottom: var(--space-lg);

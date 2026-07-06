@@ -17,3 +17,12 @@
 .response-list__status--pending {
   color: var(--color-muted);
 }
+
+.response-list__nudge {
+  border: none;
+  background: none;
+  padding: 0;
+  color: var(--color-muted);
+  text-decoration: underline;
+  cursor: pointer;
+}
