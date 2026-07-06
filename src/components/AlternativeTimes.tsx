@@ -5,14 +5,15 @@ import './AlternativeTimes.css';
 
 interface AlternativeTimesProps {
   options: Recommendation[];
-  onSelect: (option: Recommendation) => void;
+  // 확정이 아니라 이 카드를 최상단 자리로 올려 세부 내역을 먼저 보여주기 위한 콜백
+  onPreview: (option: Recommendation) => void;
 }
 
 function countFull(attendees: Attendee[]): number {
   return attendees.filter((attendee) => attendee.status === 'full').length;
 }
 
-export function AlternativeTimes({ options, onSelect }: AlternativeTimesProps) {
+export function AlternativeTimes({ options, onPreview }: AlternativeTimesProps) {
   const [open, setOpen] = useState(false);
 
   if (options.length === 0) return null;
@@ -34,7 +35,7 @@ export function AlternativeTimes({ options, onSelect }: AlternativeTimesProps) {
             key={option.timeLabel}
             type="button"
             className="alternative-times__option"
-            onClick={() => onSelect(option)}
+            onClick={() => onPreview(option)}
           >
             <span className="alternative-times__time text-title-sm">{option.timeLabel}</span>
             <span className="alternative-times__counts text-caption">
