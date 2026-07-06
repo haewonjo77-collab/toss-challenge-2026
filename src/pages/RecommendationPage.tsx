@@ -8,7 +8,7 @@ import { recommendTimes } from '../data/recommendation';
 import { useScreenMeasure } from '../utils/measure';
 
 export function RecommendationPage() {
-  const { title, attendees, durationMinutes, confirmMeeting } = useMeeting();
+  const { title, attendees, durationMinutes, weeksAhead, confirmMeeting } = useMeeting();
   const navigate = useNavigate();
   const { show } = useToast();
   const [activeLabel, setActiveLabel] = useState<string | null>(null);
@@ -18,7 +18,7 @@ export function RecommendationPage() {
 
   // 순위는 정렬 위치에서 파생 — 탭 라벨과 카드 내용 모두 여기서 나온다.
   // 참석자 목록은 모든 옵션이 같은 attendees 배열에서 파생되므로 표시 순서가 항상 동일하게 유지된다.
-  const ranked = recommendTimes(attendees, durationMinutes)
+  const ranked = recommendTimes(attendees, durationMinutes, weeksAhead)
     .slice(0, 4)
     .map((option, index) => ({ ...option, rankLabel: index === 0 ? '추천' : `대안 ${index}` }));
   const active = ranked.find((option) => option.timeLabel === activeLabel) ?? ranked[0];

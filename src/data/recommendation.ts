@@ -1,5 +1,6 @@
 import type { AttendanceStatus, Attendee, InvitedAttendee } from './mockAttendees';
 import { formatTimeRange } from './time';
+import { dateForWeekday, formatMonthDay } from './schedule';
 
 export interface Recommendation {
   timeLabel: string;
@@ -45,8 +46,12 @@ function statusAt(slot: CandidateSlot, attendee: InvitedAttendee): AttendanceSta
   return raw;
 }
 
-// 정렬 1위가 메인 추천, 나머지는 "다른 시간 보기" 대안 후보
-export function recommendTimes(attendees: InvitedAttendee[], durationMinutes: number): Recommendation[] {
+// 정렬 1위가 메인 추천, 나머지는 대안 후보. weeksAhead(화면 ①의 가능 기간)로 실제 날짜를 계산한다.
+export function recommendTimes(
+  attendees: InvitedAttendee[],
+  durationMinutes: number,
+  weeksAhead: number,
+): Recommendation[] {
   const scored = CANDIDATE_SLOTS.map((slot) => {
     const toAttendee = (attendee: InvitedAttendee): Attendee => ({
       id: attendee.id,
@@ -58,7 +63,12 @@ export function recommendTimes(attendees: InvitedAttendee[], durationMinutes: nu
     const requiredFull = requiredAttendees.filter((a) => a.status === 'full').length;
     const optionalFull = optionalAttendees.filter((a) => a.status === 'full').length;
     return {
-      timeLabel: formatTimeRange(slot.day, slot.startMinutes, durationMinutes),
+      // 예: "7/14 화요일 오후 2:00 - 3:00" — 요일만으로는 어느 주인지 모호해 실제 날짜를 병기
+      timeLabel: `${formatMonthDay(dateForWeekday(slot.day, weeksAhead))} ${formatTimeRange(
+        slot.day,
+        slot.startMinutes,
+        durationMinutes,
+      )}`,
       requiredAttendees,
       optionalAttendees,
       allRequired: requiredFull === requiredAttendees.length,
