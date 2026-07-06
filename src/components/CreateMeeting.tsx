@@ -45,13 +45,14 @@ export function CreateMeeting({
   // 함수형 업데이트 — 드래그 중 연속 이벤트가 리렌더보다 빠를 때 이전 변경 유실 방지
   const changeRole = (id: string, role: AttendeeRole) => {
     setAttendees((prev) =>
-      prev.map((attendee) => (attendee.id === id ? { ...attendee, role } : attendee)),
+      prev.map((attendee) =>
+        attendee.id === id && attendee.role !== role ? { ...attendee, role } : attendee,
+      ),
     );
   };
 
-  // 세그먼트 드래그: 300ms 이상 눌러야 진입(useLongPressDrag), 그 전엔 스크롤 제스처로 간주.
-  // 누른 세그먼트의 값 자체가 목표값이라 별도 토글이 아니므로(단순 클릭과 결과가 같음)
-  // 클릭 억제가 필요 없다 — TimeGrid와 달리 드래그 후 클릭이 다시 발생해도 같은 값이 적용될 뿐.
+  // 세그먼트 드래그: 누른 세그먼트의 값을 지나가는 참석자 행에 그대로 적용한다.
+  // TimeGrid와 달리 드래그 후 클릭이 다시 발생해도 같은 값이 적용될 뿐이라 클릭 억제가 필요 없다.
   const roleDrag = useLongPressDrag();
 
   const handleOptionPointerDown = (

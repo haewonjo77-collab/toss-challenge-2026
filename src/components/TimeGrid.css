@@ -19,13 +19,13 @@
 }
 
 .time-grid__cell {
+  touch-action: none;
   height: 40px;
   padding: 0;
   background: var(--color-canvas);
   border: 1px solid var(--color-hairline);
   border-radius: var(--radius-md);
   cursor: pointer;
-  /* touch-action은 기본값(스크롤 허용) 유지 — 드래그 모드 진입 시에만 JS로 none 전환 */
 }
 
 .time-grid__cell--unavailable {
