@@ -47,22 +47,3 @@
   width: 100%;
   margin-top: var(--space-lg);
 }
-
-.waiting-room__remember-title {
-  color: var(--color-ink);
-  margin: 0 0 var(--space-xs);
-}
-
-.waiting-room__remember-hint {
-  color: var(--color-muted);
-  margin: 0 0 var(--space-lg);
-}
-
-.waiting-room__remember-actions {
-  display: flex;
-  gap: var(--space-sm);
-}
-
-.waiting-room__remember-actions .button {
-  flex: 1;
-}

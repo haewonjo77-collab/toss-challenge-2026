@@ -2,12 +2,11 @@ import { useEffect, useRef, useState } from 'react';
 import { Avatar } from './Avatar';
 import { RoleToggle } from './RoleToggle';
 import { RangeCalendar } from './RangeCalendar';
-import { initialInvitedAttendees, recentAttendees } from '../data/mockAttendees';
+import { rememberAttendeeGroups, loadFavoriteGroups } from '../data/favorites';
 import type { AttendeeRole, InvitedAttendee } from '../data/mockAttendees';
 import { DURATION_OPTIONS, formatClockLabel } from '../data/time';
-import { loadFavoriteGroups } from '../data/favorites';
 import type { FavoriteGroup } from '../data/favorites';
-import { formatMonthDay, nextWeekRange, parseISODate, thisWeekRange } from '../data/schedule';
+import { nextWeekRange, thisWeekRange } from '../data/schedule';
 import { defaultMeetingSettings } from '../context/MeetingContext';
 import type { MeetingSettings } from '../context/MeetingContext';
 import { useLongPressDrag } from '../utils/useLongPressDrag';
@@ -41,6 +40,7 @@ export function CreateMeeting({
   const [titleError, setTitleError] = useState(false);
   const [timeSheetOpen, setTimeSheetOpen] = useState(false);
   const [customRangeOpen, setCustomRangeOpen] = useState(false);
+  const [rememberOpen, setRememberOpen] = useState(false);
   const [favoriteGroups, setFavoriteGroups] = useState<FavoriteGroup[]>([]);
   const titleInputRef = useRef<HTMLInputElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -57,6 +57,11 @@ export function CreateMeeting({
       titleInputRef.current?.focus({ preventScroll: true });
       return;
     }
+    setRememberOpen(true);
+  };
+
+  const submitMeeting = () => {
+    setRememberOpen(false);
     onSubmit(title.trim(), attendees, settings);
   };
 
@@ -74,16 +79,6 @@ export function CreateMeeting({
         ? 'next'
         : 'custom';
   const visibleRangeMode: RangeMode = customRangeOpen ? 'custom' : activeRangeMode;
-  const dateRangeLabel =
-    visibleRangeMode === 'this'
-      ? '이번 주'
-      : visibleRangeMode === 'next'
-        ? '다음 주'
-        : `${formatMonthDay(parseISODate(settings.rangeStart))}~${formatMonthDay(
-            parseISODate(settings.rangeEnd),
-          )}`;
-  const availabilitySummary = `${dateRangeLabel} · ${timeRangeLabel}`;
-
   const applyRangeMode = (mode: RangeMode) => {
     if (mode === 'custom') {
       setCustomRangeOpen(true);
@@ -196,23 +191,6 @@ export function CreateMeeting({
     if (event.key === 'Enter') addAttendee();
   };
 
-  // 이미 목록에 있는 이름은 칩에서 숨긴다
-  const availableRecent = recentAttendees.filter(
-    (recent) => !attendees.some((attendee) => attendee.name === recent.name),
-  );
-
-  const addRecent = (recent: { name: string; team?: string }) => {
-    setAttendees([
-      ...attendees,
-      { id: `recent-${recent.name}`, name: recent.name, role: 'required', team: recent.team },
-    ]);
-  };
-
-  // 개발/시연 중 화면 ②③④를 빠르게 확인하기 위한 단축 — 실제 시연은 빈 화면에서 시작
-  const fillWithMockData = () => {
-    setAttendees(initialInvitedAttendees);
-  };
-
   // 부서/팀 자동완성 — 이미 등록된 참석자들의 부서명 중 입력값과 겹치는 것을 추천 (보조, 강제 아님)
   const teamSuggestions = showTeamField
     ? Array.from(
@@ -276,13 +254,6 @@ export function CreateMeeting({
             주말 포함
           </label>
         </div>
-        <button
-          type="button"
-          className="create-meeting__time-range text-body-md"
-          onClick={() => setTimeSheetOpen(true)}
-        >
-          {availabilitySummary}
-        </button>
         <div className="create-meeting__range-options" role="group" aria-label="회의 가능 기간">
           {[
             ['this', '이번 주'],
@@ -302,13 +273,21 @@ export function CreateMeeting({
           ))}
         </div>
         {customRangeOpen && (
-        <RangeCalendar
-          rangeStart={settings.rangeStart}
-          rangeEnd={settings.rangeEnd}
-          includeWeekends={settings.includeWeekends}
-          onChange={(rangeStart, rangeEnd) => patchSettings({ rangeStart, rangeEnd })}
-        />
+          <RangeCalendar
+            rangeStart={settings.rangeStart}
+            rangeEnd={settings.rangeEnd}
+            includeWeekends={settings.includeWeekends}
+            onChange={(rangeStart, rangeEnd) => patchSettings({ rangeStart, rangeEnd })}
+          />
         )}
+        <button
+          type="button"
+          className="create-meeting__time-range text-body-md"
+          onClick={() => setTimeSheetOpen(true)}
+        >
+          <span className="create-meeting__time-range-label text-caption">시간대</span>
+          <span>{timeRangeLabel}</span>
+        </button>
       </div>
 
       <div className="create-meeting__field">
@@ -345,7 +324,7 @@ export function CreateMeeting({
 
         {favoriteGroups.length > 0 && (
           <div className="create-meeting__recent">
-            <span className="create-meeting__recent-label text-caption">즐겨찾기 폴더</span>
+            <span className="create-meeting__recent-label text-caption">저장한 참석자</span>
             <div className="create-meeting__chips">
               {favoriteGroups.map((group) => (
                 <button
@@ -369,24 +348,6 @@ export function CreateMeeting({
                   }}
                 >
                   {group.name} {group.attendees.length}명
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {availableRecent.length > 0 && (
-          <div className="create-meeting__recent">
-            <span className="create-meeting__recent-label text-caption">최근 참석자</span>
-            <div className="create-meeting__chips">
-              {availableRecent.map((recent) => (
-                <button
-                  key={recent.name}
-                  type="button"
-                  className="create-meeting__chip text-caption"
-                  onClick={() => addRecent(recent)}
-                >
-                  + {recent.name}
                 </button>
               ))}
             </div>
@@ -445,10 +406,6 @@ export function CreateMeeting({
         </div>
       </div>
 
-      <button type="button" className="link-button text-caption create-meeting__fill" onClick={fillWithMockData}>
-        예시 데이터로 빠르게 채우기
-      </button>
-
       <button
         type="button"
         className="button button--primary create-meeting__cta"
@@ -457,6 +414,38 @@ export function CreateMeeting({
       >
         초대 링크 보내기
       </button>
+
+      {rememberOpen && (
+        <div className="modal-overlay" onClick={() => setRememberOpen(false)}>
+          <div className="modal-sheet" onClick={(event) => event.stopPropagation()}>
+            <button
+              type="button"
+              className="modal-sheet__close"
+              aria-label="닫기"
+              onClick={() => setRememberOpen(false)}
+            >
+              ✕
+            </button>
+            <p className="create-meeting__sheet-title text-title-md">이 회의 참석자를 저장할까요?</p>
+            <p className="create-meeting__sheet-hint text-body-sm">다음 회의에서 바로 불러올 수 있어요</p>
+            <div className="create-meeting__remember-actions">
+              <button type="button" className="button button--secondary" onClick={submitMeeting}>
+                아니요
+              </button>
+              <button
+                type="button"
+                className="button button--primary"
+                onClick={() => {
+                  rememberAttendeeGroups(attendees);
+                  submitMeeting();
+                }}
+              >
+                저장
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {timeSheetOpen && (
         <div className="modal-overlay" onClick={() => setTimeSheetOpen(false)}>

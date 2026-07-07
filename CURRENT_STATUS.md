@@ -25,11 +25,13 @@ Last checked: 2026-07-08, Asia/Seoul
   - Meeting availability range uses simple choices: `이번 주`, `다음 주`, `직접 선택`.
   - `이번 주` automatically excludes today and earlier days.
   - Weekend inclusion toggle; when off, the calendar shows Monday-Friday only.
-  - Date range and time window are summarized in one availability section.
+  - Date range choices and time window are separated inside one availability section to avoid duplicate labels.
   - Day time window defaults to `09:00-18:00`, editable through a bottom sheet.
   - Attendee list with required/optional role selection.
-  - New attendees and recent attendees default to required.
-  - Recent attendee chips, saved favorite folder chips, and manual attendee add form.
+  - New and saved attendees default to required.
+  - Saved attendee folder chips and manual attendee add form.
+  - After tapping `초대 링크 보내기`, the organizer can save attendees for reuse.
+  - Static recent-attendee dummy chips and the quick-fill dummy button are removed from the main UI.
   - Required/optional role can be applied by dragging across attendee rows.
 
 - Waiting/status screen
