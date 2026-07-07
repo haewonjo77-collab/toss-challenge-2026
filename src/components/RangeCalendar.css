@@ -43,6 +43,11 @@
   margin-bottom: 2px;
 }
 
+.range-calendar--weekdays .range-calendar__weekdays,
+.range-calendar--weekdays .range-calendar__grid {
+  grid-template-columns: repeat(5, 1fr);
+}
+
 .range-calendar__day {
   height: 36px;
   padding: 0;

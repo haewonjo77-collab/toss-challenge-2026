@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { Attendee, InvitedAttendee, ResponseStatus } from '../data/mockAttendees';
-import { mondayOfWeek, toISODate } from '../data/schedule';
+import { nextWeekRange } from '../data/schedule';
 
 export interface ConfirmedResult {
   timeLabel: string;
@@ -21,13 +21,11 @@ export interface MeetingSettings {
 
 // SPEC 시나리오("1주일 내 회의를 잡는다") 기본값 — 다음 주 월~금, 09:00~18:00, 1시간
 export function defaultMeetingSettings(): MeetingSettings {
-  const monday = mondayOfWeek(new Date(), 1);
-  const friday = new Date(monday);
-  friday.setDate(monday.getDate() + 4);
+  const defaultRange = nextWeekRange(false);
   return {
     durationMinutes: 60,
-    rangeStart: toISODate(monday),
-    rangeEnd: toISODate(friday),
+    rangeStart: defaultRange.rangeStart,
+    rangeEnd: defaultRange.rangeEnd,
     includeWeekends: false,
     dayStartMinutes: 9 * 60,
     dayEndMinutes: 18 * 60,

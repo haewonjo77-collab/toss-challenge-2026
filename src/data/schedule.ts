@@ -35,6 +35,48 @@ export function mondayOfWeek(base: Date = new Date(), weeksAhead = 0): Date {
   return day;
 }
 
+function addDays(date: Date, days: number): Date {
+  const next = new Date(date);
+  next.setDate(date.getDate() + days);
+  return next;
+}
+
+function endOfWeek(monday: Date, includeWeekends: boolean): Date {
+  return addDays(monday, includeWeekends ? 6 : 4);
+}
+
+export interface DateRange {
+  rangeStart: string;
+  rangeEnd: string;
+}
+
+export function nextWeekRange(includeWeekends: boolean, base: Date = new Date()): DateRange {
+  const monday = mondayOfWeek(base, 1);
+  return {
+    rangeStart: toISODate(monday),
+    rangeEnd: toISODate(endOfWeek(monday, includeWeekends)),
+  };
+}
+
+// 이번 주는 오늘과 지난 날짜를 제외한다. 남은 날이 없으면 다음 주로 폴백.
+export function thisWeekRange(includeWeekends: boolean, base: Date = new Date()): DateRange {
+  const today = new Date(base.getFullYear(), base.getMonth(), base.getDate());
+  const monday = mondayOfWeek(today, 0);
+  const end = endOfWeek(monday, includeWeekends);
+  let start = addDays(today, 1);
+
+  while (start <= end && !includeWeekends && isWeekend(start)) {
+    start = addDays(start, 1);
+  }
+
+  if (start > end) return nextWeekRange(includeWeekends, base);
+
+  return {
+    rangeStart: toISODate(start),
+    rangeEnd: toISODate(end),
+  };
+}
+
 export function formatMonthDay(date: Date): string {
   return `${date.getMonth() + 1}/${date.getDate()}`;
 }

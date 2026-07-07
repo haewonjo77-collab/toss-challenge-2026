@@ -7,12 +7,14 @@ import type { AttendeeRole, InvitedAttendee } from '../data/mockAttendees';
 import { DURATION_OPTIONS, formatClockLabel } from '../data/time';
 import { loadFavoriteGroups } from '../data/favorites';
 import type { FavoriteGroup } from '../data/favorites';
+import { formatMonthDay, nextWeekRange, parseISODate, thisWeekRange } from '../data/schedule';
 import { defaultMeetingSettings } from '../context/MeetingContext';
 import type { MeetingSettings } from '../context/MeetingContext';
 import { useLongPressDrag } from '../utils/useLongPressDrag';
 import './CreateMeeting.css';
 
 const DAY_TIME_OPTIONS = Array.from({ length: 31 }, (_, index) => 7 * 60 + index * 30);
+type RangeMode = 'this' | 'next' | 'custom';
 
 interface CreateMeetingProps {
   initialTitle?: string;
@@ -38,6 +40,7 @@ export function CreateMeeting({
   const [showTeamField, setShowTeamField] = useState(false);
   const [titleError, setTitleError] = useState(false);
   const [timeSheetOpen, setTimeSheetOpen] = useState(false);
+  const [customRangeOpen, setCustomRangeOpen] = useState(false);
   const [favoriteGroups, setFavoriteGroups] = useState<FavoriteGroup[]>([]);
   const titleInputRef = useRef<HTMLInputElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -62,6 +65,46 @@ export function CreateMeeting({
   const timeRangeLabel = `${formatClockLabel(settings.dayStartMinutes)}–${formatClockLabel(
     settings.dayEndMinutes,
   )}`;
+  const thisWeek = thisWeekRange(settings.includeWeekends);
+  const nextWeek = nextWeekRange(settings.includeWeekends);
+  const activeRangeMode: RangeMode =
+    settings.rangeStart === thisWeek.rangeStart && settings.rangeEnd === thisWeek.rangeEnd
+      ? 'this'
+      : settings.rangeStart === nextWeek.rangeStart && settings.rangeEnd === nextWeek.rangeEnd
+        ? 'next'
+        : 'custom';
+  const visibleRangeMode: RangeMode = customRangeOpen ? 'custom' : activeRangeMode;
+  const dateRangeLabel =
+    visibleRangeMode === 'this'
+      ? '이번 주'
+      : visibleRangeMode === 'next'
+        ? '다음 주'
+        : `${formatMonthDay(parseISODate(settings.rangeStart))}~${formatMonthDay(
+            parseISODate(settings.rangeEnd),
+          )}`;
+  const availabilitySummary = `${dateRangeLabel} · ${timeRangeLabel}`;
+
+  const applyRangeMode = (mode: RangeMode) => {
+    if (mode === 'custom') {
+      setCustomRangeOpen(true);
+      return;
+    }
+
+    const range = mode === 'this' ? thisWeekRange(settings.includeWeekends) : nextWeekRange(settings.includeWeekends);
+    setCustomRangeOpen(false);
+    patchSettings(range);
+  };
+
+  const changeIncludeWeekends = (includeWeekends: boolean) => {
+    if (customRangeOpen || activeRangeMode === 'custom') {
+      patchSettings({ includeWeekends });
+      return;
+    }
+
+    const range =
+      activeRangeMode === 'this' ? thisWeekRange(includeWeekends) : nextWeekRange(includeWeekends);
+    setSettings((prev) => ({ ...prev, includeWeekends, ...range }));
+  };
 
   const changeDuration = (durationMinutes: number) => {
     setSettings((prev) => ({
@@ -220,36 +263,52 @@ export function CreateMeeting({
       </div>
 
       <div className="create-meeting__field">
-        <span className="create-meeting__label text-caption">시간대</span>
-        <button
-          type="button"
-          className="create-meeting__time-range text-body-md"
-          onClick={() => setTimeSheetOpen(true)}
-        >
-          {timeRangeLabel}
-        </button>
-      </div>
-
-      <div className="create-meeting__field">
         <div className="create-meeting__section-head">
           <span className="create-meeting__label create-meeting__label--inline text-caption">
-            회의 가능 기간
+            회의 가능 범위
           </span>
           <label className="create-meeting__weekend text-caption">
             <input
               type="checkbox"
               checked={settings.includeWeekends}
-              onChange={(event) => patchSettings({ includeWeekends: event.target.checked })}
+              onChange={(event) => changeIncludeWeekends(event.target.checked)}
             />
             주말 포함
           </label>
         </div>
+        <button
+          type="button"
+          className="create-meeting__time-range text-body-md"
+          onClick={() => setTimeSheetOpen(true)}
+        >
+          {availabilitySummary}
+        </button>
+        <div className="create-meeting__range-options" role="group" aria-label="회의 가능 기간">
+          {[
+            ['this', '이번 주'],
+            ['next', '다음 주'],
+            ['custom', '직접 선택'],
+          ].map(([mode, label]) => (
+            <button
+              key={mode}
+              type="button"
+              className={`create-meeting__range-option text-caption${
+                visibleRangeMode === mode ? ' create-meeting__range-option--selected' : ''
+              }`}
+              onClick={() => applyRangeMode(mode as RangeMode)}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        {customRangeOpen && (
         <RangeCalendar
           rangeStart={settings.rangeStart}
           rangeEnd={settings.rangeEnd}
           includeWeekends={settings.includeWeekends}
           onChange={(rangeStart, rangeEnd) => patchSettings({ rangeStart, rangeEnd })}
         />
+        )}
       </div>
 
       <div className="create-meeting__field">
@@ -410,8 +469,7 @@ export function CreateMeeting({
             >
               ✕
             </button>
-            <p className="create-meeting__sheet-title text-title-md">시간대 조정</p>
-            <p className="create-meeting__sheet-hint text-body-sm">참석자가 표시할 수 있는 시간 범위예요</p>
+            <p className="create-meeting__sheet-title text-title-md">시간대</p>
             <div className="create-meeting__time-selects">
               <label className="create-meeting__time-select text-caption">
                 시작

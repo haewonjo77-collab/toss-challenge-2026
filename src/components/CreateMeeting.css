@@ -37,6 +37,7 @@
   color: var(--color-ink);
   text-align: left;
   cursor: pointer;
+  margin-bottom: var(--space-xs);
 }
 
 .create-meeting__label--inline {
@@ -55,6 +56,28 @@
   accent-color: var(--color-accent);
   width: 16px;
   height: 16px;
+}
+
+.create-meeting__range-options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-xs);
+  margin-bottom: var(--space-xs);
+}
+
+.create-meeting__range-option {
+  height: 36px;
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-pill);
+  background: var(--color-canvas);
+  color: var(--color-muted);
+  cursor: pointer;
+}
+
+.create-meeting__range-option--selected {
+  background: var(--color-surface-strong);
+  color: var(--color-ink);
+  font-weight: 700;
 }
 
 .create-meeting__error {

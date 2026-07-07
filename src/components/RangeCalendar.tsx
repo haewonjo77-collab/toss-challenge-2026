@@ -34,6 +34,7 @@ export function RangeCalendar({ rangeStart, rangeEnd, includeWeekends, onChange 
   const todayKey = todayStart.getTime();
 
   const monthEnd = new Date(viewMonth.getFullYear(), viewMonth.getMonth() + 1, 0);
+  const weekdayHeaders = includeWeekends ? WEEKDAY_HEADERS : WEEKDAY_HEADERS.slice(0, 5);
   const weeks: Date[][] = [];
   let cursor = mondayOfWeek(viewMonth, 0);
   while (cursor <= monthEnd) {
@@ -83,7 +84,7 @@ export function RangeCalendar({ rangeStart, rangeEnd, includeWeekends, onChange 
   const rangeDayCount = listRangeDays(rangeStart, rangeEnd, includeWeekends).length;
 
   return (
-    <div className="range-calendar">
+    <div className={`range-calendar${includeWeekends ? '' : ' range-calendar--weekdays'}`}>
       <div className="range-calendar__header">
         <button type="button" className="range-calendar__nav" aria-label="이전 달" onClick={() => moveMonth(-1)}>
           ‹
@@ -97,7 +98,7 @@ export function RangeCalendar({ rangeStart, rangeEnd, includeWeekends, onChange 
       </div>
 
       <div className="range-calendar__weekdays">
-        {WEEKDAY_HEADERS.map((label) => (
+        {weekdayHeaders.map((label) => (
           <span key={label} className="text-caption">
             {label}
           </span>
@@ -106,7 +107,7 @@ export function RangeCalendar({ rangeStart, rangeEnd, includeWeekends, onChange 
 
       {weeks.map((week) => (
         <div key={week[0].getTime()} className="range-calendar__grid">
-          {week.map((day) => {
+          {(includeWeekends ? week : week.filter((day) => !isWeekend(day))).map((day) => {
             const iso = toISODate(day);
             const selected = iso >= rangeStart && iso <= rangeEnd && !isDisabled(day);
             return (
@@ -131,7 +132,7 @@ export function RangeCalendar({ rangeStart, rangeEnd, includeWeekends, onChange 
 
       <p className="range-calendar__caption text-caption">
         {formatMonthDay(parseISODate(rangeStart))} ~ {formatMonthDay(parseISODate(rangeEnd))} ·{' '}
-        {rangeDayCount}일 (드래그로 범위 선택)
+        {rangeDayCount}일
       </p>
     </div>
   );

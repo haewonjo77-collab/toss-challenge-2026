@@ -22,8 +22,11 @@ Last checked: 2026-07-08, Asia/Seoul
   - Meeting title input.
   - Meeting duration selection.
   - Start/end date range selection with drag on `RangeCalendar`.
-  - Weekend inclusion toggle.
-  - Day time window summary, default `09:00-18:00`, editable through a bottom sheet.
+  - Meeting availability range uses simple choices: `이번 주`, `다음 주`, `직접 선택`.
+  - `이번 주` automatically excludes today and earlier days.
+  - Weekend inclusion toggle; when off, the calendar shows Monday-Friday only.
+  - Date range and time window are summarized in one availability section.
+  - Day time window defaults to `09:00-18:00`, editable through a bottom sheet.
   - Attendee list with required/optional role selection.
   - New attendees and recent attendees default to required.
   - Recent attendee chips, saved favorite folder chips, and manual attendee add form.
