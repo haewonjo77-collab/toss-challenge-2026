@@ -7,6 +7,7 @@ import { useMeeting } from '../context/MeetingContext';
 import { recommendTimes } from '../data/recommendation';
 import { listRangeDays } from '../data/schedule';
 import { useScreenMeasure } from '../utils/measure';
+import './RecommendationPage.css';
 
 export function RecommendationPage() {
   const { title, attendees, settings, confirmMeeting } = useMeeting();
@@ -36,18 +37,18 @@ export function RecommendationPage() {
     .map((option, index) => ({ ...option, rankLabel: index === 0 ? '추천' : `대안 ${index}` }));
   const active = ranked.find((option) => option.timeLabel === activeLabel) ?? ranked[0];
 
-  const confirm = () => {
+  const confirm = (option = active) => {
     confirmMeeting({
-      timeLabel: active.timeLabel,
-      requiredAttendees: active.requiredAttendees,
-      optionalAttendees: active.optionalAttendees,
+      timeLabel: option.timeLabel,
+      requiredAttendees: option.requiredAttendees,
+      optionalAttendees: option.optionalAttendees,
     });
     navigate('/confirmed');
   };
 
   // 재확인 요청은 필수 참석자 중 불가 응답자에게만 전송된다는 것을 토스트로 명시
-  const requestRecheck = () => {
-    const missingRequired = active.requiredAttendees
+  const requestRecheck = (option = active) => {
+    const missingRequired = option.requiredAttendees
       .filter((attendee) => attendee.status === 'none')
       .map((attendee) => attendee.name);
     show(
@@ -58,22 +59,38 @@ export function RecommendationPage() {
   };
 
   return (
-    <>
-      {ranked.length > 1 && (
-        <RecommendationTabBar
-          options={ranked.map((option) => ({ key: option.timeLabel, label: option.rankLabel }))}
-          activeKey={active.timeLabel}
-          onSelect={setActiveLabel}
+    <div className="recommendation-page">
+      <div className="recommendation-page__mobile">
+        {ranked.length > 1 && (
+          <RecommendationTabBar
+            options={ranked.map((option) => ({ key: option.timeLabel, label: option.rankLabel }))}
+            activeKey={active.timeLabel}
+            onSelect={setActiveLabel}
+          />
+        )}
+        <RecommendationCard
+          timeLabel={active.timeLabel}
+          requiredAttendees={active.requiredAttendees}
+          optionalAttendees={active.optionalAttendees}
+          variant={active.isFallback ? 'fallback' : 'primary'}
+          onConfirm={() => confirm(active)}
+          onRequestRecheck={() => requestRecheck(active)}
         />
-      )}
-      <RecommendationCard
-        timeLabel={active.timeLabel}
-        requiredAttendees={active.requiredAttendees}
-        optionalAttendees={active.optionalAttendees}
-        variant={active.isFallback ? 'fallback' : 'primary'}
-        onConfirm={confirm}
-        onRequestRecheck={requestRecheck}
-      />
-    </>
+      </div>
+
+      <div className="recommendation-page__desktop">
+        {ranked.map((option) => (
+          <RecommendationCard
+            key={option.timeLabel}
+            timeLabel={`${option.rankLabel} · ${option.timeLabel}`}
+            requiredAttendees={option.requiredAttendees}
+            optionalAttendees={option.optionalAttendees}
+            variant={option.isFallback ? 'fallback' : 'primary'}
+            onConfirm={() => confirm(option)}
+            onRequestRecheck={() => requestRecheck(option)}
+          />
+        ))}
+      </div>
+    </div>
   );
 }

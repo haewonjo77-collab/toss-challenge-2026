@@ -63,3 +63,10 @@
   width: 100%;
   margin-top: var(--space-xs);
 }
+
+@media (min-width: 768px) {
+  .phone-frame--organizer .confirmed-meeting {
+    max-width: 640px;
+    margin: 0 auto;
+  }
+}

@@ -1,0 +1,26 @@
+.recommendation-page {
+  width: 100%;
+}
+
+.recommendation-page__desktop {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .phone-frame--organizer .recommendation-page__mobile {
+    display: none;
+  }
+
+  .phone-frame--organizer .recommendation-page__desktop {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-md);
+    align-items: start;
+  }
+}
+
+@media (min-width: 1080px) {
+  .phone-frame--organizer .recommendation-page__desktop {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}

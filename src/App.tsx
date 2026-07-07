@@ -28,29 +28,38 @@ function BackBar() {
   );
 }
 
+function AppFrame() {
+  const location = useLocation();
+  const isParticipantFlow = location.pathname.startsWith('/join');
+
+  return (
+    <div className="app">
+      <div className={`phone-frame${isParticipantFlow ? ' phone-frame--participant' : ' phone-frame--organizer'}`}>
+        <ToastProvider>
+          <BackBar />
+          <div className="phone-frame__screen">
+            <Routes>
+              <Route path="/" element={<CreateMeetingPage />} />
+              <Route path="/waiting" element={<WaitingPage />} />
+              <Route path="/recommendation" element={<RecommendationPage />} />
+              <Route path="/confirmed" element={<ConfirmedPage />} />
+              <Route path="/join" element={<JoinStartPage />} />
+              <Route path="/join/times" element={<JoinTimesPage />} />
+              <Route path="/join/done" element={<JoinDonePage />} />
+            </Routes>
+          </div>
+        </ToastProvider>
+      </div>
+    </div>
+  );
+}
+
 export function App() {
   return (
     <BrowserRouter>
       <MeetingProvider>
         <JoinProvider>
-          <div className="app">
-            <div className="phone-frame">
-              <ToastProvider>
-                <BackBar />
-                <div className="phone-frame__screen">
-                  <Routes>
-                    <Route path="/" element={<CreateMeetingPage />} />
-                    <Route path="/waiting" element={<WaitingPage />} />
-                    <Route path="/recommendation" element={<RecommendationPage />} />
-                    <Route path="/confirmed" element={<ConfirmedPage />} />
-                    <Route path="/join" element={<JoinStartPage />} />
-                    <Route path="/join/times" element={<JoinTimesPage />} />
-                    <Route path="/join/done" element={<JoinDonePage />} />
-                  </Routes>
-                </div>
-              </ToastProvider>
-            </div>
-          </div>
+          <AppFrame />
         </JoinProvider>
       </MeetingProvider>
     </BrowserRouter>

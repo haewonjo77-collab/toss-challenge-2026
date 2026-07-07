@@ -64,3 +64,23 @@
   padding: var(--space-xs) var(--space-md) var(--space-lg);
   box-sizing: border-box;
 }
+
+@media (min-width: 768px) {
+  .phone-frame--organizer {
+    width: min(1040px, 100%);
+    height: min(852px, calc(100dvh - var(--space-xl)));
+  }
+
+  .phone-frame--organizer .back-bar {
+    padding: 0 var(--space-xl);
+  }
+
+  .phone-frame--organizer .phone-frame__screen {
+    padding: var(--space-xs) var(--space-xl) var(--space-xl);
+  }
+
+  .phone-frame--organizer .modal-sheet {
+    max-width: 520px;
+    margin: 0 auto;
+  }
+}

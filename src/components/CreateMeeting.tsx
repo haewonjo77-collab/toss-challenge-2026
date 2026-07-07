@@ -222,20 +222,26 @@ export function CreateMeeting({
     nameInputRef.current?.focus();
   };
 
-  const addAttendee = () => {
+  const addAttendeeWithTeam = (teamOverride?: string) => {
     const name = newName.trim();
-    if (!name) return;
-    const team = newTeam.trim();
+    if (!name) return false;
+    const team = (teamOverride ?? newTeam).trim();
     // 기본값 필수 — 대부분의 초대가 필수 인원이므로, '선택'으로 낮추는 액션만 요구되게 한다
-    setAttendees([
-      ...attendees,
+    setAttendees((prev) => [
+      ...prev,
       { id: `new-${Date.now()}`, name, role: 'required', team: team || undefined },
     ]);
     setNewName('');
     setNewTeam('');
+    setShowTeamField(false);
     // 연속 입력 편의 — 추가 버튼 클릭으로 빠진 포커스를 이름 입력으로 되돌려
     // 리스트가 길어져도 다시 스크롤해 입력창을 찾지 않아도 되게 한다
     nameInputRef.current?.focus();
+    return true;
+  };
+
+  const addAttendee = () => {
+    addAttendeeWithTeam();
   };
 
   const handleAddKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -290,6 +296,8 @@ export function CreateMeeting({
   const typedTeamSuggestions = showTeamField
     ? sameTeamSuggestions.filter((team) => newTeam.trim() === '' || team.includes(newTeam.trim()))
     : sameTeamSuggestions;
+  const namePlaceholder =
+    favoriteGroups.length > 0 ? '이름 입력 또는 저장한 참석자 찾기' : '이름 입력';
 
   return (
     <div className="create-meeting">
@@ -444,7 +452,7 @@ export function CreateMeeting({
             value={newName}
             onChange={(event) => setNewName(event.target.value)}
             onKeyDown={handleAddKeyDown}
-            placeholder="이름 또는 팀 검색"
+            placeholder={namePlaceholder}
           />
           {(savedPersonMatches.length > 0 || savedTeamMatches.length > 0) && (
             <div className="create-meeting__suggestions">
@@ -480,6 +488,7 @@ export function CreateMeeting({
                   type="button"
                   className="create-meeting__chip text-caption"
                   onClick={() => {
+                    if (addAttendeeWithTeam(team)) return;
                     const savedTeam = savedTeamByName.get(team);
                     if (savedTeam && savedTeam.attendees.length > 0) {
                       addPeople(savedTeam.attendees, `same-team-${team}`);

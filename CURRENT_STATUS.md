@@ -33,7 +33,8 @@ Last checked: 2026-07-08, Asia/Seoul
   - Saved attendee folder chips show attendee previews such as initials and `+N`.
   - The attendee add input supports name or team search; saved people/teams can be added directly from suggestions.
   - Same-team chips appear before the optional team field so repeated same-team entry is faster.
-  - Same-team chips add saved people from that team directly when a matching saved team exists.
+  - Same-team chips add the typed attendee with that team in one click; if no name is typed and a saved team exists, they add saved people from that team.
+  - The attendee input uses first-time friendly placeholder text, then switches to saved-attendee finding language when reusable attendees exist.
   - After tapping `초대 링크 보내기`, the organizer can save attendees for reuse.
   - Static recent-attendee dummy chips and the quick-fill dummy button are removed from the main UI.
   - Required/optional role can be applied by dragging across attendee rows.
@@ -47,6 +48,7 @@ Last checked: 2026-07-08, Asia/Seoul
 
 - Recommendation screen
   - Shows recommended meeting candidates.
+  - On desktop organizer views, recommended candidates are shown together for comparison.
   - Required attendees are prioritized.
   - Required/optional attendees are shown as avatar groups instead of numeric badges.
   - Missing required attendees are surfaced with a danger ring and strikethrough.
@@ -91,6 +93,8 @@ Last checked: 2026-07-08, Asia/Seoul
 
 - Latest completed work includes:
   - click-to-toggle meeting dates, compact time labels, saved attendee previews, and direct team add chips
+  - organizer/participant responsive split: organizer screens expand on desktop, participant join flow stays mobile-first
+  - same-team chips now add typed attendees in one click, and the empty-state attendee placeholder avoids "search" wording
 
 - Recent Git commits include:
   - `fbb9c01 feat: replace custom-week dropdown with week-select calendar`

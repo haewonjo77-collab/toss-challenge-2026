@@ -265,3 +265,10 @@
 .create-meeting__remember-actions .button {
   flex: 1;
 }
+
+@media (min-width: 768px) {
+  .phone-frame--organizer .create-meeting {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+}

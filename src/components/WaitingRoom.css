@@ -47,3 +47,10 @@
   width: 100%;
   margin-top: var(--space-lg);
 }
+
+@media (min-width: 768px) {
+  .phone-frame--organizer .waiting-room {
+    max-width: 640px;
+    margin: 0 auto;
+  }
+}

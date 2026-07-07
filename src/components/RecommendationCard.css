@@ -104,3 +104,9 @@
 .recommendation-card__actions .button {
   flex: 1;
 }
+
+@media (min-width: 768px) {
+  .phone-frame--organizer .recommendation-card {
+    max-width: none;
+  }
+}
