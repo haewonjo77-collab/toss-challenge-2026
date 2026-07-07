@@ -12,6 +12,7 @@ import './CreateMeeting.css';
 
 const DAY_TIME_OPTIONS = Array.from({ length: 31 }, (_, index) => 7 * 60 + index * 30);
 type RangeMode = 'this' | 'next' | 'custom';
+export type InviteDelivery = 'share' | 'copy';
 
 function dateListsEqual(a: string[], b: string[]) {
   if (a.length !== b.length) return false;
@@ -22,7 +23,12 @@ interface CreateMeetingProps {
   initialTitle?: string;
   initialAttendees?: InvitedAttendee[];
   initialSettings?: MeetingSettings;
-  onSubmit: (title: string, attendees: InvitedAttendee[], settings: MeetingSettings) => void | Promise<void>;
+  onSubmit: (
+    title: string,
+    attendees: InvitedAttendee[],
+    settings: MeetingSettings,
+    delivery: InviteDelivery,
+  ) => boolean | Promise<boolean>;
 }
 
 export function CreateMeeting({
@@ -41,12 +47,13 @@ export function CreateMeeting({
   const [titleError, setTitleError] = useState(false);
   const [timeSheetOpen, setTimeSheetOpen] = useState(false);
   const [customRangeOpen, setCustomRangeOpen] = useState(false);
+  const [inviteSheetOpen, setInviteSheetOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const titleInputRef = useRef<HTMLInputElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
 
   // 제목 미입력 시 disabled로 침묵하는 대신, 클릭에 반응해 이유를 보여주고 입력 위치로 데려간다
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (submitting) return;
     if (title.trim() === '') {
       setTitleError(true);
@@ -54,9 +61,15 @@ export function CreateMeeting({
       titleInputRef.current?.focus({ preventScroll: true });
       return;
     }
+    setInviteSheetOpen(true);
+  };
+
+  const sendInvite = async (delivery: InviteDelivery) => {
+    if (submitting) return;
     setSubmitting(true);
     try {
-      await onSubmit(title.trim(), attendees, settings);
+      const completed = await onSubmit(title.trim(), attendees, settings, delivery);
+      if (completed) setInviteSheetOpen(false);
     } finally {
       setSubmitting(false);
     }
@@ -386,6 +399,43 @@ export function CreateMeeting({
       >
         {submitting ? '초대 링크 준비 중' : '초대 링크 보내기'}
       </button>
+
+      {inviteSheetOpen && (
+        <div className="modal-overlay" onClick={() => setInviteSheetOpen(false)}>
+          <div className="modal-sheet" onClick={(event) => event.stopPropagation()}>
+            <button
+              type="button"
+              className="modal-sheet__close"
+              aria-label="닫기"
+              onClick={() => setInviteSheetOpen(false)}
+            >
+              ✕
+            </button>
+            <p className="create-meeting__sheet-title text-title-md">초대 링크를 보낼까요?</p>
+            <p className="create-meeting__sheet-hint text-body-sm">
+              참석자는 링크에서 안 되는 시간을 표시해요
+            </p>
+            <div className="create-meeting__invite-actions">
+              <button
+                type="button"
+                className="button button--primary"
+                onClick={() => sendInvite('share')}
+                disabled={submitting}
+              >
+                초대 링크 공유
+              </button>
+              <button
+                type="button"
+                className="button button--secondary"
+                onClick={() => sendInvite('copy')}
+                disabled={submitting}
+              >
+                링크 복사
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {timeSheetOpen && (
         <div className="modal-overlay" onClick={() => setTimeSheetOpen(false)}>

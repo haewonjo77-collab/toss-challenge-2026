@@ -4,6 +4,7 @@ import './WaitingRoom.css';
 
 interface WaitingRoomProps {
   attendees: ResponseStatus[];
+  responseNotice?: string | null;
   onViewRecommendation: () => void;
   onShareInvite: () => void;
   onNudge?: (name: string) => void;
@@ -11,6 +12,7 @@ interface WaitingRoomProps {
 
 export function WaitingRoom({
   attendees,
+  responseNotice,
   onViewRecommendation,
   onShareInvite,
   onNudge,
@@ -21,6 +23,8 @@ export function WaitingRoom({
 
   return (
     <div className="waiting-room">
+      {responseNotice && <p className="waiting-room__notice text-body-sm">{responseNotice}</p>}
+
       <p className="waiting-room__count text-title-lg">
         {attendees.length}명 중 {respondedCount}명 응답완료
       </p>
@@ -32,7 +36,7 @@ export function WaitingRoom({
 
       <div className="waiting-room__tools">
         <button type="button" className="button button--secondary" onClick={onShareInvite}>
-          초대 링크 공유
+          링크로 참석자 추가
         </button>
       </div>
 

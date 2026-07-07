@@ -204,6 +204,16 @@
   margin-top: var(--space-lg);
 }
 
+.create-meeting__invite-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.create-meeting__invite-actions .button {
+  width: 100%;
+}
+
 @media (min-width: 768px) {
   .phone-frame--organizer .create-meeting {
     max-width: 720px;
