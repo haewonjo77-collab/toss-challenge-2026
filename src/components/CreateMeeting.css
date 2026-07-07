@@ -138,65 +138,6 @@
   cursor: pointer;
 }
 
-.create-meeting__recent {
-  margin-top: var(--space-xs);
-  /* 직접 입력 영역과 시각적으로 분리 */
-  margin-bottom: var(--space-lg);
-}
-
-.create-meeting__recent-label {
-  display: block;
-  color: var(--color-muted);
-  margin-bottom: var(--space-xxs);
-}
-
-.create-meeting__chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-xs);
-}
-
-.create-meeting__chip {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-xxs);
-  padding: 4px 10px;
-  border: 1px solid var(--color-hairline);
-  border-radius: var(--radius-pill);
-  background: var(--color-canvas);
-  color: var(--color-ink);
-  cursor: pointer;
-}
-
-.create-meeting__chip-preview {
-  color: var(--color-muted);
-}
-
-.create-meeting__suggestions {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-xxs);
-}
-
-.create-meeting__suggestion {
-  width: 100%;
-  min-height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-sm);
-  padding: 8px 10px;
-  border: 1px solid var(--color-hairline);
-  border-radius: var(--radius-md);
-  background: var(--color-canvas);
-  color: var(--color-ink);
-  cursor: pointer;
-}
-
-.create-meeting__suggestion span:last-child {
-  color: var(--color-muted);
-}
-
 .create-meeting__add {
   display: flex;
   flex-direction: column;
@@ -205,15 +146,6 @@
 
 .create-meeting__add-input {
   width: 100%;
-}
-
-.create-meeting__team-toggle {
-  align-self: flex-start;
-  border: none;
-  background: none;
-  padding: var(--space-xxs) 0;
-  color: var(--color-muted);
-  cursor: pointer;
 }
 
 .create-meeting__add-button {
@@ -270,15 +202,6 @@
 .create-meeting__sheet-cta {
   width: 100%;
   margin-top: var(--space-lg);
-}
-
-.create-meeting__remember-actions {
-  display: flex;
-  gap: var(--space-sm);
-}
-
-.create-meeting__remember-actions .button {
-  flex: 1;
 }
 
 @media (min-width: 768px) {

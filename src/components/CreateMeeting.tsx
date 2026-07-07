@@ -1,11 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { Avatar } from './Avatar';
 import { RoleToggle } from './RoleToggle';
 import { RangeCalendar } from './RangeCalendar';
-import { rememberAttendeeGroups, loadFavoriteGroups } from '../data/favorites';
 import type { AttendeeRole, InvitedAttendee } from '../data/mockAttendees';
 import { DURATION_OPTIONS, formatClock24Label } from '../data/time';
-import type { FavoriteAttendee, FavoriteGroup } from '../data/favorites';
 import { isWeekend, nextWeekRange, parseISODate, selectedDatesForRange, thisWeekRange } from '../data/schedule';
 import { defaultMeetingSettings } from '../context/MeetingContext';
 import type { MeetingSettings } from '../context/MeetingContext';
@@ -15,19 +13,9 @@ import './CreateMeeting.css';
 const DAY_TIME_OPTIONS = Array.from({ length: 31 }, (_, index) => 7 * 60 + index * 30);
 type RangeMode = 'this' | 'next' | 'custom';
 
-function personKey(person: { name: string; team?: string }) {
-  return `${person.name}|${person.team ?? ''}`;
-}
-
 function dateListsEqual(a: string[], b: string[]) {
   if (a.length !== b.length) return false;
   return a.every((date, index) => date === b[index]);
-}
-
-function attendeePreview(attendees: FavoriteAttendee[]) {
-  const names = attendees.slice(0, 3).map((attendee) => attendee.name.trim().charAt(0));
-  const rest = attendees.length - names.length;
-  return rest > 0 ? `${names.join(' ')} +${rest}` : names.join(' ');
 }
 
 interface CreateMeetingProps {
@@ -50,36 +38,23 @@ export function CreateMeeting({
     setSettings((prev) => ({ ...prev, ...partial }));
   const [newName, setNewName] = useState('');
   const [newTeam, setNewTeam] = useState('');
-  // 부서/팀은 선택 입력이라 기본 숨김 — 한 번 펼치면 연속 입력을 위해 계속 열어둔다
-  const [showTeamField, setShowTeamField] = useState(false);
   const [titleError, setTitleError] = useState(false);
   const [timeSheetOpen, setTimeSheetOpen] = useState(false);
   const [customRangeOpen, setCustomRangeOpen] = useState(false);
-  const [rememberOpen, setRememberOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [favoriteGroups, setFavoriteGroups] = useState<FavoriteGroup[]>([]);
   const titleInputRef = useRef<HTMLInputElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    setFavoriteGroups(loadFavoriteGroups());
-  }, []);
-
   // 제목 미입력 시 disabled로 침묵하는 대신, 클릭에 반응해 이유를 보여주고 입력 위치로 데려간다
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    if (submitting) return;
     if (title.trim() === '') {
       setTitleError(true);
       titleInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       titleInputRef.current?.focus({ preventScroll: true });
       return;
     }
-    setRememberOpen(true);
-  };
-
-  const submitMeeting = async () => {
-    if (submitting) return;
     setSubmitting(true);
-    setRememberOpen(false);
     try {
       await onSubmit(title.trim(), attendees, settings);
     } finally {
@@ -210,29 +185,10 @@ export function CreateMeeting({
     setAttendees(attendees.filter((attendee) => attendee.id !== id));
   };
 
-  const addPeople = (people: FavoriteAttendee[], source: string) => {
-    const now = Date.now();
-    setAttendees((prev) => {
-      const names = new Set(prev.map((attendee) => attendee.name));
-      const additions = people
-        .filter((person) => !names.has(person.name))
-        .map((person, index) => ({
-          id: `${source}-${now}-${index}`,
-          name: person.name,
-          role: person.role,
-          team: person.team,
-        }));
-      return [...prev, ...additions];
-    });
-    setNewName('');
-    setNewTeam('');
-    nameInputRef.current?.focus();
-  };
-
-  const addAttendeeWithTeam = (teamOverride?: string) => {
+  const addAttendee = () => {
     const name = newName.trim();
-    if (!name) return false;
-    const team = (teamOverride ?? newTeam).trim();
+    if (!name) return;
+    const team = newTeam.trim();
     // 기본값 필수 — 대부분의 초대가 필수 인원이므로, '선택'으로 낮추는 액션만 요구되게 한다
     setAttendees((prev) => [
       ...prev,
@@ -240,15 +196,9 @@ export function CreateMeeting({
     ]);
     setNewName('');
     setNewTeam('');
-    setShowTeamField(false);
     // 연속 입력 편의 — 추가 버튼 클릭으로 빠진 포커스를 이름 입력으로 되돌려
     // 리스트가 길어져도 다시 스크롤해 입력창을 찾지 않아도 되게 한다
     nameInputRef.current?.focus();
-    return true;
-  };
-
-  const addAttendee = () => {
-    addAttendeeWithTeam();
   };
 
   const handleAddKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -256,55 +206,6 @@ export function CreateMeeting({
     if (event.nativeEvent.isComposing) return;
     if (event.key === 'Enter') addAttendee();
   };
-
-  const existingNames = new Set(attendees.map((attendee) => attendee.name));
-  const searchQuery = newName.trim();
-  const savedPeople = Array.from(
-    new Map(
-      favoriteGroups
-        .flatMap((group) => group.attendees)
-        .filter((person) => !existingNames.has(person.name))
-        .map((person) => [personKey(person), person]),
-    ).values(),
-  );
-  const savedPersonMatches =
-    searchQuery.length > 0
-      ? savedPeople
-          .filter((person) => person.name.includes(searchQuery) || person.team?.includes(searchQuery))
-          .slice(0, 4)
-      : [];
-  const savedTeamMatches =
-    searchQuery.length > 0
-      ? favoriteGroups
-          .filter((group) => group.name !== '최근 회의 전체' && group.name.includes(searchQuery))
-          .map((group) => ({
-            ...group,
-            attendees: group.attendees.filter((person) => !existingNames.has(person.name)),
-          }))
-          .filter((group) => group.attendees.length > 0)
-          .slice(0, 3)
-      : [];
-  const savedTeamByName = new Map(
-    favoriteGroups
-      .filter((group) => group.name !== '최근 회의 전체')
-      .map((group) => [
-        group.name,
-        {
-          ...group,
-          attendees: group.attendees.filter((person) => !existingNames.has(person.name)),
-        },
-      ]),
-  );
-  const sameTeamSuggestions = Array.from(
-    new Set(attendees.map((attendee) => attendee.team).filter((team): team is string => !!team)),
-  )
-    .filter((team) => team !== newTeam.trim())
-    .slice(0, 4);
-  const typedTeamSuggestions = showTeamField
-    ? sameTeamSuggestions.filter((team) => newTeam.trim() === '' || team.includes(newTeam.trim()))
-    : sameTeamSuggestions;
-  const namePlaceholder =
-    favoriteGroups.length > 0 ? '이름 입력 또는 저장한 참석자 찾기' : '이름 입력';
 
   return (
     <div className="create-meeting">
@@ -431,110 +332,36 @@ export function CreateMeeting({
           </div>
         ))}
 
-        {favoriteGroups.length > 0 && (
-          <div className="create-meeting__recent">
-            <span className="create-meeting__recent-label text-caption">저장한 참석자</span>
-            <div className="create-meeting__chips">
-              {favoriteGroups.map((group) => (
-                <button
-                  key={group.id}
-                  type="button"
-                  className="create-meeting__chip text-caption"
-                  onClick={() => {
-                    addPeople(group.attendees, `favorite-${group.id}`);
-                  }}
-                >
-                  {group.name} {group.attendees.length}명
-                  <span className="create-meeting__chip-preview">{attendeePreview(group.attendees)}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
         <div className="create-meeting__add">
           <input
+            type="text"
             ref={nameInputRef}
             className="text-input create-meeting__add-input"
             value={newName}
             onChange={(event) => setNewName(event.target.value)}
             onKeyDown={handleAddKeyDown}
-            placeholder={namePlaceholder}
+            placeholder="참석자 이름"
+            autoComplete="off"
+            autoCapitalize="off"
+            autoCorrect="off"
+            spellCheck={false}
           />
-          {(savedPersonMatches.length > 0 || savedTeamMatches.length > 0) && (
-            <div className="create-meeting__suggestions">
-              {savedTeamMatches.map((group) => (
-                <button
-                  key={group.id}
-                  type="button"
-                  className="create-meeting__suggestion text-caption"
-                  onClick={() => addPeople(group.attendees, `team-${group.id}`)}
-                >
-                  <span>{group.name}</span>
-                  <span>{group.attendees.length}명</span>
-                </button>
-              ))}
-              {savedPersonMatches.map((person) => (
-                <button
-                  key={personKey(person)}
-                  type="button"
-                  className="create-meeting__suggestion text-caption"
-                  onClick={() => addPeople([person], `person-${person.name}`)}
-                >
-                  <span>{person.name}</span>
-                  {person.team && <span>{person.team}</span>}
-                </button>
-              ))}
-            </div>
-          )}
-          {typedTeamSuggestions.length > 0 && (
-            <div className="create-meeting__chips">
-              {typedTeamSuggestions.map((team) => (
-                <button
-                  key={team}
-                  type="button"
-                  className="create-meeting__chip text-caption"
-                  onClick={() => {
-                    if (addAttendeeWithTeam(team)) return;
-                    const savedTeam = savedTeamByName.get(team);
-                    if (savedTeam && savedTeam.attendees.length > 0) {
-                      addPeople(savedTeam.attendees, `same-team-${team}`);
-                      return;
-                    }
-                    setNewTeam(team);
-                    setShowTeamField(true);
-                  }}
-                >
-                  {team}
-                  {savedTeamByName.get(team)?.attendees.length ? (
-                    <span className="create-meeting__chip-preview">
-                      {savedTeamByName.get(team)!.attendees.length}명
-                    </span>
-                  ) : null}
-                </button>
-              ))}
-            </div>
-          )}
-          {showTeamField ? (
-            <input
-              className="text-input create-meeting__add-input"
-              value={newTeam}
-              onChange={(event) => setNewTeam(event.target.value)}
-              onKeyDown={handleAddKeyDown}
-              placeholder="부서/팀 (선택)"
-            />
-          ) : (
-            <button
-              type="button"
-              className="create-meeting__team-toggle text-caption"
-              onClick={() => setShowTeamField(true)}
-            >
-              + 부서/팀 추가
-            </button>
-          )}
+          <input
+            type="text"
+            className="text-input create-meeting__add-input"
+            value={newTeam}
+            onChange={(event) => setNewTeam(event.target.value)}
+            onKeyDown={handleAddKeyDown}
+            placeholder="부서/팀 (선택)"
+            autoComplete="off"
+            autoCapitalize="off"
+            autoCorrect="off"
+            spellCheck={false}
+          />
           <button
             type="button"
             className="button button--secondary create-meeting__add-button"
+            disabled={newName.trim() === ''}
             onClick={addAttendee}
           >
             참석자 추가
@@ -554,49 +381,11 @@ export function CreateMeeting({
       <button
         type="button"
         className="button button--primary create-meeting__cta"
-        disabled={attendees.length === 0}
+        disabled={attendees.length === 0 || submitting}
         onClick={handleSubmit}
       >
-        초대 링크 보내기
+        {submitting ? '초대 링크 준비 중' : '초대 링크 보내기'}
       </button>
-
-      {rememberOpen && (
-        <div className="modal-overlay" onClick={() => setRememberOpen(false)}>
-          <div className="modal-sheet" onClick={(event) => event.stopPropagation()}>
-            <button
-              type="button"
-              className="modal-sheet__close"
-              aria-label="닫기"
-              onClick={() => setRememberOpen(false)}
-            >
-              ✕
-            </button>
-            <p className="create-meeting__sheet-title text-title-md">이 회의 참석자를 저장할까요?</p>
-            <p className="create-meeting__sheet-hint text-body-sm">다음 회의에서 바로 불러올 수 있어요</p>
-            <div className="create-meeting__remember-actions">
-              <button
-                type="button"
-                className="button button--secondary"
-                onClick={submitMeeting}
-                disabled={submitting}
-              >
-                아니요
-              </button>
-              <button
-                type="button"
-                className="button button--primary"
-                disabled={submitting}
-                onClick={() => {
-                  rememberAttendeeGroups(attendees);
-                  submitMeeting();
-                }}
-              >
-                저장
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {timeSheetOpen && (
         <div className="modal-overlay" onClick={() => setTimeSheetOpen(false)}>

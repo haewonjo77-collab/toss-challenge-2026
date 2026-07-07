@@ -29,15 +29,12 @@ Last checked: 2026-07-08, Asia/Seoul
   - Date range choices and time window are separated inside one availability section to avoid duplicate labels.
   - Day time window defaults to compact `09:00-18:00`, editable through a bottom sheet.
   - Attendee list with required/optional role selection.
-  - New and saved attendees default to required.
-  - Saved attendee folder chips show attendee previews such as initials and `+N`.
-  - The attendee add input supports name or team search; saved people/teams can be added directly from suggestions.
-  - Same-team chips appear before the optional team field so repeated same-team entry is faster.
-  - Same-team chips add the typed attendee with that team in one click; if no name is typed and a saved team exists, they add saved people from that team.
-  - The attendee input uses first-time friendly placeholder text, then switches to saved-attendee finding language when reusable attendees exist.
+  - New attendees default to required.
+  - Attendee add area is a direct form only: attendee name, optional department/team, and add button.
+  - Saved attendee reuse, recent meeting chips, team reuse chips, and contact-like suggestions are hidden from the main flow.
+  - Attendee inputs disable browser autocomplete/autocorrect to avoid contact-app-like suggestions.
   - Response notification preference is set before sending the invite link.
-  - After tapping `초대 링크 보내기`, the organizer can save attendees for reuse.
-  - After the save-attendees choice, the app opens Web Share or copies the invite link before moving to the waiting screen.
+  - After tapping `초대 링크 보내기`, the app opens Web Share or copies the invite link before moving to the waiting screen.
   - Static recent-attendee dummy chips and the quick-fill dummy button are removed from the main UI.
   - Required/optional role can be applied by dragging across attendee rows.
 
@@ -45,7 +42,6 @@ Last checked: 2026-07-08, Asia/Seoul
   - Shows attendee response state.
   - Includes nudges for people who have not responded.
   - Invite link sharing uses the Web Share API when available, with clipboard fallback.
-  - After sharing, the organizer can save attendees to localStorage favorite folders.
   - Simulated response toasts follow the create-screen response notification preference.
   - Simulated responses wait 12 seconds between arrivals so the waiting state is testable.
 
@@ -63,6 +59,7 @@ Last checked: 2026-07-08, Asia/Seoul
 
 - Attendee join flow
   - Name/start screen.
+  - The invite start screen shows mock organizer profile context: `조해원` / `프로덕트 디자인팀`.
   - Calendar auto-import prompt with Google/Notion/Apple mock buttons.
   - Icon tap shows a spinner, then fills unavailable slots with mock data.
   - Unavailable time marking grid.
@@ -97,10 +94,10 @@ Last checked: 2026-07-08, Asia/Seoul
   - Playwright screenshots were checked at 393x852 for create, time sheet, waiting, recommendation, confirmed, and join import states.
 
 - Latest completed work includes:
-  - click-to-toggle meeting dates, compact time labels, saved attendee previews, and direct team add chips
+  - click-to-toggle meeting dates and compact time labels
   - organizer/participant responsive split: organizer screens expand on desktop, participant join flow stays mobile-first
-  - same-team chips now add typed attendees in one click, and the empty-state attendee placeholder avoids "search" wording
   - calendar date removal by drag, invite sharing before waiting, 12-second simulated responses, and richer recommendation alternatives
+  - participant invite screen organizer context and simplified direct attendee entry
 
 - Recent Git commits include:
   - `fbb9c01 feat: replace custom-week dropdown with week-select calendar`
@@ -111,7 +108,7 @@ Last checked: 2026-07-08, Asia/Seoul
 
 ## Current Working Tree
 
-The current working tree contains the completed date-toggle and attendee-reuse refinements and is ready to commit/deploy.
+The current working tree contains the organizer-context and simplified attendee-entry refinements and is ready to commit/deploy.
 
 ## If Continuing Work
 

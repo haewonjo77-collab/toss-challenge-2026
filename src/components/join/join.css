@@ -3,6 +3,20 @@
   margin: 0 0 var(--space-xxs);
 }
 
+.join__organizer {
+  margin: 0 0 var(--space-md);
+}
+
+.join__organizer-title {
+  color: var(--color-body);
+  margin: 0 0 2px;
+}
+
+.join__organizer-team {
+  color: var(--color-muted);
+  margin: 0;
+}
+
 .join__title {
   color: var(--color-ink);
   margin: 0 0 var(--space-xs);

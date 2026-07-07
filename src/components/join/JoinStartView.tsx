@@ -8,6 +8,11 @@ interface JoinStartViewProps {
   onAdvance: () => void;
 }
 
+const ORGANIZER_PROFILE = {
+  name: '조해원',
+  team: '프로덕트 디자인팀',
+};
+
 export function JoinStartView({ onAdvance }: JoinStartViewProps) {
   const { title, responses } = useMeeting();
   const { startJoin } = useJoin();
@@ -38,6 +43,12 @@ export function JoinStartView({ onAdvance }: JoinStartViewProps) {
   return (
     <div className="card">
       <p className="join__eyebrow text-caption">회의 초대</p>
+      <div className="join__organizer">
+        <p className="join__organizer-title text-body-sm">
+          {ORGANIZER_PROFILE.name}님이 회의 일정을 조율하고 있어요
+        </p>
+        <p className="join__organizer-team text-caption">{ORGANIZER_PROFILE.team}</p>
+      </div>
       <p className="join__title text-title-lg">'{meetingTitle}' 회의에 초대됐어요</p>
       <p className="join__hint text-body-sm">로그인 없이 이름만 입력하면 바로 시작할 수 있어요</p>
       <p className="join__progress text-caption">
