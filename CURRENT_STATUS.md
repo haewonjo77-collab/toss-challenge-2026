@@ -30,6 +30,8 @@ Last checked: 2026-07-08, Asia/Seoul
   - Attendee list with required/optional role selection.
   - New and saved attendees default to required.
   - Saved attendee folder chips and manual attendee add form.
+  - The attendee add input supports name or team search; saved people/teams can be added directly from suggestions.
+  - Same-team chips appear before the optional team field so repeated same-team entry is faster.
   - After tapping `초대 링크 보내기`, the organizer can save attendees for reuse.
   - Static recent-attendee dummy chips and the quick-fill dummy button are removed from the main UI.
   - Required/optional role can be applied by dragging across attendee rows.

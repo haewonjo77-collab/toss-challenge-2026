@@ -165,6 +165,31 @@
   cursor: pointer;
 }
 
+.create-meeting__suggestions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xxs);
+}
+
+.create-meeting__suggestion {
+  width: 100%;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  padding: 8px 10px;
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-md);
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  cursor: pointer;
+}
+
+.create-meeting__suggestion span:last-child {
+  color: var(--color-muted);
+}
+
 .create-meeting__add {
   display: flex;
   flex-direction: column;

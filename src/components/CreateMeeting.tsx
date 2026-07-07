@@ -5,7 +5,7 @@ import { RangeCalendar } from './RangeCalendar';
 import { rememberAttendeeGroups, loadFavoriteGroups } from '../data/favorites';
 import type { AttendeeRole, InvitedAttendee } from '../data/mockAttendees';
 import { DURATION_OPTIONS, formatClockLabel } from '../data/time';
-import type { FavoriteGroup } from '../data/favorites';
+import type { FavoriteAttendee, FavoriteGroup } from '../data/favorites';
 import { nextWeekRange, thisWeekRange } from '../data/schedule';
 import { defaultMeetingSettings } from '../context/MeetingContext';
 import type { MeetingSettings } from '../context/MeetingContext';
@@ -14,6 +14,10 @@ import './CreateMeeting.css';
 
 const DAY_TIME_OPTIONS = Array.from({ length: 31 }, (_, index) => 7 * 60 + index * 30);
 type RangeMode = 'this' | 'next' | 'custom';
+
+function personKey(person: { name: string; team?: string }) {
+  return `${person.name}|${person.team ?? ''}`;
+}
 
 interface CreateMeetingProps {
   initialTitle?: string;
@@ -169,6 +173,25 @@ export function CreateMeeting({
     setAttendees(attendees.filter((attendee) => attendee.id !== id));
   };
 
+  const addPeople = (people: FavoriteAttendee[], source: string) => {
+    const now = Date.now();
+    setAttendees((prev) => {
+      const names = new Set(prev.map((attendee) => attendee.name));
+      const additions = people
+        .filter((person) => !names.has(person.name))
+        .map((person, index) => ({
+          id: `${source}-${now}-${index}`,
+          name: person.name,
+          role: person.role,
+          team: person.team,
+        }));
+      return [...prev, ...additions];
+    });
+    setNewName('');
+    setNewTeam('');
+    nameInputRef.current?.focus();
+  };
+
   const addAttendee = () => {
     const name = newName.trim();
     if (!name) return;
@@ -191,14 +214,41 @@ export function CreateMeeting({
     if (event.key === 'Enter') addAttendee();
   };
 
-  // 부서/팀 자동완성 — 이미 등록된 참석자들의 부서명 중 입력값과 겹치는 것을 추천 (보조, 강제 아님)
-  const teamSuggestions = showTeamField
-    ? Array.from(
-        new Set(attendees.map((attendee) => attendee.team).filter((team): team is string => !!team)),
-      )
-        .filter((team) => team !== newTeam.trim() && team.includes(newTeam.trim()))
-        .slice(0, 4)
-    : [];
+  const existingNames = new Set(attendees.map((attendee) => attendee.name));
+  const searchQuery = newName.trim();
+  const savedPeople = Array.from(
+    new Map(
+      favoriteGroups
+        .flatMap((group) => group.attendees)
+        .filter((person) => !existingNames.has(person.name))
+        .map((person) => [personKey(person), person]),
+    ).values(),
+  );
+  const savedPersonMatches =
+    searchQuery.length > 0
+      ? savedPeople
+          .filter((person) => person.name.includes(searchQuery) || person.team?.includes(searchQuery))
+          .slice(0, 4)
+      : [];
+  const savedTeamMatches =
+    searchQuery.length > 0
+      ? favoriteGroups
+          .filter((group) => group.name !== '최근 회의 전체' && group.name.includes(searchQuery))
+          .map((group) => ({
+            ...group,
+            attendees: group.attendees.filter((person) => !existingNames.has(person.name)),
+          }))
+          .filter((group) => group.attendees.length > 0)
+          .slice(0, 3)
+      : [];
+  const sameTeamSuggestions = Array.from(
+    new Set(attendees.map((attendee) => attendee.team).filter((team): team is string => !!team)),
+  )
+    .filter((team) => team !== newTeam.trim())
+    .slice(0, 4);
+  const typedTeamSuggestions = showTeamField
+    ? sameTeamSuggestions.filter((team) => newTeam.trim() === '' || team.includes(newTeam.trim()))
+    : sameTeamSuggestions;
 
   return (
     <div className="create-meeting">
@@ -332,19 +382,7 @@ export function CreateMeeting({
                   type="button"
                   className="create-meeting__chip text-caption"
                   onClick={() => {
-                    const now = Date.now();
-                    setAttendees((prev) => {
-                      const names = new Set(prev.map((attendee) => attendee.name));
-                      const additions = group.attendees
-                        .filter((attendee) => !names.has(attendee.name))
-                        .map((attendee, index) => ({
-                          id: `favorite-${group.id}-${now}-${index}`,
-                          name: attendee.name,
-                          role: attendee.role,
-                          team: attendee.team,
-                        }));
-                      return [...prev, ...additions];
-                    });
+                    addPeople(group.attendees, `favorite-${group.id}`);
                   }}
                 >
                   {group.name} {group.attendees.length}명
@@ -361,32 +399,59 @@ export function CreateMeeting({
             value={newName}
             onChange={(event) => setNewName(event.target.value)}
             onKeyDown={handleAddKeyDown}
-            placeholder="이름"
+            placeholder="이름 또는 팀 검색"
           />
+          {(savedPersonMatches.length > 0 || savedTeamMatches.length > 0) && (
+            <div className="create-meeting__suggestions">
+              {savedTeamMatches.map((group) => (
+                <button
+                  key={group.id}
+                  type="button"
+                  className="create-meeting__suggestion text-caption"
+                  onClick={() => addPeople(group.attendees, `team-${group.id}`)}
+                >
+                  <span>{group.name}</span>
+                  <span>{group.attendees.length}명</span>
+                </button>
+              ))}
+              {savedPersonMatches.map((person) => (
+                <button
+                  key={personKey(person)}
+                  type="button"
+                  className="create-meeting__suggestion text-caption"
+                  onClick={() => addPeople([person], `person-${person.name}`)}
+                >
+                  <span>{person.name}</span>
+                  {person.team && <span>{person.team}</span>}
+                </button>
+              ))}
+            </div>
+          )}
+          {typedTeamSuggestions.length > 0 && (
+            <div className="create-meeting__chips">
+              {typedTeamSuggestions.map((team) => (
+                <button
+                  key={team}
+                  type="button"
+                  className="create-meeting__chip text-caption"
+                  onClick={() => {
+                    setNewTeam(team);
+                    setShowTeamField(true);
+                  }}
+                >
+                  {team}
+                </button>
+              ))}
+            </div>
+          )}
           {showTeamField ? (
-            <>
-              <input
-                className="text-input create-meeting__add-input"
-                value={newTeam}
-                onChange={(event) => setNewTeam(event.target.value)}
-                onKeyDown={handleAddKeyDown}
-                placeholder="부서/팀 (선택)"
-              />
-              {teamSuggestions.length > 0 && (
-                <div className="create-meeting__chips">
-                  {teamSuggestions.map((team) => (
-                    <button
-                      key={team}
-                      type="button"
-                      className="create-meeting__chip text-caption"
-                      onClick={() => setNewTeam(team)}
-                    >
-                      {team}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </>
+            <input
+              className="text-input create-meeting__add-input"
+              value={newTeam}
+              onChange={(event) => setNewTeam(event.target.value)}
+              onKeyDown={handleAddKeyDown}
+              placeholder="부서/팀 (선택)"
+            />
           ) : (
             <button
               type="button"
