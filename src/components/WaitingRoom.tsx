@@ -5,10 +5,20 @@ import './WaitingRoom.css';
 interface WaitingRoomProps {
   attendees: ResponseStatus[];
   onViewRecommendation: () => void;
+  onShareInvite: () => void;
   onNudge?: (name: string) => void;
+  notificationsEnabled: boolean;
+  onToggleNotifications: (enabled: boolean) => void;
 }
 
-export function WaitingRoom({ attendees, onViewRecommendation, onNudge }: WaitingRoomProps) {
+export function WaitingRoom({
+  attendees,
+  onViewRecommendation,
+  onShareInvite,
+  onNudge,
+  notificationsEnabled,
+  onToggleNotifications,
+}: WaitingRoomProps) {
   const respondedCount = attendees.filter((attendee) => attendee.responded).length;
   const remainingCount = attendees.length - respondedCount;
   const allResponded = remainingCount === 0;
@@ -23,6 +33,20 @@ export function WaitingRoom({ attendees, onViewRecommendation, onNudge }: Waitin
           ? '모든 참석자가 응답했어요'
           : `${remainingCount}명이 응답하면 추천 시간을 볼 수 있어요`}
       </p>
+
+      <div className="waiting-room__tools">
+        <button type="button" className="button button--secondary" onClick={onShareInvite}>
+          초대 링크 공유
+        </button>
+        <label className="waiting-room__toggle text-caption">
+          <input
+            type="checkbox"
+            checked={notificationsEnabled}
+            onChange={(event) => onToggleNotifications(event.target.checked)}
+          />
+          응답 알림
+        </label>
+      </div>
 
       <ResponseList responses={attendees} onNudge={onNudge} />
 

@@ -1,45 +1,50 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Avatar } from './Avatar';
 import { RoleToggle } from './RoleToggle';
-import { WeekScopeToggle } from './WeekScopeToggle';
+import { RangeCalendar } from './RangeCalendar';
 import { initialInvitedAttendees, recentAttendees } from '../data/mockAttendees';
 import type { AttendeeRole, InvitedAttendee } from '../data/mockAttendees';
-import { DURATION_OPTIONS } from '../data/time';
+import { DURATION_OPTIONS, formatClockLabel } from '../data/time';
+import { loadFavoriteGroups } from '../data/favorites';
+import type { FavoriteGroup } from '../data/favorites';
+import { defaultMeetingSettings } from '../context/MeetingContext';
+import type { MeetingSettings } from '../context/MeetingContext';
 import { useLongPressDrag } from '../utils/useLongPressDrag';
 import './CreateMeeting.css';
+
+const DAY_TIME_OPTIONS = Array.from({ length: 31 }, (_, index) => 7 * 60 + index * 30);
 
 interface CreateMeetingProps {
   initialTitle?: string;
   initialAttendees?: InvitedAttendee[];
-  initialDuration?: number;
-  initialWeeksAhead?: number;
-  onSubmit: (
-    title: string,
-    attendees: InvitedAttendee[],
-    durationMinutes: number,
-    weeksAhead: number,
-  ) => void;
+  initialSettings?: MeetingSettings;
+  onSubmit: (title: string, attendees: InvitedAttendee[], settings: MeetingSettings) => void;
 }
 
 export function CreateMeeting({
   initialTitle,
   initialAttendees,
-  initialDuration,
-  initialWeeksAhead,
+  initialSettings,
   onSubmit,
 }: CreateMeetingProps) {
   const [title, setTitle] = useState(initialTitle ?? '');
   const [attendees, setAttendees] = useState<InvitedAttendee[]>(initialAttendees ?? []);
-  const [durationMinutes, setDurationMinutes] = useState(initialDuration ?? 60);
-  // SPEC.md 시나리오("1주일 내 회의를 잡는다")와 일치하도록 기본값은 '다음 주'(1)
-  const [weeksAhead, setWeeksAhead] = useState(initialWeeksAhead ?? 1);
+  const [settings, setSettings] = useState<MeetingSettings>(initialSettings ?? defaultMeetingSettings());
+  const patchSettings = (partial: Partial<MeetingSettings>) =>
+    setSettings((prev) => ({ ...prev, ...partial }));
   const [newName, setNewName] = useState('');
   const [newTeam, setNewTeam] = useState('');
   // 부서/팀은 선택 입력이라 기본 숨김 — 한 번 펼치면 연속 입력을 위해 계속 열어둔다
   const [showTeamField, setShowTeamField] = useState(false);
   const [titleError, setTitleError] = useState(false);
+  const [timeSheetOpen, setTimeSheetOpen] = useState(false);
+  const [favoriteGroups, setFavoriteGroups] = useState<FavoriteGroup[]>([]);
   const titleInputRef = useRef<HTMLInputElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setFavoriteGroups(loadFavoriteGroups());
+  }, []);
 
   // 제목 미입력 시 disabled로 침묵하는 대신, 클릭에 반응해 이유를 보여주고 입력 위치로 데려간다
   const handleSubmit = () => {
@@ -49,11 +54,47 @@ export function CreateMeeting({
       titleInputRef.current?.focus({ preventScroll: true });
       return;
     }
-    onSubmit(title.trim(), attendees, durationMinutes, weeksAhead);
+    onSubmit(title.trim(), attendees, settings);
   };
 
   const requiredCount = attendees.filter((attendee) => attendee.role === 'required').length;
   const optionalCount = attendees.length - requiredCount;
+  const timeRangeLabel = `${formatClockLabel(settings.dayStartMinutes)}–${formatClockLabel(
+    settings.dayEndMinutes,
+  )}`;
+
+  const changeDuration = (durationMinutes: number) => {
+    setSettings((prev) => ({
+      ...prev,
+      durationMinutes,
+      dayEndMinutes:
+        prev.dayStartMinutes + durationMinutes > prev.dayEndMinutes
+          ? prev.dayStartMinutes + durationMinutes
+          : prev.dayEndMinutes,
+    }));
+  };
+
+  const changeDayStart = (dayStartMinutes: number) => {
+    setSettings((prev) => ({
+      ...prev,
+      dayStartMinutes,
+      dayEndMinutes:
+        dayStartMinutes + prev.durationMinutes > prev.dayEndMinutes
+          ? dayStartMinutes + prev.durationMinutes
+          : prev.dayEndMinutes,
+    }));
+  };
+
+  const changeDayEnd = (dayEndMinutes: number) => {
+    setSettings((prev) => ({
+      ...prev,
+      dayEndMinutes,
+      dayStartMinutes:
+        prev.dayStartMinutes + prev.durationMinutes > dayEndMinutes
+          ? dayEndMinutes - prev.durationMinutes
+          : prev.dayStartMinutes,
+    }));
+  };
 
   // 함수형 업데이트 — 드래그 중 연속 이벤트가 리렌더보다 빠를 때 이전 변경 유실 방지
   const changeRole = (id: string, role: AttendeeRole) => {
@@ -94,9 +135,10 @@ export function CreateMeeting({
     const name = newName.trim();
     if (!name) return;
     const team = newTeam.trim();
+    // 기본값 필수 — 대부분의 초대가 필수 인원이므로, '선택'으로 낮추는 액션만 요구되게 한다
     setAttendees([
       ...attendees,
-      { id: `new-${Date.now()}`, name, role: 'optional', team: team || undefined },
+      { id: `new-${Date.now()}`, name, role: 'required', team: team || undefined },
     ]);
     setNewName('');
     setNewTeam('');
@@ -119,7 +161,7 @@ export function CreateMeeting({
   const addRecent = (recent: { name: string; team?: string }) => {
     setAttendees([
       ...attendees,
-      { id: `recent-${recent.name}`, name: recent.name, role: 'optional', team: recent.team },
+      { id: `recent-${recent.name}`, name: recent.name, role: 'required', team: recent.team },
     ]);
   };
 
@@ -166,8 +208,8 @@ export function CreateMeeting({
         <select
           id="meeting-duration"
           className="text-input create-meeting__input"
-          value={durationMinutes}
-          onChange={(event) => setDurationMinutes(Number(event.target.value))}
+          value={settings.durationMinutes}
+          onChange={(event) => changeDuration(Number(event.target.value))}
         >
           {DURATION_OPTIONS.map((option) => (
             <option key={option.value} value={option.value}>
@@ -178,8 +220,36 @@ export function CreateMeeting({
       </div>
 
       <div className="create-meeting__field">
-        <span className="create-meeting__label text-caption">회의 가능 기간</span>
-        <WeekScopeToggle value={weeksAhead} onChange={setWeeksAhead} />
+        <span className="create-meeting__label text-caption">시간대</span>
+        <button
+          type="button"
+          className="create-meeting__time-range text-body-md"
+          onClick={() => setTimeSheetOpen(true)}
+        >
+          {timeRangeLabel}
+        </button>
+      </div>
+
+      <div className="create-meeting__field">
+        <div className="create-meeting__section-head">
+          <span className="create-meeting__label create-meeting__label--inline text-caption">
+            회의 가능 기간
+          </span>
+          <label className="create-meeting__weekend text-caption">
+            <input
+              type="checkbox"
+              checked={settings.includeWeekends}
+              onChange={(event) => patchSettings({ includeWeekends: event.target.checked })}
+            />
+            주말 포함
+          </label>
+        </div>
+        <RangeCalendar
+          rangeStart={settings.rangeStart}
+          rangeEnd={settings.rangeEnd}
+          includeWeekends={settings.includeWeekends}
+          onChange={(rangeStart, rangeEnd) => patchSettings({ rangeStart, rangeEnd })}
+        />
       </div>
 
       <div className="create-meeting__field">
@@ -213,6 +283,38 @@ export function CreateMeeting({
             </button>
           </div>
         ))}
+
+        {favoriteGroups.length > 0 && (
+          <div className="create-meeting__recent">
+            <span className="create-meeting__recent-label text-caption">즐겨찾기 폴더</span>
+            <div className="create-meeting__chips">
+              {favoriteGroups.map((group) => (
+                <button
+                  key={group.id}
+                  type="button"
+                  className="create-meeting__chip text-caption"
+                  onClick={() => {
+                    const now = Date.now();
+                    setAttendees((prev) => {
+                      const names = new Set(prev.map((attendee) => attendee.name));
+                      const additions = group.attendees
+                        .filter((attendee) => !names.has(attendee.name))
+                        .map((attendee, index) => ({
+                          id: `favorite-${group.id}-${now}-${index}`,
+                          name: attendee.name,
+                          role: attendee.role,
+                          team: attendee.team,
+                        }));
+                      return [...prev, ...additions];
+                    });
+                  }}
+                >
+                  {group.name} {group.attendees.length}명
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {availableRecent.length > 0 && (
           <div className="create-meeting__recent">
@@ -296,6 +398,64 @@ export function CreateMeeting({
       >
         초대 링크 보내기
       </button>
+
+      {timeSheetOpen && (
+        <div className="modal-overlay" onClick={() => setTimeSheetOpen(false)}>
+          <div className="modal-sheet" onClick={(event) => event.stopPropagation()}>
+            <button
+              type="button"
+              className="modal-sheet__close"
+              aria-label="닫기"
+              onClick={() => setTimeSheetOpen(false)}
+            >
+              ✕
+            </button>
+            <p className="create-meeting__sheet-title text-title-md">시간대 조정</p>
+            <p className="create-meeting__sheet-hint text-body-sm">참석자가 표시할 수 있는 시간 범위예요</p>
+            <div className="create-meeting__time-selects">
+              <label className="create-meeting__time-select text-caption">
+                시작
+                <select
+                  className="text-input"
+                  value={settings.dayStartMinutes}
+                  onChange={(event) => changeDayStart(Number(event.target.value))}
+                >
+                  {DAY_TIME_OPTIONS.filter(
+                    (option) => option + settings.durationMinutes <= settings.dayEndMinutes,
+                  ).map((option) => (
+                    <option key={option} value={option}>
+                      {formatClockLabel(option)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="create-meeting__time-select text-caption">
+                종료
+                <select
+                  className="text-input"
+                  value={settings.dayEndMinutes}
+                  onChange={(event) => changeDayEnd(Number(event.target.value))}
+                >
+                  {DAY_TIME_OPTIONS.filter(
+                    (option) => option >= settings.dayStartMinutes + settings.durationMinutes,
+                  ).map((option) => (
+                    <option key={option} value={option}>
+                      {formatClockLabel(option)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            <button
+              type="button"
+              className="button button--primary create-meeting__sheet-cta"
+              onClick={() => setTimeSheetOpen(false)}
+            >
+              적용
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

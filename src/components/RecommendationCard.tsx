@@ -1,4 +1,5 @@
-import { AttendeeRow } from './AttendeeRow';
+import { Avatar } from './Avatar';
+import { Badge } from './Badge';
 import type { Attendee } from '../data/mockAttendees';
 import './RecommendationCard.css';
 
@@ -13,6 +14,44 @@ interface RecommendationCardProps {
 
 function countAvailable(attendees: Attendee[]): number {
   return attendees.filter((attendee) => attendee.status === 'full').length;
+}
+
+function roleText(role: 'required' | 'optional'): string {
+  return role === 'required' ? '필수' : '선택';
+}
+
+function statusText(status: Attendee['status']): string {
+  if (status === 'full') return '참석 가능';
+  if (status === 'partial') return '일부 가능';
+  return '참석 불가';
+}
+
+function AvatarGroup({
+  attendees,
+  role,
+}: {
+  attendees: Attendee[];
+  role: 'required' | 'optional';
+}) {
+  return (
+    <div className={`recommendation-card__avatars recommendation-card__avatars--${role}`}>
+      {attendees.map((attendee) => {
+        const unavailableRequired = role === 'required' && attendee.status === 'none';
+        return (
+          <div
+            key={attendee.id}
+            className={`recommendation-card__avatar-item${
+              unavailableRequired ? ' recommendation-card__avatar-item--danger' : ''
+            }${attendee.status === 'partial' ? ' recommendation-card__avatar-item--partial' : ''}`}
+            aria-label={`${attendee.name} ${roleText(role)} ${statusText(attendee.status)}`}
+          >
+            <Avatar name={attendee.name} />
+            <span className="recommendation-card__avatar-name text-caption">{attendee.name}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
 }
 
 export function RecommendationCard({
@@ -32,12 +71,6 @@ export function RecommendationCard({
     <div className="recommendation-card">
       <p className="recommendation-card__time text-title-lg">{timeLabel}</p>
 
-      {/* 읽기 전용 요약 — 화면 ①의 세그먼트 토글과 형태가 겹치지 않도록 pill 없이 일반 텍스트 */}
-      <p className="recommendation-card__counts text-caption">
-        필수 {requiredAvailable}/{requiredAttendees.length} · 선택 {optionalAvailable}/
-        {optionalAttendees.length}
-      </p>
-
       {/* 탭 전환 중에도 항상 보이도록 참석자 목록 위에 배치 — 필수 불참만 표시 (선택 불참은 시간 결정에 영향 X) */}
       {missingRequired.length === 0 ? (
         <p className="recommendation-card__notice recommendation-card__notice--calm text-body-sm">
@@ -50,19 +83,25 @@ export function RecommendationCard({
       )}
 
       <div className="recommendation-card__section">
-        <p className="recommendation-card__section-title text-title-sm">필수 참석자</p>
-        {requiredAttendees.map((attendee) => (
-          <AttendeeRow key={attendee.id} name={attendee.name} status={attendee.status} />
-        ))}
+        <div className="recommendation-card__section-head">
+          <Badge variant="required" />
+          <span className="recommendation-card__section-count text-caption">
+            {requiredAvailable}/{requiredAttendees.length} 가능
+          </span>
+        </div>
+        <AvatarGroup attendees={requiredAttendees} role="required" />
       </div>
 
       <hr className="recommendation-card__divider" />
 
       <div className="recommendation-card__section">
-        <p className="recommendation-card__section-title text-title-sm">선택 참석자</p>
-        {optionalAttendees.map((attendee) => (
-          <AttendeeRow key={attendee.id} name={attendee.name} status={attendee.status} />
-        ))}
+        <div className="recommendation-card__section-head">
+          <Badge variant="optional" />
+          <span className="recommendation-card__section-count text-caption">
+            {optionalAvailable}/{optionalAttendees.length} 가능
+          </span>
+        </div>
+        <AvatarGroup attendees={optionalAttendees} role="optional" />
       </div>
 
       <div className="recommendation-card__actions">

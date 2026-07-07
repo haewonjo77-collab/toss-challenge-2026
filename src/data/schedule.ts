@@ -1,11 +1,31 @@
-// 화면 ①의 "회의 가능 기간" — 주 단위 오프셋 (0=이번 주, 1=다음 주, 2 이상=직접 선택한 N주 후)
-export function weeksAheadLabel(weeksAhead: number): string {
-  if (weeksAhead === 0) return '이번 주';
-  if (weeksAhead === 1) return '다음 주';
-  return `${weeksAhead}주 후`;
+// 화면 ①의 "회의 가능 기간" — 시작일~종료일 날짜 범위 (주말 포함 여부는 별도 토글)
+
+export function toISODate(date: Date): string {
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${date.getFullYear()}-${month}-${day}`;
 }
 
-const WEEKDAY_ORDER = ['월요일', '화요일', '수요일', '목요일', '금요일', '토요일', '일요일'];
+export function parseISODate(iso: string): Date {
+  const [year, month, day] = iso.split('-').map(Number);
+  return new Date(year, month - 1, day);
+}
+
+const WEEKDAY_SHORT = ['일', '월', '화', '수', '목', '금', '토'];
+const WEEKDAY_FULL = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
+
+export function isWeekend(date: Date): boolean {
+  return date.getDay() === 0 || date.getDay() === 6;
+}
+
+// 참석자 그리드 헤더용 짧은 표기: "화 14"
+export function shortDayLabel(date: Date): string {
+  return `${WEEKDAY_SHORT[date.getDay()]} ${date.getDate()}`;
+}
+
+export function fullWeekdayName(date: Date): string {
+  return WEEKDAY_FULL[date.getDay()];
+}
 
 // base가 속한 주(월요일 시작)의 월요일에서 weeksAhead주 뒤의 월요일 (자정 기준)
 export function mondayOfWeek(base: Date = new Date(), weeksAhead = 0): Date {
@@ -15,31 +35,39 @@ export function mondayOfWeek(base: Date = new Date(), weeksAhead = 0): Date {
   return day;
 }
 
-// "화요일" + weeksAhead → 해당 주의 실제 날짜
-export function dateForWeekday(dayName: string, weeksAhead: number, base: Date = new Date()): Date {
-  const monday = mondayOfWeek(base, weeksAhead);
-  const date = new Date(monday);
-  date.setDate(monday.getDate() + Math.max(0, WEEKDAY_ORDER.indexOf(dayName)));
-  return date;
-}
-
 export function formatMonthDay(date: Date): string {
   return `${date.getMonth() + 1}/${date.getDate()}`;
 }
 
-// 업무 회의 맥락상 월~금만 노출하고, 한 번에 다 보여주지 않고 며칠씩 나눠 단계적으로 노출 (SPEC 가설 B)
-export const JOIN_DAY_STAGES: string[][] = [
-  ['월요일', '화요일', '수요일'],
-  ['목요일', '금요일'],
-];
+// 범위 내 날짜 나열 — 주말 미포함이면 토/일 제외. 전부 걸러지면 시작일 하루로 폴백
+export function listRangeDays(rangeStart: string, rangeEnd: string, includeWeekends: boolean): Date[] {
+  const start = parseISODate(rangeStart);
+  const end = parseISODate(rangeEnd);
+  const days: Date[] = [];
+  for (let cursor = new Date(start); cursor <= end; cursor.setDate(cursor.getDate() + 1)) {
+    if (!includeWeekends && isWeekend(cursor)) continue;
+    days.push(new Date(cursor));
+  }
+  return days.length > 0 ? days : [start];
+}
 
-const DAY_START = 9 * 60;
-const DAY_END = 18 * 60;
+// 참석자 플로우의 단계적 노출 — 한 번에 며칠씩만 (SPEC 가설 B)
+export function chunkDays<T>(items: T[], size = 3): T[][] {
+  const chunks: T[][] = [];
+  for (let i = 0; i < items.length; i += size) {
+    chunks.push(items.slice(i, i + size));
+  }
+  return chunks;
+}
 
-// 화면 ①에서 정한 회의 시간 길이만큼 슬롯 단위를 생성 (09:00~18:00)
-export function slotsForDuration(durationMinutes: number): number[] {
+// 화면 ①에서 정한 시간대 안에서 회의 시간 길이만큼 슬롯 단위를 생성
+export function slotsForDuration(
+  durationMinutes: number,
+  dayStartMinutes = 9 * 60,
+  dayEndMinutes = 18 * 60,
+): number[] {
   const slots: number[] = [];
-  for (let start = DAY_START; start + durationMinutes <= DAY_END; start += durationMinutes) {
+  for (let start = dayStartMinutes; start + durationMinutes <= dayEndMinutes; start += durationMinutes) {
     slots.push(start);
   }
   return slots;

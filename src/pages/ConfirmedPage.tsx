@@ -6,7 +6,7 @@ import { durationLabel } from '../data/time';
 import { useScreenMeasure } from '../utils/measure';
 
 export function ConfirmedPage() {
-  const { title, durationMinutes, confirmed, resetMeeting } = useMeeting();
+  const { title, settings, confirmed, resetMeeting } = useMeeting();
   const { show } = useToast();
   const navigate = useNavigate();
   useScreenMeasure('화면④ 확정');
@@ -17,7 +17,7 @@ export function ConfirmedPage() {
     <ConfirmedMeeting
       meetingTitle={title}
       timeLabel={confirmed.timeLabel}
-      durationText={durationLabel(durationMinutes)}
+      durationText={durationLabel(settings.durationMinutes)}
       requiredAttendees={confirmed.requiredAttendees}
       optionalAttendees={confirmed.optionalAttendees}
       onShare={() => show('참석자에게 보낼 링크가 복사됐어요')}

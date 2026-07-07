@@ -13,6 +13,73 @@
   margin: 0 0 var(--space-lg);
 }
 
+.join__calendar-import {
+  padding: var(--space-sm);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-md);
+}
+
+.join__calendar-title {
+  color: var(--color-body);
+  margin: 0 0 var(--space-sm);
+}
+
+.join__calendar-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.join__calendar-button {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-full);
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  cursor: pointer;
+}
+
+.join__calendar-button:disabled,
+.join__calendar-skip:disabled {
+  cursor: default;
+}
+
+.join__calendar-mark {
+  font-weight: 700;
+}
+
+.join__spinner {
+  position: absolute;
+  inset: 10px;
+  border: 2px solid var(--color-hairline);
+  border-top-color: var(--color-ink);
+  border-radius: var(--radius-full);
+  animation: join-spin 0.8s linear infinite;
+}
+
+.join__calendar-skip {
+  border: none;
+  background: none;
+  color: var(--color-muted);
+  padding: var(--space-xs);
+  margin-left: auto;
+  cursor: pointer;
+}
+
+.join__calendar-imported {
+  color: var(--color-body);
+  margin: calc(-1 * var(--space-xs)) 0 var(--space-md);
+}
+
+@keyframes join-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .join__progress {
   color: var(--color-muted);
   margin: calc(-1 * var(--space-md)) 0 var(--space-lg);
@@ -80,6 +147,14 @@
 
 .join__headline {
   color: var(--color-ink);
+  margin: 0 0 var(--space-sm);
+}
+
+.join__nudge {
+  padding: var(--space-sm);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-soft);
+  color: var(--color-body);
   margin: 0 0 var(--space-sm);
 }
 

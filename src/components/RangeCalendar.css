@@ -1,4 +1,4 @@
-.week-calendar {
+.range-calendar {
   width: 100%;
   padding: var(--space-sm);
   background: var(--color-canvas);
@@ -7,18 +7,18 @@
   box-sizing: border-box;
 }
 
-.week-calendar__header {
+.range-calendar__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: var(--space-xs);
 }
 
-.week-calendar__month {
+.range-calendar__month {
   color: var(--color-ink);
 }
 
-.week-calendar__nav {
+.range-calendar__nav {
   border: none;
   background: none;
   padding: var(--space-xxs) var(--space-xs);
@@ -28,7 +28,7 @@
   cursor: pointer;
 }
 
-.week-calendar__weekdays {
+.range-calendar__weekdays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   text-align: center;
@@ -36,47 +36,48 @@
   margin-bottom: var(--space-xxs);
 }
 
-/* 주 단위 선택 — 한 주(행) 전체가 하나의 선택 버튼 */
-.week-calendar__week {
+.range-calendar__grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  width: 100%;
-  padding: 6px 0;
+  gap: 2px;
+  margin-bottom: 2px;
+}
+
+.range-calendar__day {
+  height: 36px;
+  padding: 0;
   border: none;
   border-radius: var(--radius-md);
   background: transparent;
-  cursor: pointer;
-}
-
-.week-calendar__week--selected {
-  background: var(--color-surface-strong);
-}
-
-.week-calendar__week:disabled {
-  cursor: default;
-}
-
-.week-calendar__day {
-  text-align: center;
   font-family: var(--font-family);
   font-size: 13px;
   color: var(--color-ink);
+  cursor: pointer;
+  /* 날짜 드래그가 스크롤로 새지 않도록 — TimeGrid 셀과 동일한 정책 */
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
-.week-calendar__week:disabled .week-calendar__day {
+.range-calendar__day--selected {
+  background: var(--color-surface-strong);
+}
+
+.range-calendar__day:disabled {
   color: var(--color-hairline);
+  cursor: default;
 }
 
-.week-calendar__day--outside {
+.range-calendar__day--outside {
   color: var(--color-muted);
 }
 
-.week-calendar__day--today {
+.range-calendar__day--today {
   font-weight: 700;
   text-decoration: underline;
 }
 
-.week-calendar__caption {
+.range-calendar__caption {
   color: var(--color-muted);
   margin: var(--space-xs) 0 0;
 }

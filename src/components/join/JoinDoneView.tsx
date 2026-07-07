@@ -26,6 +26,7 @@ export function JoinDoneView() {
     ? baseRoster.map((member) => (member.name === name ? { ...member, responded: true } : member))
     : [...baseRoster, { id: 'participant', name, responded: true }];
   const respondedCount = roster.filter((member) => member.responded).length;
+  const remainingCount = roster.length - respondedCount;
 
   return (
     <div className="card">
@@ -36,6 +37,9 @@ export function JoinDoneView() {
       <p className="join__headline text-title-lg">
         {roster.length}명 중 {respondedCount}명 응답완료
       </p>
+      {remainingCount > 0 && remainingCount <= 2 && (
+        <p className="join__nudge text-body-sm">{remainingCount}명만 응답하면 회의 시간이 정해져요</p>
+      )}
       <ResponseList responses={roster} />
       <p className="join__footer-hint text-body-sm">모든 참석자가 응답하면 주최자가 시간을 확정해요</p>
     </div>

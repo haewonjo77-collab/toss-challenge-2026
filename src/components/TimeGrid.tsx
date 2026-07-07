@@ -3,11 +3,16 @@ import { formatClockLabel } from '../data/time';
 import { useLongPressDrag } from '../utils/useLongPressDrag';
 import './TimeGrid.css';
 
+export interface TimeGridDay {
+  key: string; // 'YYYY-MM-DD' — 슬롯 키의 날짜 부분
+  label: string; // 헤더 표기 "화 14"
+}
+
 interface TimeGridProps {
-  days: string[];
+  days: TimeGridDay[];
   slots: number[];
-  isUnavailable: (day: string, slotStart: number) => boolean;
-  onSetUnavailable: (day: string, slotStart: number, value: boolean) => void;
+  isUnavailable: (dayKey: string, slotStart: number) => boolean;
+  onSetUnavailable: (dayKey: string, slotStart: number, value: boolean) => void;
 }
 
 export function TimeGrid({ days, slots, isUnavailable, onSetUnavailable }: TimeGridProps) {
@@ -49,27 +54,27 @@ export function TimeGrid({ days, slots, isUnavailable, onSetUnavailable }: TimeG
     <div className="time-grid" style={{ gridTemplateColumns: `72px repeat(${days.length}, 1fr)` }}>
       <span className="time-grid__corner" />
       {days.map((day) => (
-        <span key={day} className="time-grid__day text-caption">
-          {day.slice(0, 1)}
+        <span key={day.key} className="time-grid__day text-caption">
+          {day.label}
         </span>
       ))}
       {slots.map((slot) => (
         <Fragment key={slot}>
           <span className="time-grid__time text-caption">{formatClockLabel(slot)}</span>
           {days.map((day) => {
-            const unavailable = isUnavailable(day, slot);
+            const unavailable = isUnavailable(day.key, slot);
             return (
               <button
-                key={day}
+                key={day.key}
                 type="button"
-                data-day={day}
+                data-day={day.key}
                 data-slot={slot}
                 className={`time-grid__cell${unavailable ? ' time-grid__cell--unavailable' : ''}`}
                 aria-pressed={unavailable}
-                aria-label={`${day} ${formatClockLabel(slot)} ${unavailable ? '안 됨' : '가능'}`}
-                onPointerDown={(event) => handlePointerDown(event, day, slot)}
+                aria-label={`${day.label} ${formatClockLabel(slot)} ${unavailable ? '안 됨' : '가능'}`}
+                onPointerDown={(event) => handlePointerDown(event, day.key, slot)}
                 onPointerMove={drag.movePress}
-                onClick={() => handleClick(day, slot)}
+                onClick={() => handleClick(day.key, slot)}
               >
                 {/* "선택 = 되는 시간" 습관과의 혼동을 막기 위해 형태(✕)로 '안 됨'을 명시 */}
                 {unavailable ? '✕' : ''}

@@ -18,7 +18,51 @@
   margin: 0 0 var(--space-lg);
 }
 
+.waiting-room__tools {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-lg);
+}
+
+.waiting-room__tools .button {
+  flex: 1;
+}
+
+.waiting-room__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xxs);
+  color: var(--color-body);
+  white-space: nowrap;
+}
+
+.waiting-room__toggle input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-accent);
+}
+
 .waiting-room__cta {
   width: 100%;
   margin-top: var(--space-lg);
+}
+
+.waiting-room__remember-title {
+  color: var(--color-ink);
+  margin: 0 0 var(--space-xs);
+}
+
+.waiting-room__remember-hint {
+  color: var(--color-muted);
+  margin: 0 0 var(--space-lg);
+}
+
+.waiting-room__remember-actions {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.waiting-room__remember-actions .button {
+  flex: 1;
 }

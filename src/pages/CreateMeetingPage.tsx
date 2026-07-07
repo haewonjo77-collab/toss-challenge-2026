@@ -4,7 +4,7 @@ import { useMeeting } from '../context/MeetingContext';
 import { useScreenMeasure } from '../utils/measure';
 
 export function CreateMeetingPage() {
-  const { title, attendees, durationMinutes, weeksAhead, createMeeting } = useMeeting();
+  const { title, attendees, settings, createMeeting } = useMeeting();
   const navigate = useNavigate();
   useScreenMeasure('화면① 회의 만들기');
 
@@ -12,10 +12,9 @@ export function CreateMeetingPage() {
     <CreateMeeting
       initialTitle={title}
       initialAttendees={attendees.length > 0 ? attendees : undefined}
-      initialDuration={durationMinutes}
-      initialWeeksAhead={weeksAhead}
-      onSubmit={(newTitle, newAttendees, newDuration, newWeeksAhead) => {
-        createMeeting(newTitle, newAttendees, newDuration, newWeeksAhead);
+      initialSettings={settings}
+      onSubmit={(newTitle, newAttendees, newSettings) => {
+        createMeeting(newTitle, newAttendees, newSettings);
         navigate('/waiting');
       }}
     />

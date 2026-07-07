@@ -95,3 +95,40 @@ body {
   text-decoration: underline;
   cursor: pointer;
 }
+
+/* .phone-frame(position: relative)가 가장 가까운 포지셔닝 부모이므로
+   inset:0이 뷰포트 전체가 아니라 393×852 프레임 안에만 맞게 덮인다 */
+.modal-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  background: rgba(17, 17, 17, 0.4);
+  z-index: 10;
+}
+
+.modal-sheet {
+  position: relative;
+  width: 100%;
+  max-height: 85%;
+  background: var(--color-canvas);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding: 48px var(--space-md) var(--space-lg);
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+.modal-sheet__close {
+  position: absolute;
+  top: var(--space-sm);
+  right: var(--space-sm);
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: var(--color-surface-soft);
+  border-radius: var(--radius-full);
+  color: var(--color-ink);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}

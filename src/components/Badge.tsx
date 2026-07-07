@@ -2,8 +2,8 @@ import './Badge.css';
 
 interface BadgeProps {
   variant: 'required' | 'optional';
-  available: number;
-  total: number;
+  available?: number;
+  total?: number;
 }
 
 const LABEL_BY_VARIANT: Record<BadgeProps['variant'], string> = {
@@ -12,9 +12,12 @@ const LABEL_BY_VARIANT: Record<BadgeProps['variant'], string> = {
 };
 
 export function Badge({ variant, available, total }: BadgeProps) {
+  const showCount = typeof available === 'number' && typeof total === 'number';
+
   return (
     <span className={`badge badge--${variant}`}>
-      {LABEL_BY_VARIANT[variant]} {available}/{total}
+      {LABEL_BY_VARIANT[variant]}
+      {showCount ? ` ${available}/${total}` : ''}
     </span>
   );
 }

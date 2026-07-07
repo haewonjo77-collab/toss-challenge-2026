@@ -1,6 +1,7 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { Attendee, InvitedAttendee, ResponseStatus } from '../data/mockAttendees';
+import { mondayOfWeek, toISODate } from '../data/schedule';
 
 export interface ConfirmedResult {
   timeLabel: string;
@@ -8,20 +9,39 @@ export interface ConfirmedResult {
   optionalAttendees: Attendee[];
 }
 
+// 회의 조건 묶음 — 화면 ①에서 정하고 ②③④·참석자 플로우가 공유
+export interface MeetingSettings {
+  durationMinutes: number;
+  rangeStart: string; // 'YYYY-MM-DD'
+  rangeEnd: string;
+  includeWeekends: boolean;
+  dayStartMinutes: number;
+  dayEndMinutes: number;
+}
+
+// SPEC 시나리오("1주일 내 회의를 잡는다") 기본값 — 다음 주 월~금, 09:00~18:00, 1시간
+export function defaultMeetingSettings(): MeetingSettings {
+  const monday = mondayOfWeek(new Date(), 1);
+  const friday = new Date(monday);
+  friday.setDate(monday.getDate() + 4);
+  return {
+    durationMinutes: 60,
+    rangeStart: toISODate(monday),
+    rangeEnd: toISODate(friday),
+    includeWeekends: false,
+    dayStartMinutes: 9 * 60,
+    dayEndMinutes: 18 * 60,
+  };
+}
+
 interface MeetingContextValue {
   title: string;
   attendees: InvitedAttendee[];
-  durationMinutes: number;
-  weeksAhead: number; // 0=이번 주, 1=다음 주, 2 이상=직접 선택한 N주 후
+  settings: MeetingSettings;
   responses: ResponseStatus[];
   confirmed: ConfirmedResult | null;
-  createMeeting: (
-    title: string,
-    attendees: InvitedAttendee[],
-    durationMinutes: number,
-    weeksAhead: number,
-  ) => void;
-  markNextResponded: () => void;
+  createMeeting: (title: string, attendees: InvitedAttendee[], settings: MeetingSettings) => void;
+  markNextResponded: () => string | null;
   confirmMeeting: (result: ConfirmedResult) => void;
   resetMeeting: () => void;
 }
@@ -31,22 +51,23 @@ const MeetingContext = createContext<MeetingContextValue | null>(null);
 export function MeetingProvider({ children }: { children: ReactNode }) {
   const [title, setTitle] = useState('');
   const [attendees, setAttendees] = useState<InvitedAttendee[]>([]);
-  const [durationMinutes, setDurationMinutes] = useState(60);
-  // SPEC.md 시나리오("1주일 내 회의를 잡는다")와 일치하도록 기본값은 '다음 주'(1)
-  const [weeksAhead, setWeeksAhead] = useState(1);
+  const [settings, setSettings] = useState<MeetingSettings>(defaultMeetingSettings);
   const [responses, setResponses] = useState<ResponseStatus[]>([]);
+  const responsesRef = useRef<ResponseStatus[]>([]);
   const [confirmed, setConfirmed] = useState<ConfirmedResult | null>(null);
+
+  useEffect(() => {
+    responsesRef.current = responses;
+  }, [responses]);
 
   const createMeeting = (
     newTitle: string,
     newAttendees: InvitedAttendee[],
-    newDuration: number,
-    newWeeksAhead: number,
+    newSettings: MeetingSettings,
   ) => {
     setTitle(newTitle);
     setAttendees(newAttendees);
-    setDurationMinutes(newDuration);
-    setWeeksAhead(newWeeksAhead);
+    setSettings(newSettings);
     // 참석자 플로우가 범위 밖이라 마지막 2명을 미응답으로 시작, 화면 ②에서 도착을 시뮬레이션
     setResponses(
       newAttendees.map((attendee, index) => ({
@@ -59,13 +80,15 @@ export function MeetingProvider({ children }: { children: ReactNode }) {
   };
 
   const markNextResponded = () => {
-    setResponses((prev) => {
-      const nextIndex = prev.findIndex((response) => !response.responded);
-      if (nextIndex === -1) return prev;
-      return prev.map((response, index) =>
-        index === nextIndex ? { ...response, responded: true } : response,
-      );
-    });
+    const nextIndex = responsesRef.current.findIndex((response) => !response.responded);
+    if (nextIndex === -1) return null;
+    const respondedName = responsesRef.current[nextIndex].name;
+    const nextResponses = responsesRef.current.map((response, index) =>
+      index === nextIndex ? { ...response, responded: true } : response,
+    );
+    responsesRef.current = nextResponses;
+    setResponses(nextResponses);
+    return respondedName;
   };
 
   const confirmMeeting = (result: ConfirmedResult) => {
@@ -76,8 +99,7 @@ export function MeetingProvider({ children }: { children: ReactNode }) {
   const resetMeeting = () => {
     setTitle('');
     setAttendees([]);
-    setDurationMinutes(60);
-    setWeeksAhead(1);
+    setSettings(defaultMeetingSettings());
     setResponses([]);
     setConfirmed(null);
   };
@@ -87,8 +109,7 @@ export function MeetingProvider({ children }: { children: ReactNode }) {
       value={{
         title,
         attendees,
-        durationMinutes,
-        weeksAhead,
+        settings,
         responses,
         confirmed,
         createMeeting,
