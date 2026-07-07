@@ -18,6 +18,7 @@ export interface MeetingSettings {
   includeWeekends: boolean;
   dayStartMinutes: number;
   dayEndMinutes: number;
+  responseNotificationsEnabled: boolean;
 }
 
 // SPEC 시나리오("1주일 내 회의를 잡는다") 기본값 — 다음 주 월~금, 09:00~18:00, 1시간
@@ -31,6 +32,7 @@ export function defaultMeetingSettings(): MeetingSettings {
     includeWeekends: false,
     dayStartMinutes: 9 * 60,
     dayEndMinutes: 18 * 60,
+    responseNotificationsEnabled: true,
   };
 }
 

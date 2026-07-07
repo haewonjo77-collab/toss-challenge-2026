@@ -7,8 +7,6 @@ interface WaitingRoomProps {
   onViewRecommendation: () => void;
   onShareInvite: () => void;
   onNudge?: (name: string) => void;
-  notificationsEnabled: boolean;
-  onToggleNotifications: (enabled: boolean) => void;
 }
 
 export function WaitingRoom({
@@ -16,8 +14,6 @@ export function WaitingRoom({
   onViewRecommendation,
   onShareInvite,
   onNudge,
-  notificationsEnabled,
-  onToggleNotifications,
 }: WaitingRoomProps) {
   const respondedCount = attendees.filter((attendee) => attendee.responded).length;
   const remainingCount = attendees.length - respondedCount;
@@ -38,14 +34,6 @@ export function WaitingRoom({
         <button type="button" className="button button--secondary" onClick={onShareInvite}>
           초대 링크 공유
         </button>
-        <label className="waiting-room__toggle text-caption">
-          <input
-            type="checkbox"
-            checked={notificationsEnabled}
-            onChange={(event) => onToggleNotifications(event.target.checked)}
-          />
-          응답 알림
-        </label>
       </div>
 
       <ResponseList responses={attendees} onNudge={onNudge} />

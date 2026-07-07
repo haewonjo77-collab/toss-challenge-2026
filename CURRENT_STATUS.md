@@ -22,7 +22,7 @@ Last checked: 2026-07-08, Asia/Seoul
   - Meeting title input.
   - Meeting duration selection.
   - Start/end date range selection with drag on `RangeCalendar`.
-  - Selected meeting dates are stored as a date list, so a range can be adjusted by clicking individual days on/off.
+  - Selected meeting dates are stored as a date list, so a range can be adjusted by clicking or dragging days on/off.
   - Meeting availability range uses simple choices: `이번 주`, `다음 주`, `직접 선택`.
   - `이번 주` automatically excludes today and earlier days.
   - Weekend inclusion toggle; when off, the calendar shows Monday-Friday only.
@@ -35,7 +35,9 @@ Last checked: 2026-07-08, Asia/Seoul
   - Same-team chips appear before the optional team field so repeated same-team entry is faster.
   - Same-team chips add the typed attendee with that team in one click; if no name is typed and a saved team exists, they add saved people from that team.
   - The attendee input uses first-time friendly placeholder text, then switches to saved-attendee finding language when reusable attendees exist.
+  - Response notification preference is set before sending the invite link.
   - After tapping `초대 링크 보내기`, the organizer can save attendees for reuse.
+  - After the save-attendees choice, the app opens Web Share or copies the invite link before moving to the waiting screen.
   - Static recent-attendee dummy chips and the quick-fill dummy button are removed from the main UI.
   - Required/optional role can be applied by dragging across attendee rows.
 
@@ -44,11 +46,13 @@ Last checked: 2026-07-08, Asia/Seoul
   - Includes nudges for people who have not responded.
   - Invite link sharing uses the Web Share API when available, with clipboard fallback.
   - After sharing, the organizer can save attendees to localStorage favorite folders.
-  - Simulated response toasts can be toggled on/off.
+  - Simulated response toasts follow the create-screen response notification preference.
+  - Simulated responses wait 12 seconds between arrivals so the waiting state is testable.
 
 - Recommendation screen
   - Shows recommended meeting candidates.
   - On desktop organizer views, recommended candidates are shown together for comparison.
+  - Alternative candidates cover several cases even when attendees are manually entered: optional gaps, one required gap, and multiple required gaps.
   - Required attendees are prioritized.
   - Required/optional attendees are shown as avatar groups instead of numeric badges.
   - Missing required attendees are surfaced with a danger ring and strikethrough.
@@ -64,6 +68,7 @@ Last checked: 2026-07-08, Asia/Seoul
   - Unavailable time marking grid.
   - Unavailable cells show an X glyph.
   - Cells can be marked by dragging across the grid.
+  - If no unavailable slots are selected, the flow treats it as all times possible; if every slot is selected, it treats it as all times unavailable.
   - Done/summary screen with a low-remaining-response nudge banner.
 
 ## Important Design/Planning Files
@@ -95,6 +100,7 @@ Last checked: 2026-07-08, Asia/Seoul
   - click-to-toggle meeting dates, compact time labels, saved attendee previews, and direct team add chips
   - organizer/participant responsive split: organizer screens expand on desktop, participant join flow stays mobile-first
   - same-team chips now add typed attendees in one click, and the empty-state attendee placeholder avoids "search" wording
+  - calendar date removal by drag, invite sharing before waiting, 12-second simulated responses, and richer recommendation alternatives
 
 - Recent Git commits include:
   - `fbb9c01 feat: replace custom-week dropdown with week-select calendar`

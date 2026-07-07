@@ -34,7 +34,7 @@ interface CreateMeetingProps {
   initialTitle?: string;
   initialAttendees?: InvitedAttendee[];
   initialSettings?: MeetingSettings;
-  onSubmit: (title: string, attendees: InvitedAttendee[], settings: MeetingSettings) => void;
+  onSubmit: (title: string, attendees: InvitedAttendee[], settings: MeetingSettings) => void | Promise<void>;
 }
 
 export function CreateMeeting({
@@ -56,6 +56,7 @@ export function CreateMeeting({
   const [timeSheetOpen, setTimeSheetOpen] = useState(false);
   const [customRangeOpen, setCustomRangeOpen] = useState(false);
   const [rememberOpen, setRememberOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [favoriteGroups, setFavoriteGroups] = useState<FavoriteGroup[]>([]);
   const titleInputRef = useRef<HTMLInputElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -75,9 +76,15 @@ export function CreateMeeting({
     setRememberOpen(true);
   };
 
-  const submitMeeting = () => {
+  const submitMeeting = async () => {
+    if (submitting) return;
+    setSubmitting(true);
     setRememberOpen(false);
-    onSubmit(title.trim(), attendees, settings);
+    try {
+      await onSubmit(title.trim(), attendees, settings);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const requiredCount = attendees.filter((attendee) => attendee.role === 'required').length;
@@ -535,6 +542,15 @@ export function CreateMeeting({
         </div>
       </div>
 
+      <label className="create-meeting__notification text-caption">
+        <input
+          type="checkbox"
+          checked={settings.responseNotificationsEnabled}
+          onChange={(event) => patchSettings({ responseNotificationsEnabled: event.target.checked })}
+        />
+        응답 알림 받기
+      </label>
+
       <button
         type="button"
         className="button button--primary create-meeting__cta"
@@ -558,12 +574,18 @@ export function CreateMeeting({
             <p className="create-meeting__sheet-title text-title-md">이 회의 참석자를 저장할까요?</p>
             <p className="create-meeting__sheet-hint text-body-sm">다음 회의에서 바로 불러올 수 있어요</p>
             <div className="create-meeting__remember-actions">
-              <button type="button" className="button button--secondary" onClick={submitMeeting}>
+              <button
+                type="button"
+                className="button button--secondary"
+                onClick={submitMeeting}
+                disabled={submitting}
+              >
                 아니요
               </button>
               <button
                 type="button"
                 className="button button--primary"
+                disabled={submitting}
                 onClick={() => {
                   rememberAttendeeGroups(attendees);
                   submitMeeting();

@@ -8,7 +8,6 @@ import {
   selectedDatesForRange,
   toISODate,
 } from '../data/schedule';
-import { useLongPressDrag } from '../utils/useLongPressDrag';
 import './RangeCalendar.css';
 
 const WEEKDAY_HEADERS = ['월', '화', '수', '목', '금', '토', '일'];
@@ -30,10 +29,12 @@ export function RangeCalendar({
   includeWeekends,
   onChange,
 }: RangeCalendarProps) {
-  const drag = useLongPressDrag();
   const anchorRef = useRef<string | null>(null);
   const baseSelectionRef = useRef<string[]>([]);
-  const suppressClickRef = useRef(false);
+  const pointerIdRef = useRef<number | null>(null);
+  const dragModeRef = useRef<'add' | 'remove'>('add');
+  const changedByDragRef = useRef(false);
+  const lastTargetRef = useRef<string | null>(null);
   const start = parseISODate(rangeStart);
   const [viewMonth, setViewMonth] = useState(
     () => new Date(start.getFullYear(), start.getMonth(), 1),
@@ -77,40 +78,66 @@ export function RangeCalendar({
     return selectedDatesForRange(startISO, endISO, includeWeekends);
   };
 
-  const handlePointerDown = (event: React.PointerEvent<HTMLButtonElement>, day: Date) => {
-    if (isDisabled(day)) return;
-    const iso = toISODate(day);
-    drag.startPress(
-      event,
-      () => {
-        anchorRef.current = iso;
-        baseSelectionRef.current = selectedDates;
-        suppressClickRef.current = false;
-      },
-      (moveEvent) => {
-        const el = document.elementFromPoint(moveEvent.clientX, moveEvent.clientY) as HTMLElement | null;
-        const cell = el?.closest('[data-date]') as HTMLElement | null;
-        const targetISO = cell?.dataset.date;
-        if (!targetISO || !anchorRef.current) return;
-        if (isDisabled(parseISODate(targetISO))) return;
-        suppressClickRef.current = true;
-        emitDates([...baseSelectionRef.current, ...datesBetween(anchorRef.current, targetISO)]);
-      },
-    );
+  const applyDragTo = (targetISO: string) => {
+    if (!anchorRef.current || lastTargetRef.current === targetISO) return;
+    const span = datesBetween(anchorRef.current, targetISO);
+    const spanSet = new Set(span);
+    const nextDates =
+      dragModeRef.current === 'add'
+        ? [...baseSelectionRef.current, ...span]
+        : baseSelectionRef.current.filter((date) => !spanSet.has(date));
+    changedByDragRef.current = true;
+    lastTargetRef.current = targetISO;
+    emitDates(nextDates);
   };
 
-  const handleClick = (day: Date) => {
-    if (suppressClickRef.current) {
-      suppressClickRef.current = false;
-      return;
-    }
-    if (isDisabled(day)) return;
+  const targetDateFromPoint = (clientX: number, clientY: number) => {
+    const el = document.elementFromPoint(clientX, clientY) as HTMLElement | null;
+    const cell = el?.closest('[data-date]') as HTMLElement | null;
+    const targetISO = cell?.dataset.date;
+    if (!targetISO || isDisabled(parseISODate(targetISO))) return null;
+    return targetISO;
+  };
+
+  const handlePointerDown = (event: React.PointerEvent<HTMLButtonElement>, day: Date) => {
+    if (!event.isPrimary || isDisabled(day)) return;
     const iso = toISODate(day);
-    if (selectedSet.has(iso)) {
-      emitDates(selectedDates.filter((date) => date !== iso));
-      return;
+    pointerIdRef.current = event.pointerId;
+    anchorRef.current = iso;
+    baseSelectionRef.current = selectedDates;
+    dragModeRef.current = selectedSet.has(iso) ? 'remove' : 'add';
+    changedByDragRef.current = false;
+    lastTargetRef.current = iso;
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+  };
+
+  const handlePointerMove = (event: React.PointerEvent<HTMLButtonElement>) => {
+    if (pointerIdRef.current !== event.pointerId) return;
+    const targetISO = targetDateFromPoint(event.clientX, event.clientY);
+    if (targetISO) applyDragTo(targetISO);
+  };
+
+  const handlePointerUp = (event: React.PointerEvent<HTMLButtonElement>) => {
+    if (pointerIdRef.current !== event.pointerId || !anchorRef.current) return;
+    const targetISO = targetDateFromPoint(event.clientX, event.clientY) ?? anchorRef.current;
+    if (changedByDragRef.current) {
+      applyDragTo(targetISO);
+    } else if (dragModeRef.current === 'remove') {
+      emitDates(selectedDates.filter((date) => date !== anchorRef.current));
+    } else {
+      emitDates([...selectedDates, anchorRef.current]);
     }
-    emitDates([...selectedDates, iso]);
+    pointerIdRef.current = null;
+    anchorRef.current = null;
+    lastTargetRef.current = null;
+    changedByDragRef.current = false;
+  };
+
+  const handlePointerCancel = () => {
+    pointerIdRef.current = null;
+    anchorRef.current = null;
+    lastTargetRef.current = null;
+    changedByDragRef.current = false;
   };
 
   const moveMonth = (delta: number) => {
@@ -157,8 +184,9 @@ export function RangeCalendar({
                   day.getMonth() !== viewMonth.getMonth() ? ' range-calendar__day--outside' : ''
                 }${day.getTime() === todayKey ? ' range-calendar__day--today' : ''}`}
                 onPointerDown={(event) => handlePointerDown(event, day)}
-                onPointerMove={drag.movePress}
-                onClick={() => handleClick(day)}
+                onPointerMove={handlePointerMove}
+                onPointerUp={handlePointerUp}
+                onPointerCancel={handlePointerCancel}
               >
                 {day.getDate()}
               </button>

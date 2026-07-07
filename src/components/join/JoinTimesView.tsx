@@ -61,6 +61,13 @@ export function JoinTimesView({ onAdvance }: JoinTimesViewProps) {
   );
   const isLast = safeStageIndex === stages.length - 1;
   const nextDays = isLast ? null : stages[safeStageIndex + 1];
+  const totalSlotCount = rangeDays.length * slots.length;
+  const availabilityCountText =
+    unavailable.length === 0
+      ? '모든 시간이 가능해요'
+      : unavailable.length >= totalSlotCount
+        ? '모든 시간이 안 돼요'
+        : `안 되는 시간 ${unavailable.length}개 표시됨`;
 
   const importCalendar = (provider: string) => {
     setLoadingProvider(provider);
@@ -151,7 +158,7 @@ export function JoinTimesView({ onAdvance }: JoinTimesViewProps) {
         onSetUnavailable={(dayKey, slotStart, value) => setUnavailable(slotKey(dayKey, slotStart), value)}
       />
 
-      <p className="join__count text-caption">안 되는 시간 {unavailable.length}개 표시됨</p>
+      <p className="join__count text-caption">{availabilityCountText}</p>
 
       <div className="join__actions">
         {safeStageIndex > 0 && (
