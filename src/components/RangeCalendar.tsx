@@ -5,6 +5,7 @@ import {
   listRangeDays,
   mondayOfWeek,
   parseISODate,
+  selectedDatesForRange,
   toISODate,
 } from '../data/schedule';
 import { useLongPressDrag } from '../utils/useLongPressDrag';
@@ -15,15 +16,24 @@ const WEEKDAY_HEADERS = ['월', '화', '수', '목', '금', '토', '일'];
 interface RangeCalendarProps {
   rangeStart: string; // 'YYYY-MM-DD'
   rangeEnd: string;
+  selectedDates: string[];
   includeWeekends: boolean;
-  onChange: (rangeStart: string, rangeEnd: string) => void;
+  onChange: (rangeStart: string, rangeEnd: string, selectedDates: string[]) => void;
 }
 
 // 시작일~종료일 드래그 범위 선택 캘린더 — TimeGrid와 동일한 즉시 드래그 모델
 // (pointer capture + elementFromPoint, useLongPressDrag 재사용). 탭 한 번 = 하루짜리 범위.
-export function RangeCalendar({ rangeStart, rangeEnd, includeWeekends, onChange }: RangeCalendarProps) {
+export function RangeCalendar({
+  rangeStart,
+  rangeEnd,
+  selectedDates,
+  includeWeekends,
+  onChange,
+}: RangeCalendarProps) {
   const drag = useLongPressDrag();
   const anchorRef = useRef<string | null>(null);
+  const baseSelectionRef = useRef<string[]>([]);
+  const suppressClickRef = useRef(false);
   const start = parseISODate(rangeStart);
   const [viewMonth, setViewMonth] = useState(
     () => new Date(start.getFullYear(), start.getMonth(), 1),
@@ -51,10 +61,20 @@ export function RangeCalendar({ rangeStart, rangeEnd, includeWeekends, onChange 
   }
 
   const isDisabled = (day: Date) => day < todayStart || (!includeWeekends && isWeekend(day));
+  const selectedSet = new Set(selectedDates);
 
-  // ISO 문자열은 사전순 비교 = 날짜순 비교
-  const applyRange = (a: string, b: string) => {
-    onChange(a <= b ? a : b, a <= b ? b : a);
+  const emitDates = (dates: string[]) => {
+    const nextDates = Array.from(new Set(dates))
+      .filter((iso) => includeWeekends || !isWeekend(parseISODate(iso)))
+      .sort();
+    if (nextDates.length === 0) return;
+    onChange(nextDates[0], nextDates[nextDates.length - 1], nextDates);
+  };
+
+  const datesBetween = (a: string, b: string) => {
+    const startISO = a <= b ? a : b;
+    const endISO = a <= b ? b : a;
+    return selectedDatesForRange(startISO, endISO, includeWeekends);
   };
 
   const handlePointerDown = (event: React.PointerEvent<HTMLButtonElement>, day: Date) => {
@@ -64,7 +84,8 @@ export function RangeCalendar({ rangeStart, rangeEnd, includeWeekends, onChange 
       event,
       () => {
         anchorRef.current = iso;
-        onChange(iso, iso);
+        baseSelectionRef.current = selectedDates;
+        suppressClickRef.current = false;
       },
       (moveEvent) => {
         const el = document.elementFromPoint(moveEvent.clientX, moveEvent.clientY) as HTMLElement | null;
@@ -72,16 +93,31 @@ export function RangeCalendar({ rangeStart, rangeEnd, includeWeekends, onChange 
         const targetISO = cell?.dataset.date;
         if (!targetISO || !anchorRef.current) return;
         if (isDisabled(parseISODate(targetISO))) return;
-        applyRange(anchorRef.current, targetISO);
+        suppressClickRef.current = true;
+        emitDates([...baseSelectionRef.current, ...datesBetween(anchorRef.current, targetISO)]);
       },
     );
+  };
+
+  const handleClick = (day: Date) => {
+    if (suppressClickRef.current) {
+      suppressClickRef.current = false;
+      return;
+    }
+    if (isDisabled(day)) return;
+    const iso = toISODate(day);
+    if (selectedSet.has(iso)) {
+      emitDates(selectedDates.filter((date) => date !== iso));
+      return;
+    }
+    emitDates([...selectedDates, iso]);
   };
 
   const moveMonth = (delta: number) => {
     setViewMonth(new Date(viewMonth.getFullYear(), viewMonth.getMonth() + delta, 1));
   };
 
-  const rangeDayCount = listRangeDays(rangeStart, rangeEnd, includeWeekends).length;
+  const rangeDayCount = listRangeDays(rangeStart, rangeEnd, includeWeekends, selectedDates).length;
 
   return (
     <div className={`range-calendar${includeWeekends ? '' : ' range-calendar--weekdays'}`}>
@@ -109,7 +145,7 @@ export function RangeCalendar({ rangeStart, rangeEnd, includeWeekends, onChange 
         <div key={week[0].getTime()} className="range-calendar__grid">
           {(includeWeekends ? week : week.filter((day) => !isWeekend(day))).map((day) => {
             const iso = toISODate(day);
-            const selected = iso >= rangeStart && iso <= rangeEnd && !isDisabled(day);
+            const selected = selectedSet.has(iso) && !isDisabled(day);
             return (
               <button
                 key={iso}
@@ -122,6 +158,7 @@ export function RangeCalendar({ rangeStart, rangeEnd, includeWeekends, onChange 
                 }${day.getTime() === todayKey ? ' range-calendar__day--today' : ''}`}
                 onPointerDown={(event) => handlePointerDown(event, day)}
                 onPointerMove={drag.movePress}
+                onClick={() => handleClick(day)}
               >
                 {day.getDate()}
               </button>

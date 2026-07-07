@@ -14,6 +14,7 @@ export interface MeetingSettings {
   durationMinutes: number;
   rangeStart: string; // 'YYYY-MM-DD'
   rangeEnd: string;
+  selectedDates: string[];
   includeWeekends: boolean;
   dayStartMinutes: number;
   dayEndMinutes: number;
@@ -26,6 +27,7 @@ export function defaultMeetingSettings(): MeetingSettings {
     durationMinutes: 60,
     rangeStart: defaultRange.rangeStart,
     rangeEnd: defaultRange.rangeEnd,
+    selectedDates: defaultRange.selectedDates,
     includeWeekends: false,
     dayStartMinutes: 9 * 60,
     dayEndMinutes: 18 * 60,

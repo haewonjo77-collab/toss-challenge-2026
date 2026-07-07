@@ -157,12 +157,19 @@
 }
 
 .create-meeting__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xxs);
   padding: 4px 10px;
   border: 1px solid var(--color-hairline);
   border-radius: var(--radius-pill);
   background: var(--color-canvas);
   color: var(--color-ink);
   cursor: pointer;
+}
+
+.create-meeting__chip-preview {
+  color: var(--color-muted);
 }
 
 .create-meeting__suggestions {

@@ -19,7 +19,12 @@ export function RecommendationPage() {
 
   // 순위는 정렬 위치에서 파생 — 탭 라벨과 카드 내용 모두 여기서 나온다.
   // 참석자 목록은 모든 옵션이 같은 attendees 배열에서 파생되므로 표시 순서가 항상 동일하게 유지된다.
-  const rangeDays = listRangeDays(settings.rangeStart, settings.rangeEnd, settings.includeWeekends);
+  const rangeDays = listRangeDays(
+    settings.rangeStart,
+    settings.rangeEnd,
+    settings.includeWeekends,
+    settings.selectedDates,
+  );
   const ranked = recommendTimes(
     attendees,
     settings.durationMinutes,

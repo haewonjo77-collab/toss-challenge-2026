@@ -4,9 +4,9 @@ import { RoleToggle } from './RoleToggle';
 import { RangeCalendar } from './RangeCalendar';
 import { rememberAttendeeGroups, loadFavoriteGroups } from '../data/favorites';
 import type { AttendeeRole, InvitedAttendee } from '../data/mockAttendees';
-import { DURATION_OPTIONS, formatClockLabel } from '../data/time';
+import { DURATION_OPTIONS, formatClock24Label } from '../data/time';
 import type { FavoriteAttendee, FavoriteGroup } from '../data/favorites';
-import { nextWeekRange, thisWeekRange } from '../data/schedule';
+import { isWeekend, nextWeekRange, parseISODate, selectedDatesForRange, thisWeekRange } from '../data/schedule';
 import { defaultMeetingSettings } from '../context/MeetingContext';
 import type { MeetingSettings } from '../context/MeetingContext';
 import { useLongPressDrag } from '../utils/useLongPressDrag';
@@ -17,6 +17,17 @@ type RangeMode = 'this' | 'next' | 'custom';
 
 function personKey(person: { name: string; team?: string }) {
   return `${person.name}|${person.team ?? ''}`;
+}
+
+function dateListsEqual(a: string[], b: string[]) {
+  if (a.length !== b.length) return false;
+  return a.every((date, index) => date === b[index]);
+}
+
+function attendeePreview(attendees: FavoriteAttendee[]) {
+  const names = attendees.slice(0, 3).map((attendee) => attendee.name.trim().charAt(0));
+  const rest = attendees.length - names.length;
+  return rest > 0 ? `${names.join(' ')} +${rest}` : names.join(' ');
 }
 
 interface CreateMeetingProps {
@@ -71,15 +82,19 @@ export function CreateMeeting({
 
   const requiredCount = attendees.filter((attendee) => attendee.role === 'required').length;
   const optionalCount = attendees.length - requiredCount;
-  const timeRangeLabel = `${formatClockLabel(settings.dayStartMinutes)}–${formatClockLabel(
+  const timeRangeLabel = `${formatClock24Label(settings.dayStartMinutes)}–${formatClock24Label(
     settings.dayEndMinutes,
   )}`;
   const thisWeek = thisWeekRange(settings.includeWeekends);
   const nextWeek = nextWeekRange(settings.includeWeekends);
   const activeRangeMode: RangeMode =
-    settings.rangeStart === thisWeek.rangeStart && settings.rangeEnd === thisWeek.rangeEnd
+    settings.rangeStart === thisWeek.rangeStart &&
+    settings.rangeEnd === thisWeek.rangeEnd &&
+    dateListsEqual(settings.selectedDates, thisWeek.selectedDates)
       ? 'this'
-      : settings.rangeStart === nextWeek.rangeStart && settings.rangeEnd === nextWeek.rangeEnd
+      : settings.rangeStart === nextWeek.rangeStart &&
+          settings.rangeEnd === nextWeek.rangeEnd &&
+          dateListsEqual(settings.selectedDates, nextWeek.selectedDates)
         ? 'next'
         : 'custom';
   const visibleRangeMode: RangeMode = customRangeOpen ? 'custom' : activeRangeMode;
@@ -96,7 +111,22 @@ export function CreateMeeting({
 
   const changeIncludeWeekends = (includeWeekends: boolean) => {
     if (customRangeOpen || activeRangeMode === 'custom') {
-      patchSettings({ includeWeekends });
+      setSettings((prev) => {
+        const selectedDates = includeWeekends
+          ? prev.selectedDates
+          : prev.selectedDates.filter((date) => !isWeekend(parseISODate(date)));
+        const nextDates =
+          selectedDates.length > 0
+            ? selectedDates
+            : selectedDatesForRange(prev.rangeStart, prev.rangeEnd, includeWeekends);
+        return {
+          ...prev,
+          includeWeekends,
+          selectedDates: nextDates,
+          rangeStart: nextDates[0],
+          rangeEnd: nextDates[nextDates.length - 1],
+        };
+      });
       return;
     }
 
@@ -241,6 +271,17 @@ export function CreateMeeting({
           .filter((group) => group.attendees.length > 0)
           .slice(0, 3)
       : [];
+  const savedTeamByName = new Map(
+    favoriteGroups
+      .filter((group) => group.name !== '최근 회의 전체')
+      .map((group) => [
+        group.name,
+        {
+          ...group,
+          attendees: group.attendees.filter((person) => !existingNames.has(person.name)),
+        },
+      ]),
+  );
   const sameTeamSuggestions = Array.from(
     new Set(attendees.map((attendee) => attendee.team).filter((team): team is string => !!team)),
   )
@@ -326,8 +367,11 @@ export function CreateMeeting({
           <RangeCalendar
             rangeStart={settings.rangeStart}
             rangeEnd={settings.rangeEnd}
+            selectedDates={settings.selectedDates}
             includeWeekends={settings.includeWeekends}
-            onChange={(rangeStart, rangeEnd) => patchSettings({ rangeStart, rangeEnd })}
+            onChange={(rangeStart, rangeEnd, selectedDates) =>
+              patchSettings({ rangeStart, rangeEnd, selectedDates })
+            }
           />
         )}
         <button
@@ -386,6 +430,7 @@ export function CreateMeeting({
                   }}
                 >
                   {group.name} {group.attendees.length}명
+                  <span className="create-meeting__chip-preview">{attendeePreview(group.attendees)}</span>
                 </button>
               ))}
             </div>
@@ -435,11 +480,21 @@ export function CreateMeeting({
                   type="button"
                   className="create-meeting__chip text-caption"
                   onClick={() => {
+                    const savedTeam = savedTeamByName.get(team);
+                    if (savedTeam && savedTeam.attendees.length > 0) {
+                      addPeople(savedTeam.attendees, `same-team-${team}`);
+                      return;
+                    }
                     setNewTeam(team);
                     setShowTeamField(true);
                   }}
                 >
                   {team}
+                  {savedTeamByName.get(team)?.attendees.length ? (
+                    <span className="create-meeting__chip-preview">
+                      {savedTeamByName.get(team)!.attendees.length}명
+                    </span>
+                  ) : null}
                 </button>
               ))}
             </div>
@@ -536,7 +591,7 @@ export function CreateMeeting({
                     (option) => option + settings.durationMinutes <= settings.dayEndMinutes,
                   ).map((option) => (
                     <option key={option} value={option}>
-                      {formatClockLabel(option)}
+                      {formatClock24Label(option)}
                     </option>
                   ))}
                 </select>
@@ -552,7 +607,7 @@ export function CreateMeeting({
                     (option) => option >= settings.dayStartMinutes + settings.durationMinutes,
                   ).map((option) => (
                     <option key={option} value={option}>
-                      {formatClockLabel(option)}
+                      {formatClock24Label(option)}
                     </option>
                   ))}
                 </select>

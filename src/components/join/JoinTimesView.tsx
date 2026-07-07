@@ -42,7 +42,12 @@ export function JoinTimesView({ onAdvance }: JoinTimesViewProps) {
   useScreenMeasure('보조 플로우 · 안되는 시간 입력');
 
   // 화면 ①에서 정한 기간·주말 여부에서 날짜를 파생, 3일씩 단계적 노출 (SPEC 가설 B)
-  const rangeDays = listRangeDays(settings.rangeStart, settings.rangeEnd, settings.includeWeekends);
+  const rangeDays = listRangeDays(
+    settings.rangeStart,
+    settings.rangeEnd,
+    settings.includeWeekends,
+    settings.selectedDates,
+  );
   const stages = chunkDays(
     rangeDays.map((day) => ({ key: toISODate(day), label: shortDayLabel(day) })),
     3,

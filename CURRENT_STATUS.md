@@ -22,16 +22,18 @@ Last checked: 2026-07-08, Asia/Seoul
   - Meeting title input.
   - Meeting duration selection.
   - Start/end date range selection with drag on `RangeCalendar`.
+  - Selected meeting dates are stored as a date list, so a range can be adjusted by clicking individual days on/off.
   - Meeting availability range uses simple choices: `이번 주`, `다음 주`, `직접 선택`.
   - `이번 주` automatically excludes today and earlier days.
   - Weekend inclusion toggle; when off, the calendar shows Monday-Friday only.
   - Date range choices and time window are separated inside one availability section to avoid duplicate labels.
-  - Day time window defaults to `09:00-18:00`, editable through a bottom sheet.
+  - Day time window defaults to compact `09:00-18:00`, editable through a bottom sheet.
   - Attendee list with required/optional role selection.
   - New and saved attendees default to required.
-  - Saved attendee folder chips and manual attendee add form.
+  - Saved attendee folder chips show attendee previews such as initials and `+N`.
   - The attendee add input supports name or team search; saved people/teams can be added directly from suggestions.
   - Same-team chips appear before the optional team field so repeated same-team entry is faster.
+  - Same-team chips add saved people from that team directly when a matching saved team exists.
   - After tapping `초대 링크 보내기`, the organizer can save attendees for reuse.
   - Static recent-attendee dummy chips and the quick-fill dummy button are removed from the main UI.
   - Required/optional role can be applied by dragging across attendee rows.
@@ -87,6 +89,9 @@ Last checked: 2026-07-08, Asia/Seoul
   - `npm run build` passes.
   - Playwright screenshots were checked at 393x852 for create, time sheet, waiting, recommendation, confirmed, and join import states.
 
+- Latest completed work includes:
+  - click-to-toggle meeting dates, compact time labels, saved attendee previews, and direct team add chips
+
 - Recent Git commits include:
   - `fbb9c01 feat: replace custom-week dropdown with week-select calendar`
   - `b8a803e fix: limit missing-attendee notice to required, name recheck targets`
@@ -96,7 +101,7 @@ Last checked: 2026-07-08, Asia/Seoul
 
 ## Current Working Tree
 
-The current working tree contains the completed continuation work and is ready to commit/deploy after final approval.
+The current working tree contains the completed date-toggle and attendee-reuse refinements and is ready to commit/deploy.
 
 ## If Continuing Work
 

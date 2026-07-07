@@ -27,6 +27,12 @@ export function formatClockLabel(totalMinutes: number): string {
   return `${clock.period} ${clock.text}`;
 }
 
+export function formatClock24Label(totalMinutes: number): string {
+  const hour = Math.floor(totalMinutes / 60);
+  const minute = totalMinutes % 60;
+  return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+}
+
 export function formatTimeRange(day: string, startMinutes: number, durationMinutes: number): string {
   const start = formatClock(startMinutes);
   const end = formatClock(startMinutes + durationMinutes);

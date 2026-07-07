@@ -48,13 +48,32 @@ function endOfWeek(monday: Date, includeWeekends: boolean): Date {
 export interface DateRange {
   rangeStart: string;
   rangeEnd: string;
+  selectedDates: string[];
+}
+
+export function selectedDatesForRange(
+  rangeStart: string,
+  rangeEnd: string,
+  includeWeekends: boolean,
+): string[] {
+  const start = parseISODate(rangeStart);
+  const end = parseISODate(rangeEnd);
+  const dates: string[] = [];
+  for (let cursor = new Date(start); cursor <= end; cursor.setDate(cursor.getDate() + 1)) {
+    if (!includeWeekends && isWeekend(cursor)) continue;
+    dates.push(toISODate(cursor));
+  }
+  return dates;
 }
 
 export function nextWeekRange(includeWeekends: boolean, base: Date = new Date()): DateRange {
   const monday = mondayOfWeek(base, 1);
+  const rangeStart = toISODate(monday);
+  const rangeEnd = toISODate(endOfWeek(monday, includeWeekends));
   return {
-    rangeStart: toISODate(monday),
-    rangeEnd: toISODate(endOfWeek(monday, includeWeekends)),
+    rangeStart,
+    rangeEnd,
+    selectedDates: selectedDatesForRange(rangeStart, rangeEnd, includeWeekends),
   };
 }
 
@@ -71,9 +90,12 @@ export function thisWeekRange(includeWeekends: boolean, base: Date = new Date())
 
   if (start > end) return nextWeekRange(includeWeekends, base);
 
+  const rangeStart = toISODate(start);
+  const rangeEnd = toISODate(end);
   return {
-    rangeStart: toISODate(start),
-    rangeEnd: toISODate(end),
+    rangeStart,
+    rangeEnd,
+    selectedDates: selectedDatesForRange(rangeStart, rangeEnd, includeWeekends),
   };
 }
 
@@ -82,15 +104,18 @@ export function formatMonthDay(date: Date): string {
 }
 
 // 범위 내 날짜 나열 — 주말 미포함이면 토/일 제외. 전부 걸러지면 시작일 하루로 폴백
-export function listRangeDays(rangeStart: string, rangeEnd: string, includeWeekends: boolean): Date[] {
-  const start = parseISODate(rangeStart);
-  const end = parseISODate(rangeEnd);
-  const days: Date[] = [];
-  for (let cursor = new Date(start); cursor <= end; cursor.setDate(cursor.getDate() + 1)) {
-    if (!includeWeekends && isWeekend(cursor)) continue;
-    days.push(new Date(cursor));
-  }
-  return days.length > 0 ? days : [start];
+export function listRangeDays(
+  rangeStart: string,
+  rangeEnd: string,
+  includeWeekends: boolean,
+  selectedDates?: string[],
+): Date[] {
+  const dateKeys =
+    selectedDates && selectedDates.length > 0
+      ? selectedDates.filter((iso) => includeWeekends || !isWeekend(parseISODate(iso)))
+      : selectedDatesForRange(rangeStart, rangeEnd, includeWeekends);
+  const sortedKeys = Array.from(new Set(dateKeys)).sort();
+  return sortedKeys.length > 0 ? sortedKeys.map(parseISODate) : [parseISODate(rangeStart)];
 }
 
 // 참석자 플로우의 단계적 노출 — 한 번에 며칠씩만 (SPEC 가설 B)
