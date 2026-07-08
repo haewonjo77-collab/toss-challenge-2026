@@ -31,6 +31,7 @@ Last checked: 2026-07-08, Asia/Seoul
   - Attendee list with required/optional role selection.
   - New attendees default to required.
   - Attendee add area is a direct form only: attendee name, optional department/team, and add button.
+  - Same-team quick chips are shown only from departments already added in the current meeting.
   - Saved attendee reuse, recent meeting chips, team reuse chips, and contact-like suggestions are hidden from the main flow.
   - Attendee inputs disable browser autocomplete/autocorrect to avoid contact-app-like suggestions.
   - Response notification preference is set before sending the invite link.
@@ -44,8 +45,9 @@ Last checked: 2026-07-08, Asia/Seoul
   - Includes nudges for people who have not responded.
   - Invite link sharing uses the Web Share API when available, with clipboard fallback.
   - The waiting screen uses `링크로 참석자 추가` to make the re-share action about adding more attendees.
-  - Simulated response notifications appear as an in-card top banner focused on remaining count.
-  - Simulated responses wait 12 seconds between arrivals so the waiting state is testable.
+  - Non-responders show `대기중`; `미응답자에게 알림 보내기` is separated as a bottom action.
+  - Simulated response notifications appear as top, iPhone-style alerts focused on remaining count.
+  - Simulated responses wait 7 seconds between arrivals so the waiting state is testable.
 
 - Recommendation screen
   - Shows recommended meeting candidates.
@@ -53,6 +55,7 @@ Last checked: 2026-07-08, Asia/Seoul
   - Alternative candidates cover several cases even when attendees are manually entered: optional gaps, one required gap, and multiple required gaps.
   - Required attendees are prioritized.
   - Required/optional attendees are shown as avatar groups instead of numeric badges.
+  - Partial/unavailable states use explicit text labels such as `일부 가능` and `참석 불가`.
   - Missing required attendees are surfaced with a danger ring and strikethrough.
   - Recheck request targets are limited to required attendees.
 
@@ -98,9 +101,10 @@ Last checked: 2026-07-08, Asia/Seoul
 - Latest completed work includes:
   - click-to-toggle meeting dates and compact time labels
   - organizer/participant responsive split: organizer screens expand on desktop, participant join flow stays mobile-first
-  - calendar date removal by drag, invite sharing before waiting, 12-second simulated responses, and richer recommendation alternatives
+  - calendar date removal by drag, invite sharing before waiting, 7-second simulated responses, and richer recommendation alternatives
   - participant invite screen organizer context and simplified direct attendee entry
   - invite link share/copy confirmation sheet, waiting-screen add-by-link wording, and remaining-count response banner
+  - same-team quick chips, separated pending/nudge actions, top response alerts, 7-second mock responses, and clearer availability labels
 
 - Recent Git commits include:
   - `fbb9c01 feat: replace custom-week dropdown with week-select calendar`
