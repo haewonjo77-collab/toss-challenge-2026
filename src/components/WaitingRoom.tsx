@@ -4,7 +4,6 @@ import './WaitingRoom.css';
 
 interface WaitingRoomProps {
   attendees: ResponseStatus[];
-  responseNotice?: string | null;
   onViewRecommendation: () => void;
   onShareInvite: () => void;
   onNotifyPending?: () => void;
@@ -12,7 +11,6 @@ interface WaitingRoomProps {
 
 export function WaitingRoom({
   attendees,
-  responseNotice,
   onViewRecommendation,
   onShareInvite,
   onNotifyPending,
@@ -23,8 +21,6 @@ export function WaitingRoom({
 
   return (
     <div className="waiting-room">
-      {responseNotice && <p className="waiting-room__notice text-body-sm">{responseNotice}</p>}
-
       <p className="waiting-room__count text-title-lg">
         {attendees.length}명 중 {respondedCount}명 응답완료
       </p>

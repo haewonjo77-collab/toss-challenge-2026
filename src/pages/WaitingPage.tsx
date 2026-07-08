@@ -29,6 +29,12 @@ export function WaitingPage() {
     return () => window.clearInterval(timer);
   }, [hasPending, responses, settings.responseNotificationsEnabled]);
 
+  useEffect(() => {
+    if (!responseNotice) return;
+    const timer = window.setTimeout(() => setResponseNotice(null), 3600);
+    return () => window.clearTimeout(timer);
+  }, [responseNotice]);
+
   if (!title) return <Navigate to="/" replace />;
 
   const shareInvite = async () => {
@@ -56,15 +62,22 @@ export function WaitingPage() {
   };
 
   return (
-    <WaitingRoom
-      attendees={responses}
-      responseNotice={responseNotice}
-      onViewRecommendation={() => navigate('/recommendation')}
-      onShareInvite={shareInvite}
-      onNotifyPending={() => {
-        const pendingCount = responses.filter((response) => !response.responded).length;
-        show(`미응답자 ${pendingCount}명에게 알림을 보냈어요`);
-      }}
-    />
+    <>
+      {responseNotice && (
+        <div className="waiting-page__alert text-body-sm" role="status">
+          <span className="waiting-page__alert-label text-caption">응답 알림</span>
+          <span className="waiting-page__alert-message">{responseNotice}</span>
+        </div>
+      )}
+      <WaitingRoom
+        attendees={responses}
+        onViewRecommendation={() => navigate('/recommendation')}
+        onShareInvite={shareInvite}
+        onNotifyPending={() => {
+          const pendingCount = responses.filter((response) => !response.responded).length;
+          show(`미응답자 ${pendingCount}명에게 알림을 보냈어요`);
+        }}
+      />
+    </>
   );
 }
