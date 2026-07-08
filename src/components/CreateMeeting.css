@@ -148,6 +148,31 @@
   width: 100%;
 }
 
+.create-meeting__team-shortcuts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xxs);
+}
+
+.create-meeting__team-shortcuts-label {
+  color: var(--color-muted);
+}
+
+.create-meeting__team-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+
+.create-meeting__team-chip {
+  padding: 4px 10px;
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-pill);
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  cursor: pointer;
+}
+
 .create-meeting__add-button {
   width: 100%;
 }

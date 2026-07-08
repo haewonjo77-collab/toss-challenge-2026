@@ -198,10 +198,10 @@ export function CreateMeeting({
     setAttendees(attendees.filter((attendee) => attendee.id !== id));
   };
 
-  const addAttendee = () => {
+  const addAttendeeWithTeam = (teamOverride?: string) => {
     const name = newName.trim();
     if (!name) return;
-    const team = newTeam.trim();
+    const team = (teamOverride ?? newTeam).trim();
     // 기본값 필수 — 대부분의 초대가 필수 인원이므로, '선택'으로 낮추는 액션만 요구되게 한다
     setAttendees((prev) => [
       ...prev,
@@ -214,11 +214,21 @@ export function CreateMeeting({
     nameInputRef.current?.focus();
   };
 
+  const addAttendee = () => {
+    addAttendeeWithTeam();
+  };
+
   const handleAddKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     // 한글 IME 조합 중 Enter는 조합 확정 키이므로 무시 (조합 미종료 상태에서 추가되면 이름이 분리됨)
     if (event.nativeEvent.isComposing) return;
     if (event.key === 'Enter') addAttendee();
   };
+
+  const sameTeamSuggestions = Array.from(
+    new Set(attendees.map((attendee) => attendee.team).filter((team): team is string => !!team)),
+  )
+    .filter((team) => team !== newTeam.trim())
+    .slice(0, 4);
 
   return (
     <div className="create-meeting">
@@ -371,6 +381,30 @@ export function CreateMeeting({
             autoCorrect="off"
             spellCheck={false}
           />
+          {sameTeamSuggestions.length > 0 && (
+            <div className="create-meeting__team-shortcuts">
+              <span className="create-meeting__team-shortcuts-label text-caption">같은 부서</span>
+              <div className="create-meeting__team-chips">
+                {sameTeamSuggestions.map((team) => (
+                  <button
+                    key={team}
+                    type="button"
+                    className="create-meeting__team-chip text-caption"
+                    onClick={() => {
+                      if (newName.trim()) {
+                        addAttendeeWithTeam(team);
+                        return;
+                      }
+                      setNewTeam(team);
+                      nameInputRef.current?.focus();
+                    }}
+                  >
+                    {team}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
           <button
             type="button"
             className="button button--secondary create-meeting__add-button"
