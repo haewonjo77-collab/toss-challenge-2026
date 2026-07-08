@@ -5,6 +5,8 @@ import { useToast } from '../components/Toast';
 import { useMeeting } from '../context/MeetingContext';
 import { useScreenMeasure } from '../utils/measure';
 
+const RESPONSE_SIMULATION_DELAY_MS = 7000;
+
 export function WaitingPage() {
   const { title, settings, responses, markNextResponded } = useMeeting();
   const { show } = useToast();
@@ -25,7 +27,7 @@ export function WaitingPage() {
             : `${name}님 응답 완료 · 모두 응답했어요`,
         );
       }
-    }, 12000);
+    }, RESPONSE_SIMULATION_DELAY_MS);
     return () => window.clearInterval(timer);
   }, [hasPending, responses, settings.responseNotificationsEnabled]);
 
