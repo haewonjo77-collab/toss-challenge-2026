@@ -12,8 +12,14 @@ interface RecommendationCardProps {
   onRequestRecheck?: () => void;
 }
 
-function countAvailable(attendees: Attendee[]): number {
-  return attendees.filter((attendee) => attendee.status === 'full').length;
+function availabilitySummary(attendees: Attendee[]): string {
+  const full = attendees.filter((attendee) => attendee.status === 'full').length;
+  const partial = attendees.filter((attendee) => attendee.status === 'partial').length;
+  const none = attendees.filter((attendee) => attendee.status === 'none').length;
+  const details = [`${full} 가능`];
+  if (partial > 0) details.push(`${partial} 일부`);
+  if (none > 0) details.push(`${none} 불가`);
+  return details.join(' · ');
 }
 
 function roleText(role: 'required' | 'optional'): string {
@@ -37,16 +43,25 @@ function AvatarGroup({
     <div className={`recommendation-card__avatars recommendation-card__avatars--${role}`}>
       {attendees.map((attendee) => {
         const unavailableRequired = role === 'required' && attendee.status === 'none';
+        const statusClass =
+          attendee.status !== 'full' ? ` recommendation-card__avatar-item--${attendee.status}` : '';
         return (
           <div
             key={attendee.id}
             className={`recommendation-card__avatar-item${
               unavailableRequired ? ' recommendation-card__avatar-item--danger' : ''
-            }${attendee.status === 'partial' ? ' recommendation-card__avatar-item--partial' : ''}`}
+            }${statusClass}`}
             aria-label={`${attendee.name} ${roleText(role)} ${statusText(attendee.status)}`}
           >
             <Avatar name={attendee.name} />
             <span className="recommendation-card__avatar-name text-caption">{attendee.name}</span>
+            {attendee.status !== 'full' && (
+              <span
+                className={`recommendation-card__avatar-status recommendation-card__avatar-status--${attendee.status} text-caption`}
+              >
+                {statusText(attendee.status)}
+              </span>
+            )}
           </div>
         );
       })}
@@ -62,8 +77,6 @@ export function RecommendationCard({
   onConfirm,
   onRequestRecheck,
 }: RecommendationCardProps) {
-  const requiredAvailable = countAvailable(requiredAttendees);
-  const optionalAvailable = countAvailable(optionalAttendees);
   // 선택 참석자의 불참은 회의 시간 결정에 영향이 없으므로, 상단 안내는 필수 불참만 다룬다
   const missingRequired = requiredAttendees.filter((attendee) => attendee.status === 'none');
 
@@ -86,7 +99,7 @@ export function RecommendationCard({
         <div className="recommendation-card__section-head">
           <Badge variant="required" />
           <span className="recommendation-card__section-count text-caption">
-            {requiredAvailable}/{requiredAttendees.length} 가능
+            {availabilitySummary(requiredAttendees)}
           </span>
         </div>
         <AvatarGroup attendees={requiredAttendees} role="required" />
@@ -98,7 +111,7 @@ export function RecommendationCard({
         <div className="recommendation-card__section-head">
           <Badge variant="optional" />
           <span className="recommendation-card__section-count text-caption">
-            {optionalAvailable}/{optionalAttendees.length} 가능
+            {availabilitySummary(optionalAttendees)}
           </span>
         </div>
         <AvatarGroup attendees={optionalAttendees} role="optional" />

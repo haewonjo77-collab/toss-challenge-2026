@@ -58,7 +58,11 @@
 }
 
 .recommendation-card__avatar-item--partial .avatar {
-  border-color: var(--color-hairline);
+  border-color: var(--color-accent);
+}
+
+.recommendation-card__avatar-item--none .avatar {
+  border-color: var(--color-muted);
 }
 
 .recommendation-card__avatar-item--danger .avatar {
@@ -77,6 +81,30 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.recommendation-card__avatar-status {
+  max-width: 100%;
+  padding: 2px 6px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-hairline);
+  background: var(--color-surface-soft);
+  color: var(--color-body);
+  white-space: nowrap;
+}
+
+.recommendation-card__avatar-status--partial {
+  border-color: var(--color-accent-disabled);
+  color: var(--color-accent-active);
+}
+
+.recommendation-card__avatar-status--none {
+  color: var(--color-muted);
+}
+
+.recommendation-card__avatar-item--danger .recommendation-card__avatar-status--none {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
 }
 
 .recommendation-card__divider {
