@@ -7,7 +7,7 @@ interface WaitingRoomProps {
   responseNotice?: string | null;
   onViewRecommendation: () => void;
   onShareInvite: () => void;
-  onNudge?: (name: string) => void;
+  onNotifyPending?: () => void;
 }
 
 export function WaitingRoom({
@@ -15,7 +15,7 @@ export function WaitingRoom({
   responseNotice,
   onViewRecommendation,
   onShareInvite,
-  onNudge,
+  onNotifyPending,
 }: WaitingRoomProps) {
   const respondedCount = attendees.filter((attendee) => attendee.responded).length;
   const remainingCount = attendees.length - respondedCount;
@@ -40,7 +40,17 @@ export function WaitingRoom({
         </button>
       </div>
 
-      <ResponseList responses={attendees} onNudge={onNudge} />
+      <ResponseList responses={attendees} />
+
+      {!allResponded && onNotifyPending && (
+        <button
+          type="button"
+          className="button button--secondary waiting-room__nudge"
+          onClick={onNotifyPending}
+        >
+          미응답자에게 알림 보내기
+        </button>
+      )}
 
       <button
         type="button"

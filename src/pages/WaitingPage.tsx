@@ -61,7 +61,10 @@ export function WaitingPage() {
       responseNotice={responseNotice}
       onViewRecommendation={() => navigate('/recommendation')}
       onShareInvite={shareInvite}
-      onNudge={(name) => show(`${name}님에게 응답 요청 알림을 보냈어요`)}
+      onNotifyPending={() => {
+        const pendingCount = responses.filter((response) => !response.responded).length;
+        show(`미응답자 ${pendingCount}명에게 알림을 보냈어요`);
+      }}
     />
   );
 }
