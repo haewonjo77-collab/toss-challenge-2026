@@ -19,9 +19,9 @@ interface JoinTimesViewProps {
 }
 
 const CALENDAR_PROVIDERS = [
-  { id: 'google', label: 'Google', mark: 'G' },
-  { id: 'notion', label: 'Notion', mark: 'N' },
-  { id: 'apple', label: 'Apple', mark: 'A' },
+  { id: 'google', label: '구글 캘린더', mark: 'G' },
+  { id: 'kakao', label: '카카오 캘린더', mark: 'K' },
+  { id: 'apple', label: '애플 캘린더', mark: 'A' },
 ];
 
 function slotKey(dayKey: string, slotStart: number): string {
@@ -38,6 +38,7 @@ export function JoinTimesView({ onAdvance }: JoinTimesViewProps) {
   const { participantName, unavailable, setUnavailable, clearUnavailable, submitResponse } = useJoin();
   const [stageIndex, setStageIndex] = useState(0);
   const [calendarState, setCalendarState] = useState<'prompt' | 'imported' | 'skipped'>('prompt');
+  const [calendarSheetOpen, setCalendarSheetOpen] = useState(false);
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
   useScreenMeasure('보조 플로우 · 안되는 시간 입력');
 
@@ -80,6 +81,7 @@ export function JoinTimesView({ onAdvance }: JoinTimesViewProps) {
       mockSlots.forEach((key) => setUnavailable(key, true));
       setLoadingProvider(null);
       setCalendarState('imported');
+      setCalendarSheetOpen(false);
     }, 650);
   };
 
@@ -115,34 +117,22 @@ export function JoinTimesView({ onAdvance }: JoinTimesViewProps) {
       <p className="join__hint text-body-sm">{participantName}님, 안 되는 시간만 눌러주세요</p>
 
       {calendarState === 'prompt' && (
-        <div className="join__calendar-import">
-          <p className="join__calendar-title text-body-sm">캘린더에서 안되는 일정을 자동으로 불러올까요?</p>
-          <div className="join__calendar-actions">
-            {CALENDAR_PROVIDERS.map((provider) => (
-              <button
-                key={provider.id}
-                type="button"
-                className="join__calendar-button"
-                aria-label={`${provider.label} 캘린더 불러오기`}
-                onClick={() => importCalendar(provider.id)}
-                disabled={loadingProvider !== null}
-              >
-                <span className="join__calendar-mark text-caption">
-                  {loadingProvider === provider.id ? '' : provider.mark}
-                </span>
-                {loadingProvider === provider.id && <span className="join__spinner" aria-hidden="true" />}
-              </button>
-            ))}
-            <button
-              type="button"
-              className="join__calendar-skip text-caption"
-              onClick={() => setCalendarState('skipped')}
-              disabled={loadingProvider !== null}
-            >
-              건너뛰기
-            </button>
-          </div>
-        </div>
+        <button
+          type="button"
+          className="join__calendar-import"
+          onClick={() => setCalendarSheetOpen(true)}
+        >
+          <span className="join__calendar-icon" aria-hidden="true">
+            □
+          </span>
+          <span className="join__calendar-copy">
+            <span className="join__calendar-title text-body-sm">캘린더에서 자동 불러오기</span>
+            <span className="join__calendar-subtitle text-caption">바쁜 시간만 가져와서 표시해드려요</span>
+          </span>
+          <span className="join__calendar-chevron" aria-hidden="true">
+            ›
+          </span>
+        </button>
       )}
 
       {calendarState === 'imported' && (
@@ -181,6 +171,52 @@ export function JoinTimesView({ onAdvance }: JoinTimesViewProps) {
           {isLast ? '제출하기' : `다음 (${abbreviate(nextDays!)})`}
         </button>
       </div>
+
+      {calendarSheetOpen && (
+        <div className="modal-overlay" onClick={() => setCalendarSheetOpen(false)}>
+          <div className="modal-sheet join__calendar-sheet" onClick={(event) => event.stopPropagation()}>
+            <div className="join__sheet-handle" aria-hidden="true" />
+            <p className="join__sheet-title text-title-md">캘린더를 선택해주세요</p>
+            <p className="join__sheet-hint text-body-sm">연결된 일정에서 바쁜 시간만 가져와요</p>
+            <div className="join__provider-list">
+              {CALENDAR_PROVIDERS.map((provider) => (
+                <button
+                  key={provider.id}
+                  type="button"
+                  className="join__provider-button"
+                  onClick={() => importCalendar(provider.id)}
+                  disabled={loadingProvider !== null}
+                >
+                  <span className={`join__provider-mark join__provider-mark--${provider.id} text-title-sm`}>
+                    {loadingProvider === provider.id ? '' : provider.mark}
+                  </span>
+                  {loadingProvider === provider.id && <span className="join__spinner" aria-hidden="true" />}
+                  <span className="join__provider-copy">
+                    <span className="join__provider-name text-body-md">{provider.label}</span>
+                    <span className="join__provider-hint text-caption">
+                      연결된 일정에서 바쁜 시간만 가져와요
+                    </span>
+                  </span>
+                  <span className="join__provider-chevron" aria-hidden="true">
+                    ›
+                  </span>
+                </button>
+              ))}
+            </div>
+            <button
+              type="button"
+              className="button button--secondary join__calendar-sheet-skip"
+              onClick={() => {
+                setCalendarState('skipped');
+                setCalendarSheetOpen(false);
+              }}
+              disabled={loadingProvider !== null}
+            >
+              건너뛰기
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
