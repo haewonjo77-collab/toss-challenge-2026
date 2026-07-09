@@ -32,7 +32,10 @@ export function WaitingRoom({
 
       <div className="waiting-room__tools">
         <button type="button" className="button button--secondary" onClick={onShareInvite}>
-          링크로 참석자 추가
+          <span aria-hidden="true" className="waiting-room__plus">
+            +
+          </span>
+          참석자 추가
         </button>
       </div>
 

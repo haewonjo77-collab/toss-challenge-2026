@@ -29,6 +29,17 @@
   flex: 1;
 }
 
+.waiting-room__plus {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  margin-right: var(--space-xxs);
+  font-size: 16px;
+  line-height: 1;
+}
+
 .waiting-room__nudge {
   width: 100%;
   margin-top: var(--space-md);
