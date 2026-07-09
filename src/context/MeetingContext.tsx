@@ -43,7 +43,7 @@ interface MeetingContextValue {
   responses: ResponseStatus[];
   confirmed: ConfirmedResult | null;
   createMeeting: (title: string, attendees: InvitedAttendee[], settings: MeetingSettings) => void;
-  markNextResponded: () => string | null;
+  markNextResponded: () => { name: string; remainingCount: number } | null;
   confirmMeeting: (result: ConfirmedResult) => void;
   resetMeeting: () => void;
 }
@@ -90,7 +90,10 @@ export function MeetingProvider({ children }: { children: ReactNode }) {
     );
     responsesRef.current = nextResponses;
     setResponses(nextResponses);
-    return respondedName;
+    return {
+      name: respondedName,
+      remainingCount: nextResponses.filter((response) => !response.responded).length,
+    };
   };
 
   const confirmMeeting = (result: ConfirmedResult) => {

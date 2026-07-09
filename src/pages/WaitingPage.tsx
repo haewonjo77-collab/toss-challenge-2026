@@ -5,31 +5,42 @@ import { useToast } from '../components/Toast';
 import { useMeeting } from '../context/MeetingContext';
 import { useScreenMeasure } from '../utils/measure';
 
-const RESPONSE_SIMULATION_DELAY_MS = 7000;
+const RESPONSE_SIMULATION_DELAYS_MS = [4200, 6800, 9200, 11200];
 
 export function WaitingPage() {
   const { title, settings, responses, markNextResponded } = useMeeting();
   const { show } = useToast();
   const navigate = useNavigate();
   const [responseNotice, setResponseNotice] = useState<string | null>(null);
+  const [simulatedResponseCount, setSimulatedResponseCount] = useState(0);
   const hasPending = responses.some((response) => !response.responded);
   useScreenMeasure('화면② 대기');
 
   useEffect(() => {
-    if (!hasPending) return;
-    const timer = window.setInterval(() => {
-      const name = markNextResponded();
-      if (name && settings.responseNotificationsEnabled) {
-        const remaining = responses.filter((response) => !response.responded).length - 1;
+    if (!hasPending) {
+      setSimulatedResponseCount(0);
+      return;
+    }
+
+    const delay =
+      RESPONSE_SIMULATION_DELAYS_MS[
+        Math.min(simulatedResponseCount, RESPONSE_SIMULATION_DELAYS_MS.length - 1)
+      ];
+    const timer = window.setTimeout(() => {
+      const result = markNextResponded();
+      if (result) {
+        setSimulatedResponseCount((count) => count + 1);
+      }
+      if (result && settings.responseNotificationsEnabled) {
         setResponseNotice(
-          remaining > 0
-            ? `${name}님 응답 완료 · ${remaining}명 남았어요`
-            : `${name}님 응답 완료 · 모두 응답했어요`,
+          result.remainingCount > 0
+            ? `${result.name}님 응답 완료 · ${result.remainingCount}명 남았어요`
+            : `${result.name}님 응답 완료 · 모두 응답했어요`,
         );
       }
-    }, RESPONSE_SIMULATION_DELAY_MS);
-    return () => window.clearInterval(timer);
-  }, [hasPending, responses, settings.responseNotificationsEnabled]);
+    }, delay);
+    return () => window.clearTimeout(timer);
+  }, [hasPending, markNextResponded, settings.responseNotificationsEnabled, simulatedResponseCount]);
 
   useEffect(() => {
     if (!responseNotice) return;
