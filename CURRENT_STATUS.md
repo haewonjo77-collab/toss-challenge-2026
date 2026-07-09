@@ -30,8 +30,9 @@ Last checked: 2026-07-08, Asia/Seoul
   - Day time window defaults to compact `09:00-18:00`, editable through a bottom sheet.
   - Attendee list with required/optional role selection.
   - New attendees default to required.
-  - Attendee add area is a direct form only: attendee name, optional department/team, and add button.
-  - Same-team quick chips are shown only from departments already added in the current meeting.
+  - Attendee add area is a direct form only: same-team quick chips, attendee name, optional department/team, and add button.
+  - Attendee name and department/team fields are side by side.
+  - Same-team quick chips are shown above the inputs and only from departments already added in the current meeting.
   - Saved attendee reuse, recent meeting chips, team reuse chips, and contact-like suggestions are hidden from the main flow.
   - Attendee inputs disable browser autocomplete/autocorrect to avoid contact-app-like suggestions.
   - Response notification preference is set before sending the invite link.
@@ -44,7 +45,7 @@ Last checked: 2026-07-08, Asia/Seoul
   - Shows attendee response state.
   - Includes nudges for people who have not responded.
   - Invite link sharing uses the Web Share API when available, with clipboard fallback.
-  - The waiting screen uses `링크로 참석자 추가` to make the re-share action about adding more attendees.
+  - The waiting screen uses `+ 참석자 추가` to make the re-share action about adding more attendees.
   - Non-responders show `대기중`; `미응답자에게 알림 보내기` is separated as a bottom action.
   - Simulated response notifications appear as top, iPhone-style alerts focused on remaining count.
   - Simulated responses wait 7 seconds between arrivals so the waiting state is testable.
@@ -54,8 +55,9 @@ Last checked: 2026-07-08, Asia/Seoul
   - On desktop organizer views, recommended candidates are shown together for comparison.
   - Alternative candidates cover several cases even when attendees are manually entered: optional gaps, one required gap, and multiple required gaps.
   - Required attendees are prioritized.
-  - Required/optional attendees are shown as avatar groups instead of numeric badges.
+  - Required/optional attendees are shown as list rows with avatar, name, and status pill.
   - Partial/unavailable states use explicit text labels such as `일부 가능` and `참석 불가`.
+  - Required attendees use stronger accent color; optional attendees use lower-emphasis gray tones.
   - Missing required attendees are surfaced with a danger ring and strikethrough.
   - Recheck request targets are limited to required attendees.
 
@@ -70,6 +72,7 @@ Last checked: 2026-07-08, Asia/Seoul
   - Unavailable time marking grid.
   - Unavailable cells show an X glyph.
   - Cells can be marked by dragging across the grid.
+  - Unavailable markings can be cleared with `선택 초기화`.
   - If no unavailable slots are selected, the flow treats it as all times possible; if every slot is selected, it treats it as all times unavailable.
   - Done/summary screen with a low-remaining-response nudge banner.
 
@@ -105,6 +108,7 @@ Last checked: 2026-07-08, Asia/Seoul
   - participant invite screen organizer context and simplified direct attendee entry
   - invite link share/copy confirmation sheet, waiting-screen add-by-link wording, and remaining-count response banner
   - same-team quick chips, separated pending/nudge actions, top response alerts, 7-second mock responses, and clearer availability labels
+  - unavailable-time reset, side-by-side attendee inputs, `+ 참석자 추가`, and list-style recommendation status rows
 
 - Recent Git commits include:
   - `fbb9c01 feat: replace custom-week dropdown with week-select calendar`
@@ -115,7 +119,7 @@ Last checked: 2026-07-08, Asia/Seoul
 
 ## Current Working Tree
 
-The current working tree contains the invite-link clarity and response-banner refinements and is ready to commit/deploy.
+The current working tree contains the latest attendee-entry, unavailable-time, waiting, and recommendation refinements and is ready to commit/deploy.
 
 ## If Continuing Work
 
