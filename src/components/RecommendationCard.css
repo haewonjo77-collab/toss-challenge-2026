@@ -25,35 +25,39 @@
   color: var(--color-muted);
 }
 
-.recommendation-card__avatars {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--space-sm);
+.recommendation-card__list {
+  display: flex;
+  flex-direction: column;
 }
 
 .recommendation-card__avatar-item {
   min-width: 0;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: var(--space-xxs);
+  gap: var(--space-sm);
+  min-height: 56px;
+  padding: var(--space-xs) 0;
+  border-top: 1px solid var(--color-hairline);
   color: var(--color-ink);
 }
 
 .recommendation-card__avatar-item .avatar {
   border: 2px solid transparent;
+  flex-shrink: 0;
 }
 
-.recommendation-card__avatars--required .recommendation-card__avatar-item .avatar {
-  background: var(--color-surface-strong);
+.recommendation-card__list--required .recommendation-card__avatar-item .avatar {
+  background: var(--color-accent-disabled);
+  color: var(--color-accent-active);
   font-weight: 700;
 }
 
-.recommendation-card__avatars--optional .recommendation-card__avatar-item {
+.recommendation-card__list--optional .recommendation-card__avatar-item {
   color: var(--color-muted);
 }
 
-.recommendation-card__avatars--optional .recommendation-card__avatar-item .avatar {
+.recommendation-card__list--optional .recommendation-card__avatar-item .avatar {
+  background: var(--color-surface-soft);
   color: var(--color-muted);
 }
 
@@ -75,35 +79,44 @@
 }
 
 .recommendation-card__avatar-name {
-  max-width: 100%;
+  flex: 1;
+  min-width: 0;
   color: inherit;
-  text-align: center;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .recommendation-card__avatar-status {
-  max-width: 100%;
-  padding: 2px 6px;
+  flex-shrink: 0;
+  padding: 3px 10px;
   border-radius: var(--radius-pill);
-  border: 1px solid var(--color-hairline);
-  background: var(--color-surface-soft);
-  color: var(--color-body);
+  border: none;
+  background: var(--color-surface-strong);
+  color: var(--color-ink);
   white-space: nowrap;
+  font-weight: 700;
+}
+
+.recommendation-card__avatar-status--full {
+  background: var(--color-success-soft);
+  color: var(--color-success);
 }
 
 .recommendation-card__avatar-status--partial {
-  border-color: var(--color-accent-disabled);
+  border: 1px solid var(--color-accent-disabled);
+  background: var(--color-canvas);
   color: var(--color-accent-active);
 }
 
 .recommendation-card__avatar-status--none {
+  background: var(--color-surface-soft);
   color: var(--color-muted);
 }
 
 .recommendation-card__avatar-item--danger .recommendation-card__avatar-status--none {
-  border-color: var(--color-danger);
+  background: var(--color-canvas);
+  border: 1px solid var(--color-danger);
   color: var(--color-danger);
 }
 

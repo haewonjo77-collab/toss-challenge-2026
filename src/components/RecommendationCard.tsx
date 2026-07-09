@@ -27,12 +27,12 @@ function roleText(role: 'required' | 'optional'): string {
 }
 
 function statusText(status: Attendee['status']): string {
-  if (status === 'full') return '참석 가능';
+  if (status === 'full') return '가능';
   if (status === 'partial') return '일부 가능';
-  return '참석 불가';
+  return '불가';
 }
 
-function AvatarGroup({
+function AttendeeList({
   attendees,
   role,
 }: {
@@ -40,7 +40,7 @@ function AvatarGroup({
   role: 'required' | 'optional';
 }) {
   return (
-    <div className={`recommendation-card__avatars recommendation-card__avatars--${role}`}>
+    <div className={`recommendation-card__list recommendation-card__list--${role}`}>
       {attendees.map((attendee) => {
         const unavailableRequired = role === 'required' && attendee.status === 'none';
         const statusClass =
@@ -54,14 +54,12 @@ function AvatarGroup({
             aria-label={`${attendee.name} ${roleText(role)} ${statusText(attendee.status)}`}
           >
             <Avatar name={attendee.name} />
-            <span className="recommendation-card__avatar-name text-caption">{attendee.name}</span>
-            {attendee.status !== 'full' && (
-              <span
-                className={`recommendation-card__avatar-status recommendation-card__avatar-status--${attendee.status} text-caption`}
-              >
-                {statusText(attendee.status)}
-              </span>
-            )}
+            <span className="recommendation-card__avatar-name text-body-md">{attendee.name}</span>
+            <span
+              className={`recommendation-card__avatar-status recommendation-card__avatar-status--${attendee.status} text-caption`}
+            >
+              {statusText(attendee.status)}
+            </span>
           </div>
         );
       })}
@@ -102,7 +100,7 @@ export function RecommendationCard({
             {availabilitySummary(requiredAttendees)}
           </span>
         </div>
-        <AvatarGroup attendees={requiredAttendees} role="required" />
+        <AttendeeList attendees={requiredAttendees} role="required" />
       </div>
 
       <hr className="recommendation-card__divider" />
@@ -114,7 +112,7 @@ export function RecommendationCard({
             {availabilitySummary(optionalAttendees)}
           </span>
         </div>
-        <AvatarGroup attendees={optionalAttendees} role="optional" />
+        <AttendeeList attendees={optionalAttendees} role="optional" />
       </div>
 
       <div className="recommendation-card__actions">
