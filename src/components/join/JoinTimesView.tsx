@@ -35,7 +35,7 @@ function abbreviate(days: TimeGridDay[]): string {
 
 export function JoinTimesView({ onAdvance }: JoinTimesViewProps) {
   const { settings } = useMeeting();
-  const { participantName, unavailable, setUnavailable, submitResponse } = useJoin();
+  const { participantName, unavailable, setUnavailable, clearUnavailable, submitResponse } = useJoin();
   const [stageIndex, setStageIndex] = useState(0);
   const [calendarState, setCalendarState] = useState<'prompt' | 'imported' | 'skipped'>('prompt');
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
@@ -158,7 +158,14 @@ export function JoinTimesView({ onAdvance }: JoinTimesViewProps) {
         onSetUnavailable={(dayKey, slotStart, value) => setUnavailable(slotKey(dayKey, slotStart), value)}
       />
 
-      <p className="join__count text-caption">{availabilityCountText}</p>
+      <div className="join__selection-summary">
+        <p className="join__count text-caption">{availabilityCountText}</p>
+        {unavailable.length > 0 && (
+          <button type="button" className="join__reset text-caption" onClick={clearUnavailable}>
+            선택 초기화
+          </button>
+        )}
+      </div>
 
       <div className="join__actions">
         {safeStageIndex > 0 && (

@@ -131,7 +131,25 @@
 
 .join__count {
   color: var(--color-muted);
-  margin: var(--space-sm) 0 0;
+  margin: 0;
+}
+
+.join__selection-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  margin-top: var(--space-sm);
+}
+
+.join__reset {
+  border: none;
+  background: none;
+  padding: var(--space-xxs) 0;
+  color: var(--color-muted);
+  text-decoration: underline;
+  cursor: pointer;
+  flex-shrink: 0;
 }
 
 .join__actions {

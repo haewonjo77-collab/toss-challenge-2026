@@ -7,6 +7,7 @@ interface JoinContextValue {
   submitted: boolean;
   startJoin: (name: string) => void;
   setUnavailable: (key: string, value: boolean) => void;
+  clearUnavailable: () => void;
   submitResponse: () => void;
 }
 
@@ -32,6 +33,10 @@ export function JoinProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  const clearUnavailable = () => {
+    setUnavailableSlots([]);
+  };
+
   const submitResponse = () => {
     setSubmitted(true);
   };
@@ -44,6 +49,7 @@ export function JoinProvider({ children }: { children: ReactNode }) {
         submitted,
         startJoin,
         setUnavailable,
+        clearUnavailable,
         submitResponse,
       }}
     >
