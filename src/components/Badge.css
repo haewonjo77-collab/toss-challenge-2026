@@ -9,13 +9,13 @@
 }
 
 .badge--required {
-  background: var(--color-surface-strong);
-  color: var(--color-ink);
+  background: var(--color-accent-disabled);
+  color: var(--color-accent-active);
   font-weight: 700;
 }
 
 .badge--optional {
-  background: var(--color-surface-soft);
-  color: var(--color-muted);
+  background: var(--color-surface-strong);
+  color: var(--color-body);
   font-weight: 500;
 }

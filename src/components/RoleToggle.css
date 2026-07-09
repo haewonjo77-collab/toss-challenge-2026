@@ -26,7 +26,13 @@
   color: var(--color-ink);
 }
 
-/* 필수가 선택된 경우 배지와 동일하게 굵기로 강조 (badge-required의 700) */
 .role-toggle__option--selected:first-child {
+  border-color: var(--color-accent-disabled);
+  color: var(--color-accent-active);
   font-weight: 700;
+}
+
+.role-toggle__option--selected:last-child {
+  background: var(--color-surface-strong);
+  color: var(--color-body);
 }
