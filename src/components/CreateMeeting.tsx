@@ -356,31 +356,6 @@ export function CreateMeeting({
         ))}
 
         <div className="create-meeting__add">
-          <input
-            type="text"
-            ref={nameInputRef}
-            className="text-input create-meeting__add-input"
-            value={newName}
-            onChange={(event) => setNewName(event.target.value)}
-            onKeyDown={handleAddKeyDown}
-            placeholder="참석자 이름"
-            autoComplete="off"
-            autoCapitalize="off"
-            autoCorrect="off"
-            spellCheck={false}
-          />
-          <input
-            type="text"
-            className="text-input create-meeting__add-input"
-            value={newTeam}
-            onChange={(event) => setNewTeam(event.target.value)}
-            onKeyDown={handleAddKeyDown}
-            placeholder="부서/팀 (선택)"
-            autoComplete="off"
-            autoCapitalize="off"
-            autoCorrect="off"
-            spellCheck={false}
-          />
           {sameTeamSuggestions.length > 0 && (
             <div className="create-meeting__team-shortcuts">
               <span className="create-meeting__team-shortcuts-label text-caption">같은 부서</span>
@@ -405,6 +380,33 @@ export function CreateMeeting({
               </div>
             </div>
           )}
+          <div className="create-meeting__add-fields">
+            <input
+              type="text"
+              ref={nameInputRef}
+              className="text-input create-meeting__add-input"
+              value={newName}
+              onChange={(event) => setNewName(event.target.value)}
+              onKeyDown={handleAddKeyDown}
+              placeholder="참석자 이름"
+              autoComplete="off"
+              autoCapitalize="off"
+              autoCorrect="off"
+              spellCheck={false}
+            />
+            <input
+              type="text"
+              className="text-input create-meeting__add-input"
+              value={newTeam}
+              onChange={(event) => setNewTeam(event.target.value)}
+              onKeyDown={handleAddKeyDown}
+              placeholder="부서/팀 (선택)"
+              autoComplete="off"
+              autoCapitalize="off"
+              autoCorrect="off"
+              spellCheck={false}
+            />
+          </div>
           <button
             type="button"
             className="button button--secondary create-meeting__add-button"

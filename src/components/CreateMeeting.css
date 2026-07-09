@@ -144,8 +144,15 @@
   gap: var(--space-xs);
 }
 
+.create-meeting__add-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--space-xs);
+}
+
 .create-meeting__add-input {
   width: 100%;
+  min-width: 0;
 }
 
 .create-meeting__team-shortcuts {
