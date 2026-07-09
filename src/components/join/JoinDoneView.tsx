@@ -22,9 +22,13 @@ export function JoinDoneView() {
 
   const name = participantName.trim();
   const inRoster = baseRoster.some((member) => member.name === name);
-  const roster = inRoster
+  const submittedRoster = inRoster
     ? baseRoster.map((member) => (member.name === name ? { ...member, responded: true } : member))
     : [...baseRoster, { id: 'participant', name, responded: true }];
+  const roster = [
+    ...submittedRoster.filter((member) => member.name === name),
+    ...submittedRoster.filter((member) => member.name !== name),
+  ];
   const respondedCount = roster.filter((member) => member.responded).length;
   const remainingCount = roster.length - respondedCount;
 
