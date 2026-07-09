@@ -11,9 +11,10 @@ Last updated: 2026-07-09, Asia/Seoul
 - Copy and share are separate actions. Copy shows `초대 링크가 복사됐어요`; share shows `초대 링크가 공유됐어요`.
 - Waiting rows show `대기중` for non-responders. The separate bottom action is `미응답자에게 알림 보내기`.
 - Simulated response updates appear as top notification banners with remaining-count context, e.g. `김도윤님 응답 완료 · 1명 남았어요`.
-- Simulated responses arrive every 7 seconds for testability.
+- Simulated responses arrive sequentially with slightly varied delays to feel more product-like during testing.
 - Recommendation cards must distinguish full/partial/unavailable states with text labels, not color alone.
 - Required attendees use stronger accent treatment; optional attendees stay lower-emphasis in gray tones.
+- Optional attendee partial availability should also stay lower-emphasis in gray tones.
 
 ## Latest Implemented Changes
 
@@ -26,6 +27,8 @@ Last updated: 2026-07-09, Asia/Seoul
 - Moved same-team chips above attendee inputs and placed attendee name/team fields side by side.
 - Changed waiting-screen add action to `+ 참석자 추가`.
 - Converted recommendation attendee status display from avatar grid to list rows.
+- Changed calendar auto-import in the participant flow from inline provider buttons to a bottom sheet.
+- Reordered the participant submitted-response list so the current participant appears first.
 
 ## Verification Notes
 
