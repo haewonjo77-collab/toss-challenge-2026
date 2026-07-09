@@ -46,7 +46,7 @@ export function WaitingPage() {
     try {
       if (navigator.share) {
         await navigator.share({ title, text, url: joinUrl });
-        show('초대 링크를 공유했어요');
+        show('초대 링크가 공유됐어요');
       } else if (navigator.clipboard) {
         await navigator.clipboard.writeText(joinUrl);
         show('초대 링크가 복사됐어요');

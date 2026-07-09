@@ -22,7 +22,7 @@ export function CreateMeetingPage() {
     try {
       if (navigator.share) {
         await navigator.share({ title: meetingTitle, text, url: joinUrl });
-        show('초대 링크를 공유했어요');
+        show('초대 링크가 공유됐어요');
         return true;
       }
       if (navigator.clipboard) {
