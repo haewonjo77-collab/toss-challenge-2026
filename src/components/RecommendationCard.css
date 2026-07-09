@@ -109,6 +109,16 @@
   color: var(--color-accent-active);
 }
 
+.recommendation-card__list--optional .recommendation-card__avatar-item--partial .avatar {
+  border-color: var(--color-hairline);
+}
+
+.recommendation-card__list--optional .recommendation-card__avatar-status--partial {
+  border-color: var(--color-hairline);
+  background: var(--color-surface-soft);
+  color: var(--color-muted);
+}
+
 .recommendation-card__avatar-status--none {
   background: var(--color-surface-soft);
   color: var(--color-muted);
