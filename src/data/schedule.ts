@@ -18,9 +18,9 @@ export function isWeekend(date: Date): boolean {
   return date.getDay() === 0 || date.getDay() === 6;
 }
 
-// 참석자 그리드 헤더용 짧은 표기: "화 14"
+// 참석자 날짜 선택용 짧은 표기: "14 화"
 export function shortDayLabel(date: Date): string {
-  return `${WEEKDAY_SHORT[date.getDay()]} ${date.getDate()}`;
+  return `${date.getDate()} ${WEEKDAY_SHORT[date.getDay()]}`;
 }
 
 export function fullWeekdayName(date: Date): string {

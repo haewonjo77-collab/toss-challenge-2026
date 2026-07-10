@@ -3,6 +3,7 @@ import { CreateMeeting } from '../components/CreateMeeting';
 import type { InviteDelivery } from '../components/CreateMeeting';
 import { useToast } from '../components/Toast';
 import { useMeeting } from '../context/MeetingContext';
+import { rememberAttendeeGroups } from '../data/favorites';
 import { useScreenMeasure } from '../utils/measure';
 
 export function CreateMeetingPage() {
@@ -58,9 +59,16 @@ export function CreateMeetingPage() {
       initialTitle={title}
       initialAttendees={attendees.length > 0 ? attendees : undefined}
       initialSettings={settings}
-      onSubmit={async (newTitle, newAttendees, newSettings, delivery: InviteDelivery) => {
+      onSubmit={async (
+        newTitle,
+        newAttendees,
+        newSettings,
+        delivery: InviteDelivery,
+        rememberAttendees,
+      ) => {
         const sent = delivery === 'share' ? await shareInvite(newTitle) : await copyInvite(newTitle);
         if (!sent) return false;
+        if (rememberAttendees) rememberAttendeeGroups(newAttendees);
         createMeeting(newTitle, newAttendees, newSettings);
         navigate('/waiting');
         return true;

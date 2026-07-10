@@ -28,6 +28,7 @@ interface CreateMeetingProps {
     attendees: InvitedAttendee[],
     settings: MeetingSettings,
     delivery: InviteDelivery,
+    rememberAttendees: boolean,
   ) => boolean | Promise<boolean>;
 }
 
@@ -47,7 +48,9 @@ export function CreateMeeting({
   const [titleError, setTitleError] = useState(false);
   const [timeSheetOpen, setTimeSheetOpen] = useState(false);
   const [customRangeOpen, setCustomRangeOpen] = useState(false);
+  const [selectedRangeMode, setSelectedRangeMode] = useState<RangeMode | null>(null);
   const [inviteSheetOpen, setInviteSheetOpen] = useState(false);
+  const [rememberAttendees, setRememberAttendees] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const titleInputRef = useRef<HTMLInputElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -68,7 +71,7 @@ export function CreateMeeting({
     if (submitting) return;
     setSubmitting(true);
     try {
-      const completed = await onSubmit(title.trim(), attendees, settings, delivery);
+      const completed = await onSubmit(title.trim(), attendees, settings, delivery, rememberAttendees);
       if (completed) setInviteSheetOpen(false);
     } finally {
       setSubmitting(false);
@@ -92,8 +95,9 @@ export function CreateMeeting({
           dateListsEqual(settings.selectedDates, nextWeek.selectedDates)
         ? 'next'
         : 'custom';
-  const visibleRangeMode: RangeMode = customRangeOpen ? 'custom' : activeRangeMode;
+  const visibleRangeMode: RangeMode = customRangeOpen ? 'custom' : (selectedRangeMode ?? activeRangeMode);
   const applyRangeMode = (mode: RangeMode) => {
+    setSelectedRangeMode(mode);
     if (mode === 'custom') {
       setCustomRangeOpen(true);
       return;
@@ -105,7 +109,8 @@ export function CreateMeeting({
   };
 
   const changeIncludeWeekends = (includeWeekends: boolean) => {
-    if (customRangeOpen || activeRangeMode === 'custom') {
+    const effectiveRangeMode = selectedRangeMode ?? activeRangeMode;
+    if (customRangeOpen || effectiveRangeMode === 'custom') {
       setSettings((prev) => {
         const selectedDates = includeWeekends
           ? prev.selectedDates
@@ -126,7 +131,7 @@ export function CreateMeeting({
     }
 
     const range =
-      activeRangeMode === 'this' ? thisWeekRange(includeWeekends) : nextWeekRange(includeWeekends);
+      effectiveRangeMode === 'this' ? thisWeekRange(includeWeekends) : nextWeekRange(includeWeekends);
     setSettings((prev) => ({ ...prev, includeWeekends, ...range }));
   };
 
@@ -247,7 +252,7 @@ export function CreateMeeting({
             setTitle(event.target.value);
             if (titleError) setTitleError(false);
           }}
-          placeholder="예: 주간 제품 리뷰"
+          placeholder="예: 디자인팀"
         />
         {titleError && <p className="create-meeting__error text-body-sm">회의 제목을 입력해주세요</p>}
       </div>
@@ -308,9 +313,10 @@ export function CreateMeeting({
             rangeEnd={settings.rangeEnd}
             selectedDates={settings.selectedDates}
             includeWeekends={settings.includeWeekends}
-            onChange={(rangeStart, rangeEnd, selectedDates) =>
-              patchSettings({ rangeStart, rangeEnd, selectedDates })
-            }
+            onChange={(rangeStart, rangeEnd, selectedDates) => {
+              setSelectedRangeMode('custom');
+              patchSettings({ rangeStart, rangeEnd, selectedDates });
+            }}
           />
         )}
         <button
@@ -451,6 +457,19 @@ export function CreateMeeting({
             <p className="create-meeting__sheet-hint text-body-sm">
               참석자는 링크에서 안 되는 시간을 표시해요
             </p>
+            <label className="create-meeting__remember text-body-sm">
+              <input
+                type="checkbox"
+                checked={rememberAttendees}
+                onChange={(event) => setRememberAttendees(event.target.checked)}
+              />
+              <span>
+                <span className="create-meeting__remember-title">이 회의 참석자 저장</span>
+                <span className="create-meeting__remember-hint text-caption">
+                  다음 회의에서 같은 참석자를 다시 불러올 수 있어요
+                </span>
+              </span>
+            </label>
             <div className="create-meeting__invite-actions">
               <button
                 type="button"

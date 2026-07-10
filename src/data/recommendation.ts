@@ -33,6 +33,12 @@ const CANDIDATE_PATTERNS: CandidatePattern[] = [
     optionalNoneIndexes: [2],
   },
   {
+    startMinutes: 15 * 60,
+    availability: { 'req-2': 'none', 'opt-2': 'partial' },
+    requiredNoneIndexes: [1],
+    optionalPartialIndexes: [1],
+  },
+  {
     startMinutes: 10 * 60,
     availability: { 'req-4': 'none', 'opt-2': 'none', 'opt-3': 'none' },
     requiredNoneIndexes: [0, 3],
@@ -62,7 +68,19 @@ function statusAt(pattern: CandidatePattern, attendee: InvitedAttendee, roleInde
   return raw;
 }
 
-// 정렬 1위가 메인 추천, 나머지는 대안 후보. 화면 ①에서 정한 가능 기간의 실제 날짜에 매핑한다.
+function optionalScore(attendees: Attendee[]): number {
+  return attendees.reduce((score, attendee) => {
+    if (attendee.status === 'full') return score + 2;
+    if (attendee.status === 'partial') return score + 1;
+    return score;
+  }, 0);
+}
+
+function requiredMissingCount(attendees: Attendee[]): number {
+  return attendees.filter((attendee) => attendee.status !== 'full').length;
+}
+
+// 정렬 1위가 메인 추천, 나머지는 대안 후보. 필수 참석자 전원 가능 후보만 추천 자격을 가진다.
 export function recommendTimes(
   attendees: InvitedAttendee[],
   durationMinutes: number,
@@ -87,26 +105,37 @@ export function recommendTimes(
     const optionalAttendees = optionalSource.map(toAttendee);
     const requiredFull = requiredAttendees.filter((a) => a.status === 'full').length;
     const optionalFull = optionalAttendees.filter((a) => a.status === 'full').length;
+    const optionalPartial = optionalAttendees.filter((a) => a.status === 'partial').length;
+    const missingRequired = requiredMissingCount(requiredAttendees);
     return {
       // 예: "7/14 화요일 오후 2:00 - 3:00" — 요일만으로는 어느 주인지 모호해 실제 날짜를 병기
       timeLabel: `${formatMonthDay(day)} ${formatTimeRange(fullWeekdayName(day), startMinutes, durationMinutes)}`,
       requiredAttendees,
       optionalAttendees,
       allRequired: requiredFull === requiredAttendees.length,
-      requiredFull,
+      missingRequired,
       optionalFull,
+      optionalPartial,
+      optionalScore: optionalScore(optionalAttendees),
     };
   });
 
-  scored.sort((a, b) => {
-    if (a.allRequired !== b.allRequired) return a.allRequired ? -1 : 1;
-    if (a.requiredFull !== b.requiredFull) return b.requiredFull - a.requiredFull;
-    return b.optionalFull - a.optionalFull;
+  const strictCandidates = scored.filter((slot) => slot.allRequired);
+  const fallbackCandidates =
+    strictCandidates.length > 0
+      ? []
+      : scored.filter((slot) => slot.missingRequired === 1);
+  const rankedCandidates = strictCandidates.length > 0 ? strictCandidates : fallbackCandidates;
+
+  rankedCandidates.sort((a, b) => {
+    if (a.optionalScore !== b.optionalScore) return b.optionalScore - a.optionalScore;
+    if (a.optionalFull !== b.optionalFull) return b.optionalFull - a.optionalFull;
+    return b.optionalPartial - a.optionalPartial;
   });
 
   // 좁은 기간·시간대에서 후보가 같은 시각으로 수렴하면 중복 라벨 제거 (탭 키 충돌 방지)
   const seen = new Set<string>();
-  return scored
+  return rankedCandidates
     .filter((slot) => !seen.has(slot.timeLabel) && Boolean(seen.add(slot.timeLabel)))
     .map((slot) => ({
       timeLabel: slot.timeLabel,

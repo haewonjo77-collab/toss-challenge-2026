@@ -35,6 +35,7 @@ export function RangeCalendar({
   const dragModeRef = useRef<'add' | 'remove'>('add');
   const changedByDragRef = useRef(false);
   const lastTargetRef = useRef<string | null>(null);
+  const clickAnchorRef = useRef<{ iso: string; mode: 'add' | 'remove' } | null>(null);
   const start = parseISODate(rangeStart);
   const [viewMonth, setViewMonth] = useState(
     () => new Date(start.getFullYear(), start.getMonth(), 1),
@@ -123,9 +124,25 @@ export function RangeCalendar({
     if (changedByDragRef.current) {
       applyDragTo(targetISO);
     } else if (dragModeRef.current === 'remove') {
-      emitDates(selectedDates.filter((date) => date !== anchorRef.current));
+      if (
+        clickAnchorRef.current?.mode === 'remove' &&
+        clickAnchorRef.current.iso !== anchorRef.current
+      ) {
+        const spanSet = new Set(datesBetween(clickAnchorRef.current.iso, anchorRef.current));
+        emitDates(selectedDates.filter((date) => !spanSet.has(date)));
+        clickAnchorRef.current = null;
+      } else {
+        emitDates(selectedDates.filter((date) => date !== anchorRef.current));
+        clickAnchorRef.current = { iso: anchorRef.current, mode: 'remove' };
+      }
     } else {
-      emitDates([...selectedDates, anchorRef.current]);
+      if (clickAnchorRef.current?.mode === 'add' && clickAnchorRef.current.iso !== anchorRef.current) {
+        emitDates([...selectedDates, ...datesBetween(clickAnchorRef.current.iso, anchorRef.current)]);
+        clickAnchorRef.current = null;
+      } else {
+        emitDates([...selectedDates, anchorRef.current]);
+        clickAnchorRef.current = { iso: anchorRef.current, mode: 'add' };
+      }
     }
     pointerIdRef.current = null;
     anchorRef.current = null;

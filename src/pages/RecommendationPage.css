@@ -6,6 +6,22 @@
   display: none;
 }
 
+.recommendation-page__fallback,
+.recommendation-page__empty {
+  margin-bottom: var(--space-md);
+}
+
+.recommendation-page__fallback p,
+.recommendation-page__empty p {
+  margin: 0;
+}
+
+.recommendation-page__fallback p + p,
+.recommendation-page__empty p + p {
+  margin-top: var(--space-xs);
+  color: var(--color-muted);
+}
+
 @media (min-width: 768px) {
   .phone-frame--organizer .recommendation-page__mobile {
     display: none;
@@ -16,6 +32,12 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--space-md);
     align-items: start;
+  }
+
+  .phone-frame--organizer .recommendation-page__fallback--desktop {
+    grid-column: 1 / -1;
+    max-width: none;
+    margin-bottom: 0;
   }
 }
 

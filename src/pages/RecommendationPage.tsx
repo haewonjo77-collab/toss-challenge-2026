@@ -35,7 +35,29 @@ export function RecommendationPage() {
   )
     .slice(0, 4)
     .map((option, index) => ({ ...option, rankLabel: index === 0 ? '추천' : `대안 ${index}` }));
+  const fallbackName = ranked[0]?.requiredAttendees.find((attendee) => attendee.status !== 'full')?.name;
+  const fallbackCount = fallbackName
+    ? ranked.filter(
+        (option) =>
+          option.isFallback &&
+          option.requiredAttendees.filter((attendee) => attendee.status !== 'full').length === 1 &&
+          option.requiredAttendees.some(
+            (attendee) => attendee.name === fallbackName && attendee.status !== 'full',
+          ),
+      ).length
+    : 0;
   const active = ranked.find((option) => option.timeLabel === activeLabel) ?? ranked[0];
+
+  if (!active) {
+    return (
+      <div className="recommendation-page">
+        <div className="recommendation-page__empty card">
+          <p className="text-title-md">추천할 수 있는 시간이 없어요</p>
+          <p className="text-body-sm">회의 가능 기간이나 시간대를 넓혀 다시 확인해주세요</p>
+        </div>
+      </div>
+    );
+  }
 
   const confirm = (option = active) => {
     confirmMeeting({
@@ -61,6 +83,14 @@ export function RecommendationPage() {
   return (
     <div className="recommendation-page">
       <div className="recommendation-page__mobile">
+        {active.isFallback && fallbackName && (
+          <div className="recommendation-page__fallback card">
+            <p className="text-title-sm">필수 참석자 전원이 가능한 시간은 없어요</p>
+            <p className="text-body-sm">
+              {fallbackName}님만 다시 확인하면 확정할 수 있는 시간이 {fallbackCount}개 있어요
+            </p>
+          </div>
+        )}
         {ranked.length > 1 && (
           <RecommendationTabBar
             options={ranked.map((option) => ({ key: option.timeLabel, label: option.rankLabel }))}
@@ -79,6 +109,14 @@ export function RecommendationPage() {
       </div>
 
       <div className="recommendation-page__desktop">
+        {ranked[0]?.isFallback && fallbackName && (
+          <div className="recommendation-page__fallback recommendation-page__fallback--desktop card">
+            <p className="text-title-sm">필수 참석자 전원이 가능한 시간은 없어요</p>
+            <p className="text-body-sm">
+              {fallbackName}님만 다시 확인하면 확정할 수 있는 시간이 {fallbackCount}개 있어요
+            </p>
+          </div>
+        )}
         {ranked.map((option) => (
           <RecommendationCard
             key={option.timeLabel}
