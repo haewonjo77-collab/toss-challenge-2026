@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useMeeting } from '../../context/MeetingContext';
 import { useJoin } from '../../context/JoinContext';
+import type { AttendeeRole } from '../../data/mockAttendees';
 import { formatClock24Label } from '../../data/time';
 import {
   formatMonthDay,
@@ -14,6 +15,8 @@ import './join.css';
 
 interface JoinTimesViewProps {
   onAdvance: () => void;
+  advanceOnConfirm?: boolean;
+  participantRole?: AttendeeRole;
 }
 
 const CALENDAR_PROVIDERS = [
@@ -22,7 +25,14 @@ const CALENDAR_PROVIDERS = [
   { id: 'apple', label: '애플 캘린더' },
 ];
 
-const MOCK_BUSY_EVENTS = [
+type BusyEvent = {
+  date: string;
+  startMinutes: number;
+  endMinutes: number;
+  title: string;
+};
+
+const PERSONAL_BUSY_EVENTS = [
   { date: '2026-07-13', startMinutes: 10 * 60, endMinutes: 14 * 60, title: '외근' },
   { date: '2026-07-14', startMinutes: 12 * 60, endMinutes: 14 * 60, title: '점심시간 이후라 비선호' },
   { date: '2026-07-17', startMinutes: 14 * 60, endMinutes: 16 * 60, title: 'A팀 미팅' },
@@ -41,6 +51,47 @@ function parseSlotKey(key: string) {
   return { dayKey, slotStart: Number(slotStart) };
 }
 
+function slotsFromEvents(
+  events: BusyEvent[],
+  rangeDays: Date[],
+  slots: number[],
+  durationMinutes: number,
+) {
+  const rangeDayKeys = new Set(rangeDays.map(toISODate));
+  return events.flatMap((event) => {
+    if (!rangeDayKeys.has(event.date)) return [];
+    return slots
+      .filter((slot) => overlaps(slot, durationMinutes, event.startMinutes, event.endMinutes))
+      .map((slot) => slotKey(event.date, slot));
+    });
+}
+
+function internalBusyEventsForRange(rangeDays: Date[]): BusyEvent[] {
+  const firstDay = rangeDays[0];
+  const middleDay = rangeDays[Math.min(2, rangeDays.length - 1)];
+  const lastDay = rangeDays[Math.min(4, rangeDays.length - 1)];
+  return [
+    firstDay && {
+      date: toISODate(firstDay),
+      startMinutes: 9 * 60,
+      endMinutes: 11 * 60,
+      title: '집중근무시간',
+    },
+    middleDay && {
+      date: toISODate(middleDay),
+      startMinutes: 13 * 60,
+      endMinutes: 15 * 60,
+      title: '다른 미팅',
+    },
+    lastDay && {
+      date: toISODate(lastDay),
+      startMinutes: 16 * 60,
+      endMinutes: 18 * 60,
+      title: '휴가',
+    },
+  ].filter(Boolean) as BusyEvent[];
+}
+
 function formatIntervalSummary(intervals: UnavailableInterval[]) {
   if (intervals.length === 0) return '모든 시간 가능';
 
@@ -50,6 +101,22 @@ function formatIntervalSummary(intervals: UnavailableInterval[]) {
         `${formatClock24Label(interval.startMinutes)} - ${formatClock24Label(interval.endMinutes)}`,
     )
     .join(', ');
+}
+
+function formatPendingProgress(
+  attendees: Array<{ id: string; name: string; role?: AttendeeRole }>,
+  responses: Array<{ id: string; responded: boolean }>,
+) {
+  const responseById = new Map(responses.map((response) => [response.id, response.responded]));
+  const pending = attendees.filter((attendee) => responseById.get(attendee.id) !== true);
+  if (pending.length === 0) return '모든 참석자가 응답했어요';
+
+  const requiredPending = pending.filter((attendee) => attendee.role === 'required');
+  const target = requiredPending[0] ?? pending[0];
+  const remainingCount = (requiredPending.length > 0 ? requiredPending.length : pending.length) - 1;
+  const suffix = remainingCount > 0 ? ` 외 ${remainingCount}명` : '';
+  const prefix = requiredPending.length > 0 ? '필수 참석자 ' : '';
+  return `${prefix}${target.name}님${suffix} 응답 대기 중`;
 }
 
 function CalendarProviderLogo({ providerId }: { providerId: string }) {
@@ -149,7 +216,7 @@ function groupIntervals(keys: string[], durationMinutes: number): UnavailableInt
 
       return intervals.map((interval) => ({
         ...interval,
-        title: MOCK_BUSY_EVENTS.find(
+        title: PERSONAL_BUSY_EVENTS.find(
           (event) =>
             event.date === interval.dayKey &&
             event.startMinutes === interval.startMinutes &&
@@ -160,7 +227,11 @@ function groupIntervals(keys: string[], durationMinutes: number): UnavailableInt
     .sort((a, b) => a.dayKey.localeCompare(b.dayKey) || a.startMinutes - b.startMinutes);
 }
 
-export function JoinTimesView({ onAdvance: _onAdvance }: JoinTimesViewProps) {
+export function JoinTimesView({
+  onAdvance,
+  advanceOnConfirm = false,
+  participantRole,
+}: JoinTimesViewProps) {
   const { title, attendees, responses, settings } = useMeeting();
   const { participantName, unavailable, setUnavailable, clearUnavailable, submitResponse } = useJoin();
   const [calendarState, setCalendarState] = useState<'prompt' | 'imported' | 'skipped'>('prompt');
@@ -172,8 +243,9 @@ export function JoinTimesView({ onAdvance: _onAdvance }: JoinTimesViewProps) {
   const [sheetDragStartY, setSheetDragStartY] = useState<number | null>(null);
   const [submitSheetOpen, setSubmitSheetOpen] = useState(false);
   const [submitSheetClosing, setSubmitSheetClosing] = useState(false);
+  const [internalCalendarApplied, setInternalCalendarApplied] = useState(false);
+  const [revealedInternalDays, setRevealedInternalDays] = useState<string[]>([]);
   useScreenMeasure('보조 플로우 · 안되는 시간 입력');
-  void _onAdvance;
 
   // 회의 생성 화면에서 정한 날짜를 한 화면에 표시한다.
   const rangeDays = listRangeDays(
@@ -188,6 +260,13 @@ export function JoinTimesView({ onAdvance: _onAdvance }: JoinTimesViewProps) {
     settings.dayStartMinutes,
     settings.dayEndMinutes,
   );
+  const internalBusyEvents = internalBusyEventsForRange(rangeDays);
+  const internalSlotKeys = new Set(
+    slotsFromEvents(internalBusyEvents, rangeDays, slots, settings.durationMinutes),
+  );
+  // 사내 일정 슬롯이 그리드에서 숨겨져 있어도(revealedInternalDays 밖) 실제로는 이미
+  // unavailable 처리돼 있으므로, 요약 텍스트("모든 시간 가능" 등)는 항상 전체 unavailable
+  // 기준으로 계산해야 "사내 일정은 이미 반영했어요" 문구와 모순되지 않는다.
   const selectedIntervals = groupIntervals(unavailable, settings.durationMinutes);
   const intervalsByDay = new Map<string, UnavailableInterval[]>();
   selectedIntervals.forEach((interval) => {
@@ -199,21 +278,34 @@ export function JoinTimesView({ onAdvance: _onAdvance }: JoinTimesViewProps) {
   const hiddenAttendeeCount = Math.max(0, attendees.length - visibleAttendees.length);
   // 실시간 응답 현황 — 0명일 땐 부정적 사회적 증거를 피하려 카운트 자체를 숨긴다
   const respondedCount = responses.filter((response) => response.responded).length;
+  const pendingProgressText = formatPendingProgress(attendees, responses);
+  const resolvedRole =
+    participantRole ??
+    attendees.find((attendee) => attendee.name === participantName)?.role ??
+    'required';
+
+  useEffect(() => {
+    if (internalCalendarApplied || rangeDays.length === 0 || slots.length === 0) return;
+    slotsFromEvents(internalBusyEvents, rangeDays, slots, settings.durationMinutes).forEach((key) => {
+      setUnavailable(key, true);
+    });
+    setInternalCalendarApplied(true);
+  }, [
+    internalBusyEvents,
+    internalCalendarApplied,
+    rangeDays,
+    slots,
+    settings.durationMinutes,
+    setUnavailable,
+  ]);
 
   const importCalendar = (provider: string) => {
     const providerLabel = CALENDAR_PROVIDERS.find((item) => item.id === provider)?.label ?? '캘린더';
     setLoadingProvider(provider);
     window.setTimeout(() => {
-      const rangeDayKeys = new Set(rangeDays.map(toISODate));
-      const mockSlots = MOCK_BUSY_EVENTS.flatMap((event) => {
-        if (!rangeDayKeys.has(event.date)) return [];
-        return slots
-          .filter((slot) =>
-            overlaps(slot, settings.durationMinutes, event.startMinutes, event.endMinutes),
-          )
-          .map((slot) => slotKey(event.date, slot));
-      });
-      mockSlots.forEach((key) => setUnavailable(key, true));
+      slotsFromEvents(PERSONAL_BUSY_EVENTS, rangeDays, slots, settings.durationMinutes).forEach(
+        (key) => setUnavailable(key, true),
+      );
       setLoadingProvider(null);
       setCalendarState('imported');
       setImportedProviderLabel(providerLabel);
@@ -223,7 +315,6 @@ export function JoinTimesView({ onAdvance: _onAdvance }: JoinTimesViewProps) {
 
   const dismissCalendarSheet = () => {
     if (loadingProvider !== null) return;
-    setCalendarState('skipped');
     setCalendarSheetOpen(false);
     setSheetDragStartY(null);
   };
@@ -265,6 +356,7 @@ export function JoinTimesView({ onAdvance: _onAdvance }: JoinTimesViewProps) {
     window.setTimeout(() => {
       setSubmitSheetOpen(false);
       setSubmitSheetClosing(false);
+      if (advanceOnConfirm) onAdvance();
     }, 300);
   };
 
@@ -277,9 +369,12 @@ export function JoinTimesView({ onAdvance: _onAdvance }: JoinTimesViewProps) {
         </p>
         {respondedCount > 0 && (
           <p className="join__meeting-progress text-caption">
-            {attendees.length}명 중 {respondedCount}명 이미 응답했어요
+            {pendingProgressText}
           </p>
         )}
+        <p className="join__meeting-role text-caption">
+          {resolvedRole === 'required' ? '필수 참석자로 초대됐어요' : '선택 참석자로 초대됐어요'}
+        </p>
         <div className="join__meeting-roster" aria-label={`참석자 ${attendees.length}명`}>
           {visibleAttendees.length > 0 && (
             <div className="join__meeting-roster-list">
@@ -308,27 +403,30 @@ export function JoinTimesView({ onAdvance: _onAdvance }: JoinTimesViewProps) {
       <p className="join__hint text-body-md">{participantName}님, 안 되는 시간만 눌러주세요</p>
 
       {calendarState !== 'skipped' && (
-        <button
-          type="button"
-          className="join__calendar-import"
-          onClick={() => setCalendarSheetOpen(true)}
-        >
-          <span className="join__calendar-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" focusable="false">
-              <path d="M7 3v4M17 3v4M5 8h14M5 5h14v16H5z" />
-            </svg>
-          </span>
-          <span className="join__calendar-copy">
-            <span className="join__calendar-title text-body-sm">
-              {calendarState === 'imported' && importedProviderLabel
-                ? `${importedProviderLabel}에서 불러왔어요 · 다시 불러오기`
-                : '캘린더에서 바쁜 시간 불러오기'}
+        <div className="join__calendar-block">
+          <p className="join__calendar-note text-caption">사내 일정은 이미 반영했어요</p>
+          <button
+            type="button"
+            className="join__calendar-import"
+            onClick={() => setCalendarSheetOpen(true)}
+          >
+            <span className="join__calendar-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" focusable="false">
+                <path d="M7 3v4M17 3v4M5 8h14M5 5h14v16H5z" />
+              </svg>
             </span>
-          </span>
-          <span className="join__calendar-chevron" aria-hidden="true">
-            ›
-          </span>
-        </button>
+            <span className="join__calendar-copy">
+              <span className="join__calendar-title text-body-sm">
+                {calendarState === 'imported' && importedProviderLabel
+                  ? `${importedProviderLabel}까지 반영했어요 · 다시 불러오기`
+                  : '다른 캘린더도 불러오기'}
+              </span>
+            </span>
+            <span className="join__calendar-chevron" aria-hidden="true">
+              ›
+            </span>
+          </button>
+        </div>
       )}
 
       <div className="join__inline-picker">
@@ -336,6 +434,16 @@ export function JoinTimesView({ onAdvance: _onAdvance }: JoinTimesViewProps) {
           {days.map((day) => {
             const intervals = intervalsByDay.get(day.key) ?? [];
             const expanded = day.key === openDayKey;
+            const internalSlotsForDay = slots.filter((slot) =>
+              internalSlotKeys.has(slotKey(day.key, slot)),
+            );
+            const visibleSlots = slots.filter((slot) => !internalSlotKeys.has(slotKey(day.key, slot)));
+            const isInternalRevealed = revealedInternalDays.includes(day.key);
+            const internalIntervalCount = groupIntervals(
+              internalSlotsForDay.map((slot) => slotKey(day.key, slot)),
+              settings.durationMinutes,
+            ).length;
+            const renderedSlots = isInternalRevealed ? slots : visibleSlots;
             return (
               <div key={day.key} className="join__day-panel">
                 <button
@@ -356,25 +464,46 @@ export function JoinTimesView({ onAdvance: _onAdvance }: JoinTimesViewProps) {
                   </span>
                 </button>
                 {expanded && (
-                  <div className="join__time-grid" aria-label={`${day.label} 시간대`}>
-                    {slots.map((slot) => {
-                      const selected = unavailable.includes(slotKey(day.key, slot));
-                      return (
-                        <button
-                          key={slot}
-                          type="button"
-                          className={`join__time-cell${selected ? ' join__time-cell--selected' : ''}`}
-                          aria-label={`${formatClock24Label(slot)} ${selected ? '안 됨' : '가능'}`}
-                          aria-pressed={selected}
-                          onClick={() => toggleSlot(day.key, slot)}
-                        >
-                          <span className="join__time-cell-label text-caption">
-                            {formatClock24Label(slot)}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
+                  <>
+                    <div className="join__time-grid" aria-label={`${day.label} 시간대`}>
+                      {renderedSlots.map((slot) => {
+                        const key = slotKey(day.key, slot);
+                        const selected = unavailable.includes(key);
+                        const isInternalSlot = internalSlotKeys.has(key);
+                        return (
+                          <button
+                            key={slot}
+                            type="button"
+                            className={`join__time-cell${selected ? ' join__time-cell--selected' : ''}${
+                              isInternalSlot ? ' join__time-cell--internal' : ''
+                            }`}
+                            aria-label={`${formatClock24Label(slot)} ${selected ? '안 됨' : '가능'}`}
+                            aria-pressed={selected}
+                            onClick={() => toggleSlot(day.key, slot)}
+                          >
+                            <span className="join__time-cell-label text-caption">
+                              {formatClock24Label(slot)}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {internalIntervalCount > 0 && (
+                      <button
+                        type="button"
+                        className="join__internal-toggle text-caption"
+                        onClick={() =>
+                          setRevealedInternalDays((prev) =>
+                            prev.includes(day.key)
+                              ? prev.filter((key) => key !== day.key)
+                              : [...prev, day.key],
+                          )
+                        }
+                      >
+                        사내 일정 {internalIntervalCount}개 {isInternalRevealed ? '표시 중 · 숨기기' : '숨겨짐 · 보기'}
+                      </button>
+                    )}
+                  </>
                 )}
               </div>
             );
@@ -414,7 +543,7 @@ export function JoinTimesView({ onAdvance: _onAdvance }: JoinTimesViewProps) {
             onPointerCancel={() => setSheetDragStartY(null)}
           >
             <div className="join__sheet-handle" aria-hidden="true" />
-            <p className="join__sheet-title text-title-md">어떤 캘린더에서 불러올까요?</p>
+            <p className="join__sheet-title text-title-md">추가로 불러올 캘린더를 선택해주세요</p>
             <p className="join__sheet-hint text-body-md">바쁜 시간만 자동으로 표시해요</p>
             <div className="join__provider-list">
               {CALENDAR_PROVIDERS.map((provider) => (

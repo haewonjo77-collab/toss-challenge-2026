@@ -26,18 +26,26 @@ export function JoinStartView({ onAdvance }: JoinStartViewProps) {
   // 주최자가 등록한 참석자 목록을 초대 링크의 이름 선택지로 그대로 사용한다.
   // 응답 여부만 responses에서 덧씌우고, 단독 접속 목업에서는 기존 기본 명단을 사용한다.
   const roster: ResponseStatus[] = useMemo(() => {
-    const responseById = new Map(responses.map((response) => [response.id, response.responded]));
+    const responseById = new Map(responses.map((response) => [response.id, response]));
     return attendees.length > 0
-      ? attendees.map((attendee) => ({
-          id: attendee.id,
-          name: attendee.name,
-          responded: responseById.get(attendee.id) ?? false,
-        }))
-      : initialInvitedAttendees.map((attendee, index) => ({
-          id: attendee.id,
-          name: attendee.name,
-          responded: index < initialInvitedAttendees.length - 2,
-        }));
+      ? attendees.map((attendee) => {
+          const response = responseById.get(attendee.id);
+          return {
+            id: attendee.id,
+            name: attendee.name,
+            responded: response?.responded ?? false,
+            availabilityState: response?.availabilityState ?? 'pending',
+          };
+        })
+      : initialInvitedAttendees.map((attendee, index) => {
+          const responded = index < initialInvitedAttendees.length - 2;
+          return {
+            id: attendee.id,
+            name: attendee.name,
+            responded,
+            availabilityState: responded ? 'available' : 'pending',
+          };
+        });
   }, [attendees, responses]);
   const respondedCount = roster.filter((member) => member.responded).length;
 

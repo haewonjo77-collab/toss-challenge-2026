@@ -26,8 +26,11 @@ export const initialInvitedAttendees: InvitedAttendee[] = [
   { id: 'opt-3', name: '오예린', role: 'optional' },
 ];
 
+export type ResponseAvailabilityState = 'pending' | 'available' | 'unavailable';
+
 export interface ResponseStatus {
   id: string;
   name: string;
   responded: boolean;
+  availabilityState: ResponseAvailabilityState;
 }

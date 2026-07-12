@@ -113,6 +113,8 @@ export function recommendTimes(
     return {
       // 예: "7/14 화요일 오후 2:00 - 3:00" — 요일만으로는 어느 주인지 모호해 실제 날짜를 병기
       timeLabel: `${formatMonthDay(day)} ${formatTimeRange(fullWeekdayName(day), startMinutes, durationMinutes)}`,
+      startMinutes,
+      dayTime: day.getTime(),
       requiredAttendees,
       optionalAttendees,
       allRequired: requiredFull === requiredAttendees.length,
@@ -133,7 +135,9 @@ export function recommendTimes(
   rankedCandidates.sort((a, b) => {
     if (a.optionalScore !== b.optionalScore) return b.optionalScore - a.optionalScore;
     if (a.optionalFull !== b.optionalFull) return b.optionalFull - a.optionalFull;
-    return b.optionalPartial - a.optionalPartial;
+    if (a.optionalPartial !== b.optionalPartial) return b.optionalPartial - a.optionalPartial;
+    if (a.dayTime !== b.dayTime) return a.dayTime - b.dayTime;
+    return a.startMinutes - b.startMinutes;
   });
 
   // 좁은 기간·시간대에서 후보가 같은 시각으로 수렴하면 중복 라벨 제거 (탭 키 충돌 방지)

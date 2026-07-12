@@ -3,6 +3,8 @@ export const DURATION_OPTIONS: { value: number; label: string }[] = [
   { value: 60, label: '1시간' },
   { value: 90, label: '1시간 30분' },
   { value: 120, label: '2시간' },
+  { value: 150, label: '2시간 30분' },
+  { value: 180, label: '3시간' },
 ];
 
 export function durationLabel(minutes: number): string {

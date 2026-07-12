@@ -18,10 +18,14 @@ export function ConfirmedPage() {
     location.state !== null &&
     'confirmationNotice' in location.state &&
     location.state.confirmationNotice === true;
-  // location.state는 라우터 히스토리에 계속 남아 있어, 이 값을 그대로 렌더링에 쓰면
-  // 시간이 지나도 알림이 사라지지 않는다 — 로컬 state로 옮겨 타이머로 직접 해제한다.
-  const [showConfirmationNotice, setShowConfirmationNotice] = useState(arrivedWithNotice);
+  const [showConfirmationNotice, setShowConfirmationNotice] = useState(false);
   useScreenMeasure('화면④ 확정');
+
+  useEffect(() => {
+    if (!arrivedWithNotice) return;
+    setShowConfirmationNotice(true);
+    navigate('.', { replace: true, state: null });
+  }, [arrivedWithNotice, navigate]);
 
   useEffect(() => {
     if (!showConfirmationNotice) return;

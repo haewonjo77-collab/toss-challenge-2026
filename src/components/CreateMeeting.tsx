@@ -4,11 +4,17 @@ import type { InvitedAttendee } from '../data/mockAttendees';
 import { organizationMembers } from '../data/organizationMembers';
 import type { OrganizationMember } from '../data/organizationMembers';
 import { DURATION_OPTIONS, formatClockLabel } from '../data/time';
-import { isWeekend, nextWeekRange, parseISODate, selectedDatesForRange, thisWeekRange } from '../data/schedule';
+import {
+  formatMonthDay,
+  nextWeekRange,
+  parseISODate,
+  selectedDatesForRange,
+  thisWeekRange,
+} from '../data/schedule';
 import { defaultMeetingSettings } from '../context/MeetingContext';
 import type { MeetingSettings } from '../context/MeetingContext';
-import { loadFavoriteGroups, upsertMeetingGroup } from '../data/favorites';
-import type { FavoriteGroup } from '../data/favorites';
+import { upsertMeetingGroup } from '../data/favorites';
+import { memberMatchesQuery } from '../utils/koreanSearch';
 import './CreateMeeting.css';
 
 const DAY_TIME_OPTIONS = Array.from({ length: 31 }, (_, index) => 7 * 60 + index * 30);
@@ -48,29 +54,18 @@ export function CreateMeeting({
   const [timeSheetOpen, setTimeSheetOpen] = useState(false);
   const [customRangeOpen, setCustomRangeOpen] = useState(false);
   const [selectedRangeMode, setSelectedRangeMode] = useState<RangeMode | null>('next');
-  const [rememberAttendees, setRememberAttendees] = useState(true);
+  const [rememberAttendees, setRememberAttendees] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [favoriteGroups, setFavoriteGroups] = useState<FavoriteGroup[]>(() => loadFavoriteGroups());
   const titleInputRef = useRef<HTMLInputElement>(null);
+  const memberResultsRef = useRef<HTMLDivElement>(null);
   const shouldScrollActiveMemberRef = useRef(false);
 
-  // 저장 토글이 켜져 있는 동안 회의명+참석자 목록을 실시간으로 칩에 반영
+  // 저장 토글이 켜져 있을 때만 다음 회의에서 쓸 참석자 세트를 보관한다.
   useEffect(() => {
     if (!rememberAttendees) return;
     if (title.trim() === '' || attendees.length === 0) return;
-    setFavoriteGroups(upsertMeetingGroup(title, attendees));
+    upsertMeetingGroup(title, attendees);
   }, [rememberAttendees, title, attendees]);
-
-  const loadFavoriteGroup = (group: FavoriteGroup) => {
-    setAttendees(
-      group.attendees.map((favorite, index) => ({
-        id: `fav-${group.id}-${index}-${Date.now()}`,
-        name: favorite.name,
-        role: favorite.role,
-        team: favorite.team,
-      })),
-    );
-  };
 
   // 제목 미입력 시 disabled로 침묵하는 대신, 클릭에 반응해 이유를 보여주고 입력 위치로 데려간다
   const handleSubmit = async () => {
@@ -122,19 +117,15 @@ export function CreateMeeting({
     const effectiveRangeMode = selectedRangeMode ?? activeRangeMode;
     if (customRangeOpen || effectiveRangeMode === 'custom') {
       setSettings((prev) => {
-        const selectedDates = includeWeekends
-          ? prev.selectedDates
-          : prev.selectedDates.filter((date) => !isWeekend(parseISODate(date)));
-        const nextDates =
-          selectedDates.length > 0
-            ? selectedDates
-            : selectedDatesForRange(prev.rangeStart, prev.rangeEnd, includeWeekends);
+        // 선택 범위(rangeStart~rangeEnd) 안에서 새 주말 포함 여부에 맞춰 다시 채운다 —
+        // 단순 필터링(제거)만 하면 체크 시 이미 빠진 주말이 다시 채워지지 않는 버그가 있었다.
+        const nextDates = selectedDatesForRange(prev.rangeStart, prev.rangeEnd, includeWeekends);
         return {
           ...prev,
           includeWeekends,
           selectedDates: nextDates,
-          rangeStart: nextDates[0],
-          rangeEnd: nextDates[nextDates.length - 1],
+          rangeStart: nextDates[0] ?? prev.rangeStart,
+          rangeEnd: nextDates[nextDates.length - 1] ?? prev.rangeEnd,
         };
       });
       return;
@@ -187,12 +178,7 @@ export function CreateMeeting({
     () =>
       normalizedMemberQuery
         ? organizationMembers
-            .filter((member) => {
-              return (
-                member.name.toLowerCase().includes(normalizedMemberQuery) ||
-                member.team.toLowerCase().includes(normalizedMemberQuery)
-              );
-            })
+            .filter((member) => memberMatchesQuery(member, normalizedMemberQuery))
             .sort((a, b) => Number(b.id === 'org-jo-haewon') - Number(a.id === 'org-jo-haewon'))
             .slice(0, 8)
         : [],
@@ -201,6 +187,10 @@ export function CreateMeeting({
   const selectedIds = new Set(attendees.map((attendee) => attendee.id));
   const allSearchResultsSelected =
     searchResults.length > 0 && searchResults.every((member) => selectedIds.has(member.id));
+
+  useEffect(() => {
+    if (memberResultsRef.current) memberResultsRef.current.scrollTop = 0;
+  }, [normalizedMemberQuery, searchResults.length]);
 
   useEffect(() => {
     if (!shouldScrollActiveMemberRef.current) return;
@@ -291,7 +281,7 @@ export function CreateMeeting({
               setActiveMemberIndex(0);
             }}
             onKeyDown={handleMemberSearchKeyDown}
-            placeholder="이름, 부서, 프로젝트 검색"
+            placeholder="이름, 부서 검색"
             autoComplete="off"
             autoCapitalize="off"
             autoCorrect="off"
@@ -311,20 +301,6 @@ export function CreateMeeting({
             </button>
           )}
         </label>
-        {favoriteGroups.length > 0 && (
-          <div className="create-meeting__favorite-groups" aria-label="저장된 참석자 그룹">
-            {favoriteGroups.map((group) => (
-              <button
-                key={group.id}
-                type="button"
-                className="create-meeting__favorite-chip text-caption"
-                onClick={() => loadFavoriteGroup(group)}
-              >
-                {group.name} · {group.attendees.length}명
-              </button>
-            ))}
-          </div>
-        )}
         {normalizedMemberQuery && (
           <div className="create-meeting__member-results" aria-label="조직 멤버 검색 결과">
             {searchResults.length > 0 ? (
@@ -342,35 +318,37 @@ export function CreateMeeting({
                     전체 선택
                   </label>
                 </div>
-                {searchResults.map((member, index) => {
-                  const checked = selectedIds.has(member.id);
-                  return (
-                    <label
-                      key={member.id}
-                      data-member-result-index={index}
-                      className={`create-meeting__member-result${
-                        checked ? ' create-meeting__member-result--selected' : ''
-                      }${
-                        index === activeMemberIndex ? ' create-meeting__member-result--active' : ''
-                      }`}
-                      onMouseEnter={() => setActiveMemberIndex(index)}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={checked}
-                        onChange={() => toggleMember(member)}
-                      />
-                      <span className="create-meeting__member-copy">
-                        <span className="create-meeting__member-name text-body-sm">
-                          {member.name}
+                <div ref={memberResultsRef} className="create-meeting__member-results-list">
+                  {searchResults.map((member, index) => {
+                    const checked = selectedIds.has(member.id);
+                    return (
+                      <label
+                        key={member.id}
+                        data-member-result-index={index}
+                        className={`create-meeting__member-result${
+                          checked ? ' create-meeting__member-result--selected' : ''
+                        }${
+                          index === activeMemberIndex ? ' create-meeting__member-result--active' : ''
+                        }`}
+                        onMouseEnter={() => setActiveMemberIndex(index)}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={() => toggleMember(member)}
+                        />
+                        <span className="create-meeting__member-copy">
+                          <span className="create-meeting__member-name text-body-sm">
+                            {member.name}
+                          </span>
+                          <span className="create-meeting__member-meta text-caption">
+                            {member.team}
+                          </span>
                         </span>
-                        <span className="create-meeting__member-meta text-caption">
-                          {member.team}
-                        </span>
-                      </span>
-                    </label>
-                  );
-                })}
+                      </label>
+                    );
+                  })}
+                </div>
               </>
             ) : (
               <p className="create-meeting__member-empty text-caption">
@@ -418,7 +396,7 @@ export function CreateMeeting({
 
       <div className="create-meeting__field">
         <label className="create-meeting__label text-title-sm" htmlFor="meeting-title">
-          회의 이름
+          회의 제목
         </label>
         <input
           id="meeting-title"
@@ -429,7 +407,7 @@ export function CreateMeeting({
             setTitle(event.target.value);
             if (titleError) setTitleError(false);
           }}
-          placeholder="예: 디자인팀 회의"
+          placeholder="예: 디자인팀"
         />
         {titleError && <p className="create-meeting__error text-body-sm">회의 이름을 입력해주세요</p>}
       </div>
@@ -468,6 +446,12 @@ export function CreateMeeting({
             </button>
           ))}
         </div>
+        {!customRangeOpen && (
+          <p className="create-meeting__range-caption text-caption">
+            {formatMonthDay(parseISODate(settings.rangeStart))} ~{' '}
+            {formatMonthDay(parseISODate(settings.rangeEnd))} · {settings.selectedDates.length}일
+          </p>
+        )}
         {customRangeOpen && (
           <RangeCalendar
             rangeStart={settings.rangeStart}

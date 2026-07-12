@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { WaitingRoom } from '../components/WaitingRoom';
 import { useToast } from '../components/Toast';
+import { useJoin } from '../context/JoinContext';
 import { useMeeting } from '../context/MeetingContext';
 import { useScreenMeasure } from '../utils/measure';
 
-const RESPONSE_SIMULATION_DELAYS_MS = [2400, 4000, 5600, 7200];
+const RESPONSE_SIMULATION_DELAYS_MS = [1200, 2000, 2800, 3600];
 
 interface ResponseNotice {
   name: string;
@@ -22,6 +23,7 @@ export function WaitingPage() {
     updateAttendeeRole,
     markNextResponded,
   } = useMeeting();
+  const { startJoin } = useJoin();
   const { show } = useToast();
   const navigate = useNavigate();
   const [responseNotice, setResponseNotice] = useState<ResponseNotice | null>(null);
@@ -66,17 +68,22 @@ export function WaitingPage() {
     team: attendee.team,
     role: attendee.role,
     responded: responseById.get(attendee.id) ?? false,
+    availabilityState:
+      responses.find((response) => response.id === attendee.id)?.availabilityState ?? 'pending',
   }));
-  // 참석자는 앱 푸시로 알림을 받는 전제라 공유 시트를 열 필요가 없음 —
-  // 탭 즉시 발송 확인 상태로 전환한다 (iOS 네이티브 공유 시트 제거)
+  const addAndNotifyAttendee = (name: string, team?: string) => {
+    const attendee = addAttendee(name, team);
+    show(`${attendee.name}님에게 초대를 보냈어요`);
+  };
+
   const notifyPending = () => {
     const pendingCount = responses.filter((response) => !response.responded).length;
     show(pendingCount === 0 ? '모두 응답했어요' : `${pendingCount}명에게 응답 요청을 보냈어요`);
   };
 
-  const addAndNotifyAttendee = (name: string, team?: string) => {
-    const attendee = addAttendee(name, team);
-    show(`${attendee.name}님에게 초대를 보냈어요`);
+  const registerHostTime = () => {
+    startJoin('조해원');
+    navigate('/host/times');
   };
 
   return (
@@ -111,6 +118,7 @@ export function WaitingPage() {
         onChangeRole={updateAttendeeRole}
         onAddAttendee={addAndNotifyAttendee}
         onViewRecommendation={() => navigate('/recommendation')}
+        onRegisterHostTime={registerHostTime}
         onNotifyPending={notifyPending}
       />
     </div>

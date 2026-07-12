@@ -2,8 +2,8 @@
   width: 100%;
   max-width: 361px;
   padding: var(--space-lg);
-  background: var(--color-canvas);
-  border: 1px solid var(--color-hairline);
+  background: #f7f8fa;
+  border: none;
   border-radius: var(--radius-lg);
   box-sizing: border-box;
 }
@@ -81,6 +81,11 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: var(--space-xs);
+}
+
+.create-meeting__range-caption {
+  color: var(--color-muted);
+  margin: var(--space-xs) 0 0;
 }
 
 .create-meeting__range-option {
@@ -272,18 +277,14 @@
 }
 
 .create-meeting__member-results {
-  height: 212px;
-  overflow-y: auto;
   padding: 0;
   border: 1px solid var(--color-hairline);
   border-radius: var(--radius-md);
   background: var(--color-canvas);
+  overflow: hidden;
 }
 
 .create-meeting__member-results-head {
-  position: sticky;
-  top: 0;
-  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -292,6 +293,14 @@
   border-bottom: 1px solid var(--color-hairline);
   margin-bottom: 0;
   background: var(--color-canvas);
+}
+
+.create-meeting__member-results-list {
+  height: 212px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xxs);
 }
 
 .create-meeting__member-results-title {
@@ -531,11 +540,4 @@
 
 .create-meeting__switch input:checked + .create-meeting__switch-track::after {
   transform: translateX(18px);
-}
-
-@media (min-width: 768px) {
-  .phone-frame--organizer .create-meeting {
-    max-width: 720px;
-    margin: 0 auto;
-  }
 }

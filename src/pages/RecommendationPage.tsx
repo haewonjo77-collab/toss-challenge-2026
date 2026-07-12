@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { RecommendationCard } from '../components/RecommendationCard';
 import { RecommendationTabBar } from '../components/RecommendationTabBar';
-import { useToast } from '../components/Toast';
 import { useMeeting } from '../context/MeetingContext';
 import { recommendTimes } from '../data/recommendation';
 import { listRangeDays } from '../data/schedule';
@@ -10,9 +9,8 @@ import { useScreenMeasure } from '../utils/measure';
 import './RecommendationPage.css';
 
 export function RecommendationPage() {
-  const { title, attendees, settings, confirmMeeting } = useMeeting();
+  const { title, attendees, responses, settings, confirmMeeting } = useMeeting();
   const navigate = useNavigate();
-  const { show } = useToast();
   const [activeLabel, setActiveLabel] = useState<string | null>(null);
   useScreenMeasure('화면③ 추천 결과');
 
@@ -26,13 +24,30 @@ export function RecommendationPage() {
     settings.includeWeekends,
     settings.selectedDates,
   );
-  const recommendedOptions = recommendTimes(
-    attendees,
-    settings.durationMinutes,
-    rangeDays,
-    settings.dayStartMinutes,
-    settings.dayEndMinutes,
-  ).slice(0, 2);
+  const decidedResponseIds = new Set(
+    responses
+      .filter((response) => response.availabilityState !== 'pending')
+      .map((response) => response.id),
+  );
+  const pendingRequiredCount = attendees.filter(
+    (attendee) => attendee.role === 'required' && !decidedResponseIds.has(attendee.id),
+  ).length;
+  const recommendationAttendees =
+    pendingRequiredCount === 0
+      ? attendees.filter(
+          (attendee) => attendee.role === 'required' || decidedResponseIds.has(attendee.id),
+        )
+      : [];
+  const recommendedOptions =
+    pendingRequiredCount === 0
+      ? recommendTimes(
+          recommendationAttendees,
+          settings.durationMinutes,
+          rangeDays,
+          settings.dayStartMinutes,
+          settings.dayEndMinutes,
+        ).slice(0, 2)
+      : [];
   const hasPerfectRecommendation = recommendedOptions[0] && !recommendedOptions[0].isFallback;
   const ranked = recommendedOptions.map((option, index) => ({
     ...option,
@@ -50,8 +65,19 @@ export function RecommendationPage() {
     return (
       <div className="recommendation-page">
         <div className="recommendation-page__empty card">
-          <p className="text-title-lg">추천할 시간이 없어요</p>
-          <p className="text-body-md">후보 날짜나 시간을 더 넓혀주세요</p>
+          {pendingRequiredCount > 0 ? (
+            <>
+              <p className="text-title-lg">필수 참석자 응답을 기다리고 있어요</p>
+              <p className="text-body-md">
+                필수 참석자 {pendingRequiredCount}명이 응답하면 추천 시간을 볼 수 있어요
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="text-title-lg">추천할 시간이 없어요</p>
+              <p className="text-body-md">후보 날짜나 시간을 더 넓혀주세요</p>
+            </>
+          )}
         </div>
       </div>
     );
@@ -64,11 +90,6 @@ export function RecommendationPage() {
       optionalAttendees: option.optionalAttendees,
     });
     navigate('/confirmed', { state: { confirmationNotice: true } });
-  };
-
-  // 재확인 요청은 필수 참석자 중 불가 응답자에게만 전송된다는 것을 토스트로 명시
-  const requestRecheck = (attendeeName: string) => {
-    show(`${attendeeName}님에게 재요청을 보냈어요`);
   };
 
   return (
@@ -95,7 +116,6 @@ export function RecommendationPage() {
           optionalAttendees={active.optionalAttendees}
           variant={active.isFallback ? 'fallback' : 'primary'}
           onConfirm={() => confirm(active)}
-          onRequestRecheck={(attendee) => requestRecheck(attendee.name)}
         />
       </div>
 
@@ -116,7 +136,6 @@ export function RecommendationPage() {
             optionalAttendees={option.optionalAttendees}
             variant={option.isFallback ? 'fallback' : 'primary'}
             onConfirm={() => confirm(option)}
-            onRequestRecheck={(attendee) => requestRecheck(attendee.name)}
           />
         ))}
       </div>

@@ -51,6 +51,12 @@
   margin: 0 0 var(--space-xs);
 }
 
+.join__meeting-role {
+  color: var(--color-accent);
+  font-weight: 700;
+  margin: 0 0 var(--space-xs);
+}
+
 .join__meeting-roster {
   display: flex;
   flex-direction: column;
@@ -74,6 +80,15 @@
   font-weight: 600;
 }
 
+.join__calendar-block {
+  margin-bottom: var(--space-md);
+}
+
+.join__calendar-note {
+  color: var(--color-muted);
+  margin: 0 0 var(--space-xxs);
+}
+
 .join__calendar-import {
   width: 100%;
   min-height: 56px;
@@ -84,7 +99,6 @@
   border: 1px solid var(--color-hairline);
   border-radius: var(--radius-md);
   background: var(--color-canvas);
-  margin-bottom: var(--space-md);
   text-align: left;
   cursor: pointer;
 }
@@ -420,6 +434,20 @@
   font-weight: 600;
   text-decoration: line-through;
   text-decoration-thickness: 1px;
+}
+
+.join__internal-toggle {
+  display: block;
+  width: calc(100% - var(--space-sm) * 2);
+  margin: 0 var(--space-sm) var(--space-sm);
+  padding: var(--space-xxs) 0 0;
+  border: none;
+  border-top: 1px solid var(--color-hairline-soft);
+  background: none;
+  color: var(--color-muted);
+  font-family: var(--font-family);
+  text-align: left;
+  cursor: pointer;
 }
 
 .join__actions {

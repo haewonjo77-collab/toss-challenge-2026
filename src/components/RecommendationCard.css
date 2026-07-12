@@ -2,8 +2,8 @@
   width: 100%;
   max-width: 361px;
   padding: var(--space-lg);
-  background: var(--color-canvas);
-  border: 1px solid var(--color-hairline);
+  background: #f7f8fa;
+  border: none;
   border-radius: var(--radius-lg);
   box-sizing: border-box;
 }
@@ -19,6 +19,15 @@
   justify-content: space-between;
   gap: var(--space-xs);
   margin-bottom: var(--space-xs);
+}
+
+.recommendation-card__section-toggle {
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: var(--font-family);
 }
 
 .recommendation-card__section-count {
@@ -94,19 +103,6 @@
   color: var(--color-muted);
 }
 
-.recommendation-card__recheck {
-  flex-shrink: 0;
-  min-height: 28px;
-  padding: 0 var(--space-xs);
-  border: 1px solid var(--color-hairline);
-  border-radius: var(--radius-pill);
-  background: var(--color-canvas);
-  color: var(--color-accent);
-  cursor: pointer;
-  font-family: var(--font-family);
-  font-weight: 700;
-}
-
 .recommendation-card__divider {
   border: none;
   border-top: 1px solid var(--color-hairline);
@@ -135,10 +131,4 @@
 
 .recommendation-card__actions .button {
   width: 100%;
-}
-
-@media (min-width: 768px) {
-  .phone-frame--organizer .recommendation-card {
-    max-width: none;
-  }
 }

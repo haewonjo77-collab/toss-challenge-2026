@@ -6,6 +6,7 @@ import { CreateMeetingPage } from './pages/CreateMeetingPage';
 import { WaitingPage } from './pages/WaitingPage';
 import { RecommendationPage } from './pages/RecommendationPage';
 import { ConfirmedPage } from './pages/ConfirmedPage';
+import { HostTimesPage } from './pages/HostTimesPage';
 import { JoinStartPage } from './pages/JoinStartPage';
 import { JoinTimesPage } from './pages/JoinTimesPage';
 import { JoinDonePage } from './pages/JoinDonePage';
@@ -47,6 +48,7 @@ function AppFrame() {
               <Route path="/waiting" element={<WaitingPage />} />
               <Route path="/recommendation" element={<RecommendationPage />} />
               <Route path="/confirmed" element={<ConfirmedPage />} />
+              <Route path="/host/times" element={<HostTimesPage />} />
               <Route path="/join" element={<JoinStartPage />} />
               <Route path="/join/times" element={<JoinTimesPage />} />
               <Route path="/join/done" element={<JoinDonePage />} />

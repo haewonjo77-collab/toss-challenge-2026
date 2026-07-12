@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { AttendanceIcon } from './AttendanceIcon';
 import { Badge } from './Badge';
 import type { Attendee } from '../data/mockAttendees';
@@ -9,7 +10,6 @@ interface RecommendationCardProps {
   optionalAttendees: Attendee[];
   variant: 'primary' | 'fallback';
   onConfirm: () => void;
-  onRequestRecheck?: (attendee: Attendee) => void;
 }
 
 function availabilitySummary(attendees: Attendee[]): string {
@@ -39,11 +39,9 @@ function shouldShowStatusBadge(status: Attendee['status']): boolean {
 function AttendeeList({
   attendees,
   role,
-  onRequestRecheck,
 }: {
   attendees: Attendee[];
   role: 'required' | 'optional';
-  onRequestRecheck?: (attendee: Attendee) => void;
 }) {
   return (
     <div className={`recommendation-card__list recommendation-card__list--${role}`}>
@@ -75,15 +73,6 @@ function AttendeeList({
                 {statusText(attendee.status)}
               </span>
             )}
-            {unavailableRequired && onRequestRecheck && (
-              <button
-                type="button"
-                className="recommendation-card__recheck text-caption"
-                onClick={() => onRequestRecheck(attendee)}
-              >
-                재요청
-              </button>
-            )}
           </div>
         );
       })}
@@ -97,10 +86,13 @@ export function RecommendationCard({
   optionalAttendees,
   variant,
   onConfirm,
-  onRequestRecheck,
 }: RecommendationCardProps) {
+  const [optionalExpanded, setOptionalExpanded] = useState(false);
   // 선택 참석자의 불참은 회의 시간 결정에 영향이 없으므로, 상단 안내는 필수 불참만 다룬다
   const missingRequired = requiredAttendees.filter((attendee) => attendee.status === 'none');
+  const optionalAvailableCount = optionalAttendees.filter(
+    (attendee) => attendee.status === 'full',
+  ).length;
 
   return (
     <div className="recommendation-card">
@@ -124,23 +116,26 @@ export function RecommendationCard({
             {availabilitySummary(requiredAttendees)}
           </span>
         </div>
-        <AttendeeList
-          attendees={requiredAttendees}
-          role="required"
-          onRequestRecheck={onRequestRecheck}
-        />
+        <AttendeeList attendees={requiredAttendees} role="required" />
       </div>
 
       <hr className="recommendation-card__divider" />
 
       <div className="recommendation-card__section">
-        <div className="recommendation-card__section-head">
+        <button
+          type="button"
+          className="recommendation-card__section-head recommendation-card__section-toggle"
+          aria-expanded={optionalExpanded}
+          onClick={() => setOptionalExpanded((expanded) => !expanded)}
+        >
           <Badge variant="optional" />
           <span className="recommendation-card__section-count text-caption">
-            {availabilitySummary(optionalAttendees)}
+            {optionalExpanded
+              ? availabilitySummary(optionalAttendees)
+              : `선택 ${optionalAvailableCount}가능 · 보기`}
           </span>
-        </div>
-        <AttendeeList attendees={optionalAttendees} role="optional" />
+        </button>
+        {optionalExpanded && <AttendeeList attendees={optionalAttendees} role="optional" />}
       </div>
 
       <div className="recommendation-card__actions">

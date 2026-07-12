@@ -3,7 +3,7 @@
   min-height: 100dvh;
   display: flex;
   padding: var(--space-lg);
-  background: var(--color-surface-strong);
+  background: #f5f7fb;
   box-sizing: border-box;
 }
 
@@ -15,13 +15,17 @@
   max-width: 100%;
   max-height: 100%;
   margin: auto;
-  background: var(--color-surface-soft);
-  border: 1px solid var(--color-hairline);
-  border-radius: var(--radius-lg);
+  background: #f7f8fa;
+  border-radius: 34px;
+  box-shadow:
+    0 0 0 8px #111827,
+    0 0 0 10px rgba(255, 255, 255, 0.72),
+    0 18px 48px rgba(17, 24, 39, 0.18);
   overflow: hidden;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
 }
 
 /* 실제 모바일 뷰포트에서는 프레임 장식(테두리/여백) 없이 화면을 그대로 채운다 —
@@ -37,14 +41,16 @@
     height: 100dvh;
     border: none;
     border-radius: 0;
+    box-shadow: none;
   }
 }
 
 .back-bar {
-  height: 48px;
+  height: 38px;
   display: flex;
   align-items: center;
   padding: 0 var(--space-md);
+  background: #f7f8fa;
   flex-shrink: 0;
 }
 
@@ -61,26 +67,7 @@
 .phone-frame__screen {
   flex: 1;
   overflow-y: auto;
-  padding: var(--space-xs) var(--space-md) var(--space-lg);
+  padding: var(--space-sm) var(--space-md) var(--space-lg);
+  background: #f7f8fa;
   box-sizing: border-box;
-}
-
-@media (min-width: 768px) {
-  .phone-frame--organizer {
-    width: min(1040px, 100%);
-    height: min(852px, calc(100dvh - var(--space-xl)));
-  }
-
-  .phone-frame--organizer .back-bar {
-    padding: 0 var(--space-xl);
-  }
-
-  .phone-frame--organizer .phone-frame__screen {
-    padding: var(--space-xs) var(--space-xl) var(--space-xl);
-  }
-
-  .phone-frame--organizer .modal-sheet {
-    max-width: 520px;
-    margin: 0 auto;
-  }
 }

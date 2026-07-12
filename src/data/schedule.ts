@@ -41,10 +41,6 @@ function addDays(date: Date, days: number): Date {
   return next;
 }
 
-function endOfWeek(monday: Date, includeWeekends: boolean): Date {
-  return addDays(monday, includeWeekends ? 6 : 4);
-}
-
 export interface DateRange {
   rangeStart: string;
   rangeEnd: string;
@@ -66,10 +62,12 @@ export function selectedDatesForRange(
   return dates;
 }
 
-export function nextWeekRange(includeWeekends: boolean, base: Date = new Date()): DateRange {
-  const monday = mondayOfWeek(base, 1);
-  const rangeStart = toISODate(monday);
-  const rangeEnd = toISODate(endOfWeek(monday, includeWeekends));
+// 이번 주/다음 주는 "오늘부터 해당 주(월요일 시작) 끝(일요일)까지"를 뜻한다 — 롤링 7일 범위가 아니다.
+export function thisWeekRange(includeWeekends: boolean, base: Date = new Date()): DateRange {
+  const today = new Date(base.getFullYear(), base.getMonth(), base.getDate());
+  const end = addDays(mondayOfWeek(base, 0), 6);
+  const rangeStart = toISODate(today);
+  const rangeEnd = toISODate(end);
   return {
     rangeStart,
     rangeEnd,
@@ -77,20 +75,10 @@ export function nextWeekRange(includeWeekends: boolean, base: Date = new Date())
   };
 }
 
-// 이번 주는 오늘과 지난 날짜를 제외한다. 남은 날이 없으면 다음 주로 폴백.
-export function thisWeekRange(includeWeekends: boolean, base: Date = new Date()): DateRange {
+export function nextWeekRange(includeWeekends: boolean, base: Date = new Date()): DateRange {
   const today = new Date(base.getFullYear(), base.getMonth(), base.getDate());
-  const monday = mondayOfWeek(today, 0);
-  const end = endOfWeek(monday, includeWeekends);
-  let start = addDays(today, 1);
-
-  while (start <= end && !includeWeekends && isWeekend(start)) {
-    start = addDays(start, 1);
-  }
-
-  if (start > end) return nextWeekRange(includeWeekends, base);
-
-  const rangeStart = toISODate(start);
+  const end = addDays(mondayOfWeek(base, 1), 6);
+  const rangeStart = toISODate(today);
   const rangeEnd = toISODate(end);
   return {
     rangeStart,

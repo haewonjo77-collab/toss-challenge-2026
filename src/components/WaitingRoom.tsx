@@ -11,6 +11,7 @@ interface WaitingRoomProps {
   onChangeRole: (id: string, role: AttendeeRole) => void;
   onAddAttendee: (name: string, team?: string) => void | Promise<void>;
   onViewRecommendation: () => void;
+  onRegisterHostTime?: () => void;
   onNotifyPending?: () => void | Promise<void>;
 }
 
@@ -19,6 +20,7 @@ export function WaitingRoom({
   onChangeRole,
   onAddAttendee,
   onViewRecommendation,
+  onRegisterHostTime,
   onNotifyPending,
 }: WaitingRoomProps) {
   const respondedCount = attendees.filter((attendee) => attendee.responded).length;
@@ -35,18 +37,39 @@ export function WaitingRoom({
       <p className="waiting-room__count text-title-lg">
         {attendees.length}명 중 {respondedCount}명이 응답했어요
       </p>
-      <p className="waiting-room__hint text-body-md">
-        {canViewRecommendation
-          ? '필수 참석자가 모두 응답했어요'
-          : `필수 참석자 ${pendingRequiredCount}명이 더 응답하면 추천 시간을 볼 수 있어요`}
-      </p>
-      {canViewRecommendation && pendingOptionalCount > 0 && (
-        <p className="waiting-room__optional-note text-caption">
-          선택 참석자 {pendingOptionalCount}명은 아직 응답 전이에요
-        </p>
-      )}
+      <div className="waiting-room__summary">
+        {canViewRecommendation ? (
+          <p className="waiting-room__summary-row waiting-room__summary-row--done text-body-md">
+            필수 참석자가 모두 응답했어요
+          </p>
+        ) : (
+          <p className="waiting-room__summary-row waiting-room__summary-row--pending text-body-md">
+            필수 참석자 {pendingRequiredCount}명이 더 응답하면 추천 시간을 볼 수 있어요
+          </p>
+        )}
+        {canViewRecommendation && pendingOptionalCount > 0 && (
+          <p className="waiting-room__summary-row waiting-room__summary-row--pending text-body-md">
+            선택 참석자 {pendingOptionalCount}명은 아직 응답 전이에요
+          </p>
+        )}
+      </div>
 
       <ResponseList responses={attendees} onChangeRole={onChangeRole} onAddAttendee={onAddAttendee} />
+
+      {onRegisterHostTime && (
+        <button
+          type="button"
+          className="button button--secondary waiting-room__host-time"
+          onClick={onRegisterHostTime}
+        >
+          <span className="waiting-room__host-time-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" focusable="false">
+              <path d="M7 3v4M17 3v4M5 8h14M5 5h14v16H5z" />
+            </svg>
+          </span>
+          내 일정도 추가하기
+        </button>
+      )}
 
       {remainingCount > 0 && onNotifyPending && (
         <button
@@ -54,7 +77,7 @@ export function WaitingRoom({
           className="button button--secondary waiting-room__nudge"
           onClick={onNotifyPending}
         >
-          미응답자에게 다시 알리기
+          미응답자에게 알림 보내기
         </button>
       )}
 

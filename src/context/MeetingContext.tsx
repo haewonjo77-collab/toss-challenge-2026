@@ -77,6 +77,7 @@ export function MeetingProvider({ children }: { children: ReactNode }) {
         id: attendee.id,
         name: attendee.name,
         responded: false,
+        availabilityState: 'pending',
       })),
     );
     setConfirmed(null);
@@ -97,7 +98,15 @@ export function MeetingProvider({ children }: { children: ReactNode }) {
     };
     setAttendees((prev) => [...prev, attendee]);
     setResponses((prev) => {
-      const nextResponses = [...prev, { id: attendee.id, name: attendee.name, responded: false }];
+      const nextResponses: ResponseStatus[] = [
+        ...prev,
+        {
+          id: attendee.id,
+          name: attendee.name,
+          responded: false,
+          availabilityState: 'pending',
+        },
+      ];
       responsesRef.current = nextResponses;
       return nextResponses;
     });
@@ -109,7 +118,9 @@ export function MeetingProvider({ children }: { children: ReactNode }) {
     if (nextIndex === -1) return null;
     const respondedName = responsesRef.current[nextIndex].name;
     const nextResponses = responsesRef.current.map((response, index) =>
-      index === nextIndex ? { ...response, responded: true } : response,
+      index === nextIndex
+        ? { ...response, responded: true, availabilityState: 'available' as const }
+        : response,
     );
     responsesRef.current = nextResponses;
     setResponses(nextResponses);

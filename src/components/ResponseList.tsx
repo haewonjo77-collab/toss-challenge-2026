@@ -5,6 +5,7 @@ import { RoleToggle } from './RoleToggle';
 import type { AttendeeRole, ResponseStatus } from '../data/mockAttendees';
 import { organizationMembers } from '../data/organizationMembers';
 import type { OrganizationMember } from '../data/organizationMembers';
+import { memberMatchesQuery } from '../utils/koreanSearch';
 import './ResponseList.css';
 
 interface ResponseListItem extends ResponseStatus {
@@ -24,6 +25,7 @@ export function ResponseList({ responses, onChangeRole, onAddAttendee }: Respons
   const [activeMemberIndex, setActiveMemberIndex] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const memberResultsRef = useRef<HTMLDivElement>(null);
   const shouldScrollActiveMemberRef = useRef(false);
   const normalizedMemberQuery = memberQuery.trim().toLowerCase();
   const addedNames = new Set(responses.map((response) => response.name));
@@ -31,12 +33,7 @@ export function ResponseList({ responses, onChangeRole, onAddAttendee }: Respons
     () =>
       normalizedMemberQuery
         ? organizationMembers
-            .filter((member) => {
-              return (
-                member.name.toLowerCase().includes(normalizedMemberQuery) ||
-                member.team.toLowerCase().includes(normalizedMemberQuery)
-              );
-            })
+            .filter((member) => memberMatchesQuery(member, normalizedMemberQuery))
             .sort((a, b) => Number(b.id === 'org-jo-haewon') - Number(a.id === 'org-jo-haewon'))
             .slice(0, 8)
         : [],
@@ -53,6 +50,10 @@ export function ResponseList({ responses, onChangeRole, onAddAttendee }: Respons
     setMemberQuery('');
     setActiveMemberIndex(0);
   };
+
+  useEffect(() => {
+    if (memberResultsRef.current) memberResultsRef.current.scrollTop = 0;
+  }, [isAdding, normalizedMemberQuery, searchResults.length]);
 
   useEffect(() => {
     if (!shouldScrollActiveMemberRef.current) return;
@@ -143,7 +144,7 @@ export function ResponseList({ responses, onChangeRole, onAddAttendee }: Respons
                   setActiveMemberIndex(0);
                 }}
                 onKeyDown={handleInputKeyDown}
-                placeholder="이름이나 부서 입력"
+                placeholder="이름, 부서 검색"
                 autoComplete="off"
                 autoCapitalize="off"
                 autoCorrect="off"
@@ -159,7 +160,11 @@ export function ResponseList({ responses, onChangeRole, onAddAttendee }: Respons
               </button>
             </label>
             {normalizedMemberQuery && (
-              <div className="response-list__member-results" aria-label="조직 멤버 검색 결과">
+              <div
+                ref={memberResultsRef}
+                className="response-list__member-results"
+                aria-label="조직 멤버 검색 결과"
+              >
                 {searchResults.length > 0 ? (
                   searchResults.map((member, index) => {
                     const checked = addedNames.has(member.name);
