@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { KeyboardEvent } from 'react';
 import { AttendanceIcon } from './AttendanceIcon';
 import { RoleToggle } from './RoleToggle';
+import { Badge } from './Badge';
 import type { AttendeeRole, ResponseStatus } from '../data/mockAttendees';
 import { organizationMembers } from '../data/organizationMembers';
 import type { OrganizationMember } from '../data/organizationMembers';
@@ -120,9 +121,14 @@ export function ResponseList({ responses, onChangeRole, onAddAttendee }: Respons
               <span className="response-list__team text-caption">{response.team}</span>
             )}
           </span>
-          {response.role && onChangeRole && (
-            <RoleToggle value={response.role} onChange={(role) => onChangeRole(response.id, role)} />
-          )}
+          {response.role &&
+            (onChangeRole ? (
+              // 주최자: 필수/선택을 직접 바꿀 수 있는 토글
+              <RoleToggle value={response.role} onChange={(role) => onChangeRole(response.id, role)} />
+            ) : (
+              // 참석자: 읽기 전용 칩으로 필수/선택만 표시
+              <Badge variant={response.role} />
+            ))}
         </div>
       ))}
       {onAddAttendee &&
