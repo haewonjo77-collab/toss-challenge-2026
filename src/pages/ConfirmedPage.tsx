@@ -27,7 +27,8 @@ export function ConfirmedPage() {
       requiredAttendees={confirmed.requiredAttendees}
       optionalAttendees={confirmed.optionalAttendees}
       showConfirmationNotice={showConfirmationNotice}
-      onShare={() => show('확정된 회의 링크가 복사됐어요')}
+      // 참석자는 앱 푸시로 알림을 받는 전제라 공유 시트 없이 바로 발송 확인 상태로 전환
+      onNotifyAgain={() => show('참석자에게 확정 알림을 다시 보냈어요')}
       onNewMeeting={() => {
         resetMeeting();
         navigate('/');

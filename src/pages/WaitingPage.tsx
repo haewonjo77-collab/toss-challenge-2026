@@ -67,74 +67,16 @@ export function WaitingPage() {
     role: attendee.role,
     responded: responseById.get(attendee.id) ?? false,
   }));
-  const notifyPending = async () => {
-    const pendingNames = responses
-      .filter((response) => !response.responded)
-      .map((response) => response.name);
-    if (pendingNames.length === 0) {
-      show('모두 응답했어요');
-      return;
-    }
-
-    const joinUrl = `${window.location.origin}/join`;
-    const nameText = pendingNames.map((name) => `${name}님`).join(', ');
-    const text = `${nameText}, 아직 회의 응답 전이에요`;
-
-    try {
-      if (navigator.share) {
-        await navigator.share({
-          title: `${title} 회의 응답 요청`,
-          text,
-          url: joinUrl,
-        });
-        show('미응답자에게 응답 요청을 보냈어요');
-        return;
-      }
-      if (navigator.clipboard) {
-        await navigator.clipboard.writeText(`${text}\n${joinUrl}`);
-        show('알림 메시지가 복사됐어요');
-        return;
-      }
-      show('응답 요청 메시지를 준비했어요');
-    } catch {
-      if (navigator.clipboard) {
-        await navigator.clipboard.writeText(`${text}\n${joinUrl}`);
-        show('알림 메시지가 복사됐어요');
-        return;
-      }
-      show('응답 요청을 다시 시도해주세요');
-    }
+  // 참석자는 앱 푸시로 알림을 받는 전제라 공유 시트를 열 필요가 없음 —
+  // 탭 즉시 발송 확인 상태로 전환한다 (iOS 네이티브 공유 시트 제거)
+  const notifyPending = () => {
+    const pendingCount = responses.filter((response) => !response.responded).length;
+    show(pendingCount === 0 ? '모두 응답했어요' : `${pendingCount}명에게 응답 요청을 보냈어요`);
   };
 
-  const addAndShareAttendee = async (name: string, team?: string) => {
+  const addAndNotifyAttendee = (name: string, team?: string) => {
     const attendee = addAttendee(name, team);
-    const joinUrl = `${window.location.origin}/join?attendee=${encodeURIComponent(attendee.id)}`;
-    const text = `${attendee.name}님, ${title}에서 안 되는 시간을 골라주세요`;
-
-    try {
-      if (navigator.share) {
-        await navigator.share({
-          title: `${title} 회의 초대`,
-          text,
-          url: joinUrl,
-        });
-        show(`${attendee.name}님에게 초대 링크를 보냈어요`);
-        return;
-      }
-      if (navigator.clipboard) {
-        await navigator.clipboard.writeText(joinUrl);
-        show(`${attendee.name}님 전용 링크가 복사됐어요`);
-        return;
-      }
-      show(`${attendee.name}님을 참석자에 추가했어요`);
-    } catch {
-      if (navigator.clipboard) {
-        await navigator.clipboard.writeText(joinUrl);
-        show(`${attendee.name}님 전용 링크가 복사됐어요`);
-        return;
-      }
-      show('초대 링크 공유를 다시 시도해주세요');
-    }
+    show(`${attendee.name}님에게 초대를 보냈어요`);
   };
 
   return (
@@ -167,7 +109,7 @@ export function WaitingPage() {
       <WaitingRoom
         attendees={waitingAttendees}
         onChangeRole={updateAttendeeRole}
-        onAddAttendee={addAndShareAttendee}
+        onAddAttendee={addAndNotifyAttendee}
         onViewRecommendation={() => navigate('/recommendation')}
         onNotifyPending={notifyPending}
       />

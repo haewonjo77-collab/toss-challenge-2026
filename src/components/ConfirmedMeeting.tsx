@@ -9,7 +9,7 @@ interface ConfirmedMeetingProps {
   requiredAttendees: Attendee[];
   optionalAttendees: Attendee[];
   showConfirmationNotice?: boolean;
-  onShare: () => void;
+  onNotifyAgain: () => void;
   onNewMeeting: () => void;
 }
 
@@ -24,7 +24,7 @@ export function ConfirmedMeeting({
   requiredAttendees,
   optionalAttendees,
   showConfirmationNotice = false,
-  onShare,
+  onNotifyAgain,
   onNewMeeting,
 }: ConfirmedMeetingProps) {
   return (
@@ -78,8 +78,8 @@ export function ConfirmedMeeting({
         ))}
       </div>
 
-      <button type="button" className="button button--secondary confirmed-meeting__cta" onClick={onShare}>
-        참석자에게 다시 공유하기
+      <button type="button" className="button button--secondary confirmed-meeting__cta" onClick={onNotifyAgain}>
+        참석자에게 다시 알리기
       </button>
       {/* accent는 상단 확정 체크 마커 1군데 유지 — 새 플로우 진입 버튼도 secondary */}
       <button
