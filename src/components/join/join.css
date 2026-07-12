@@ -46,14 +46,15 @@
   font-weight: 700;
 }
 
+.join__meeting-progress {
+  color: var(--color-muted);
+  margin: 0 0 var(--space-xs);
+}
+
 .join__meeting-roster {
   display: flex;
   flex-direction: column;
   gap: var(--space-xxs);
-}
-
-.join__meeting-roster-label {
-  color: var(--color-muted);
 }
 
 .join__meeting-roster-list {
@@ -279,14 +280,17 @@
   color: var(--color-ink);
 }
 
+/* 회의 정보 카드(.join__meeting-info) 안의 한 행으로 병합 — 별도 박스 스타일 없음 */
+.join__meeting-divider {
+  border: none;
+  border-top: 1px solid var(--color-hairline-soft);
+  margin: var(--space-xs) 0;
+}
+
 .join__date-summary {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: var(--space-sm);
-  border-radius: var(--radius-md);
-  background: var(--color-surface-soft);
-  margin-bottom: var(--space-sm);
 }
 
 .join__date-summary-label {

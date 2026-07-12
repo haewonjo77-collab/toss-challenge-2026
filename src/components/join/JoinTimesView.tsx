@@ -161,7 +161,7 @@ function groupIntervals(keys: string[], durationMinutes: number): UnavailableInt
 }
 
 export function JoinTimesView({ onAdvance: _onAdvance }: JoinTimesViewProps) {
-  const { title, attendees, settings } = useMeeting();
+  const { title, attendees, responses, settings } = useMeeting();
   const { participantName, unavailable, setUnavailable, clearUnavailable, submitResponse } = useJoin();
   const [calendarState, setCalendarState] = useState<'prompt' | 'imported' | 'skipped'>('prompt');
   const [calendarSheetOpen, setCalendarSheetOpen] = useState(false);
@@ -197,6 +197,8 @@ export function JoinTimesView({ onAdvance: _onAdvance }: JoinTimesViewProps) {
   const meetingTitle = title || '디자인팀 회의';
   const visibleAttendees = attendees.slice(0, 6);
   const hiddenAttendeeCount = Math.max(0, attendees.length - visibleAttendees.length);
+  // 실시간 응답 현황 — 0명일 땐 부정적 사회적 증거를 피하려 카운트 자체를 숨긴다
+  const respondedCount = responses.filter((response) => response.responded).length;
 
   const importCalendar = (provider: string) => {
     const providerLabel = CALENDAR_PROVIDERS.find((item) => item.id === provider)?.label ?? '캘린더';
@@ -273,8 +275,12 @@ export function JoinTimesView({ onAdvance: _onAdvance }: JoinTimesViewProps) {
           <strong>조해원님</strong>이 <strong>&apos;{meetingTitle}&apos;</strong> 시간을 맞추고
           있어요
         </p>
+        {respondedCount > 0 && (
+          <p className="join__meeting-progress text-caption">
+            {attendees.length}명 중 {respondedCount}명 이미 응답했어요
+          </p>
+        )}
         <div className="join__meeting-roster" aria-label={`참석자 ${attendees.length}명`}>
-          <span className="join__meeting-roster-label text-caption">참석자 {attendees.length}명</span>
           {visibleAttendees.length > 0 && (
             <div className="join__meeting-roster-list">
               {visibleAttendees.map((attendee) => (
@@ -288,14 +294,16 @@ export function JoinTimesView({ onAdvance: _onAdvance }: JoinTimesViewProps) {
             </div>
           )}
         </div>
-      </section>
 
-      <div className="join__date-summary">
-        <span className="join__date-summary-label text-caption">후보 날짜</span>
-        <span className="join__date-summary-value text-body-sm">
-          {formatMonthDay(rangeDays[0])} ~ {formatMonthDay(rangeDays[rangeDays.length - 1])}
-        </span>
-      </div>
+        <hr className="join__meeting-divider" />
+
+        <div className="join__date-summary">
+          <span className="join__date-summary-label text-caption">후보 날짜</span>
+          <span className="join__date-summary-value text-body-sm">
+            {formatMonthDay(rangeDays[0])} ~ {formatMonthDay(rangeDays[rangeDays.length - 1])}
+          </span>
+        </div>
+      </section>
       <p className="join__title text-title-lg">안 되는 시간을 골라주세요</p>
       <p className="join__hint text-body-md">{participantName}님, 안 되는 시간만 눌러주세요</p>
 
