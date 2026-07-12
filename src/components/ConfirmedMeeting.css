@@ -55,7 +55,7 @@
 
 .confirmed-meeting__alert-title {
   color: var(--color-ink);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .confirmed-meeting__alert-message {
@@ -91,7 +91,7 @@
   color: var(--color-ink);
   margin: 0 0 var(--space-xs);
   font-size: 24px;
-  font-weight: 600;
+  font-weight: 800;
   line-height: 1.25;
 }
 

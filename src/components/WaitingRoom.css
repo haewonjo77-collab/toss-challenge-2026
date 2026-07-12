@@ -33,7 +33,7 @@
 
 .waiting-room__summary-row--done {
   color: var(--color-ink);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .waiting-room__summary-row--pending {
@@ -131,7 +131,7 @@
 .waiting-page__alert-label {
   display: block;
   color: var(--color-muted);
-  font-weight: 600;
+  font-weight: 800;
   line-height: 1.2;
 }
 
@@ -139,7 +139,7 @@
   display: block;
   overflow: hidden;
   color: var(--color-ink);
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1.3;
   text-overflow: ellipsis;
   white-space: nowrap;

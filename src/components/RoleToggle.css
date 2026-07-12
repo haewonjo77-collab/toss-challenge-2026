@@ -15,8 +15,8 @@
   background: transparent;
   color: var(--color-body);
   font-family: var(--font-family);
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 800;
   line-height: 1.4;
   cursor: pointer;
 }
@@ -27,5 +27,5 @@
   background: #4e535c;
   border-color: #4e535c;
   color: var(--color-on-accent);
-  font-weight: 600;
+  font-weight: 800;
 }

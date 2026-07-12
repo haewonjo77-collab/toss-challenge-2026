@@ -27,8 +27,8 @@
   border-radius: var(--radius-sm);
   cursor: pointer;
   font-family: var(--font-family);
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 700;
   color: var(--color-body);
 }
 

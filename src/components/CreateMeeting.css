@@ -22,7 +22,7 @@
 
 .create-meeting__subtitle strong {
   color: var(--color-ink);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .create-meeting__field {
@@ -101,7 +101,7 @@
   border-radius: var(--radius-pill);
   background: transparent;
   color: var(--color-muted);
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
 }
 
@@ -276,7 +276,7 @@
   border-radius: var(--radius-pill);
   background: var(--color-surface-soft);
   color: var(--color-body);
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
 }
 
@@ -389,7 +389,7 @@
 .create-meeting__member-name,
 .create-meeting__selected-name {
   color: var(--color-ink);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .create-meeting__member-meta,
@@ -507,7 +507,7 @@
 
 .create-meeting__option-title {
   color: var(--color-ink);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .create-meeting__option-hint {
