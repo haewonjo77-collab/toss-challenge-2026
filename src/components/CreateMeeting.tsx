@@ -324,7 +324,10 @@ export function CreateMeeting({
                   <span className="create-meeting__member-results-title text-caption">
                     선택할 사람 {searchResults.length}명
                   </span>
-                  <label className="create-meeting__member-select-all text-caption">
+                  <label
+                    className="create-meeting__member-select-all text-caption"
+                    onMouseDown={(event) => event.preventDefault()}
+                  >
                     <input
                       type="checkbox"
                       checked={allSearchResultsSelected}
