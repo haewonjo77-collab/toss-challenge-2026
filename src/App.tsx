@@ -11,15 +11,19 @@ import { JoinTimesPage } from './pages/JoinTimesPage';
 import { JoinDonePage } from './pages/JoinDonePage';
 import './App.css';
 
+// 각 플로우의 진입점 — 호스트는 회의 만들기 첫 화면(/), 참석자는 응답 입력 첫 화면(/join).
+// 이 프로토타입 범위 밖의 홈 화면으로 이어지는 앱이므로, 진입점에서는 뒤로갈 대상이 없어 버튼을 숨긴다.
+const ENTRY_POINT_PATHS = ['/', '/join'];
+
 function BackBar() {
   const navigate = useNavigate();
   const location = useLocation();
-  const isRoot = location.pathname === '/';
+  const isEntryPoint = ENTRY_POINT_PATHS.includes(location.pathname);
 
-  // '/'에서도 바 높이를 유지해 화면 전환 시 카드 위치가 튀지 않게 한다
+  // 진입점에서도 바 높이를 유지해 화면 전환 시 카드 위치가 튀지 않게 한다
   return (
     <div className="back-bar">
-      {!isRoot && (
+      {!isEntryPoint && (
         <button type="button" className="back-bar__button" aria-label="뒤로가기" onClick={() => navigate(-1)}>
           ←
         </button>
