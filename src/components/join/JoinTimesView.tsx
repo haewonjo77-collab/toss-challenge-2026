@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useMeeting } from '../../context/MeetingContext';
 import { useJoin } from '../../context/JoinContext';
 import type { AttendeeRole } from '../../data/mockAttendees';
@@ -6,6 +6,7 @@ import { formatClock24Label } from '../../data/time';
 import {
   formatMonthDay,
   listRangeDays,
+  mondayOfWeek,
   shortDayLabel,
   slotsForDuration,
   toISODate,
@@ -239,6 +240,7 @@ export function JoinTimesView({
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
   const [importedProviderLabel, setImportedProviderLabel] = useState<string | null>(null);
   const [expandedDayKey, setExpandedDayKey] = useState<string | null>(null);
+  const [currentWeekIndex, setCurrentWeekIndex] = useState(0);
   const [rangeAnchor, setRangeAnchor] = useState<{ dayKey: string; slot: number } | null>(null);
   const [sheetDragStartY, setSheetDragStartY] = useState<number | null>(null);
   const [submitSheetOpen, setSubmitSheetOpen] = useState(false);
@@ -255,6 +257,22 @@ export function JoinTimesView({
     settings.selectedDates,
   );
   const days = rangeDays.map((day) => ({ key: toISODate(day), label: shortDayLabel(day) }));
+  // 후보 날짜가 여러 주에 걸치면 한 화면에 다 쌓여 스크롤이 길어지므로, 주(월요일 시작) 단위로
+  // 끊어 한 번에 한 주만 노출하고 나머지 주는 주 전환 네비게이션으로 이동한다.
+  const weeks = useMemo(() => {
+    const byWeek = new Map<string, { key: string; label: string; date: Date }[]>();
+    rangeDays.forEach((date) => {
+      const weekStart = toISODate(mondayOfWeek(date, 0));
+      const list = byWeek.get(weekStart) ?? [];
+      list.push({ key: toISODate(date), label: shortDayLabel(date), date });
+      byWeek.set(weekStart, list);
+    });
+    return Array.from(byWeek.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([weekStart, weekDays]) => ({ weekStart, days: weekDays }));
+  }, [rangeDays]);
+  const safeWeekIndex = Math.min(currentWeekIndex, Math.max(0, weeks.length - 1));
+  const visibleDays = weeks[safeWeekIndex]?.days ?? days.map((day) => ({ ...day, date: new Date() }));
   const slots = slotsForDuration(
     settings.durationMinutes,
     settings.dayStartMinutes,
@@ -272,7 +290,16 @@ export function JoinTimesView({
   selectedIntervals.forEach((interval) => {
     intervalsByDay.set(interval.dayKey, [...(intervalsByDay.get(interval.dayKey) ?? []), interval]);
   });
-  const openDayKey = expandedDayKey ?? days[0]?.key;
+  // 펼쳐진 날짜가 현재 보이는 주에 속할 때만 유지하고, 아니면 그 주의 첫날을 기본으로 펼친다.
+  const openDayKey =
+    expandedDayKey && visibleDays.some((day) => day.key === expandedDayKey)
+      ? expandedDayKey
+      : visibleDays[0]?.key;
+  const goToWeek = (nextIndex: number) => {
+    setCurrentWeekIndex(Math.min(Math.max(0, nextIndex), weeks.length - 1));
+    setExpandedDayKey(null);
+    setRangeAnchor(null);
+  };
   const meetingTitle = title || '디자인팀 회의';
   const visibleAttendees = attendees.slice(0, 6);
   const hiddenAttendeeCount = Math.max(0, attendees.length - visibleAttendees.length);
@@ -430,8 +457,38 @@ export function JoinTimesView({
       )}
 
       <div className="join__inline-picker">
+        {weeks.length > 1 && (
+          <div className="join__week-nav" role="group" aria-label="주 단위 이동">
+            <button
+              type="button"
+              className="join__week-nav-btn"
+              aria-label="이전 주"
+              disabled={safeWeekIndex === 0}
+              onClick={() => goToWeek(safeWeekIndex - 1)}
+            >
+              ‹
+            </button>
+            <span className="join__week-nav-label">
+              <span className="join__week-nav-range text-body-sm">
+                {formatMonthDay(visibleDays[0].date)} ~ {formatMonthDay(visibleDays[visibleDays.length - 1].date)}
+              </span>
+              <span className="join__week-nav-count text-caption">
+                {weeks.length}주 중 {safeWeekIndex + 1}주차
+              </span>
+            </span>
+            <button
+              type="button"
+              className="join__week-nav-btn"
+              aria-label="다음 주"
+              disabled={safeWeekIndex === weeks.length - 1}
+              onClick={() => goToWeek(safeWeekIndex + 1)}
+            >
+              ›
+            </button>
+          </div>
+        )}
         <div className="join__day-accordion" aria-label="후보 날짜별 시간대">
-          {days.map((day) => {
+          {visibleDays.map((day) => {
             const intervals = intervalsByDay.get(day.key) ?? [];
             const expanded = day.key === openDayKey;
             const internalSlotsForDay = slots.filter((slot) =>

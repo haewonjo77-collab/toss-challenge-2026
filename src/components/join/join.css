@@ -368,6 +368,55 @@
   margin-top: var(--space-md);
 }
 
+.join__week-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-sm);
+  padding: var(--space-xxs) var(--space-xs);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-soft);
+}
+
+.join__week-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-ink);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.join__week-nav-btn:disabled {
+  color: var(--color-hairline);
+  cursor: default;
+}
+
+.join__week-nav-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+}
+
+.join__week-nav-range {
+  color: var(--color-ink);
+  font-weight: 700;
+}
+
+.join__week-nav-count {
+  color: var(--color-muted);
+}
+
 .join__day-accordion {
   display: flex;
   flex-direction: column;
