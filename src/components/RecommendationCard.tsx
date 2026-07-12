@@ -10,6 +10,7 @@ interface RecommendationCardProps {
   optionalAttendees: Attendee[];
   variant: 'primary' | 'fallback';
   onConfirm: () => void;
+  onRequestRecheck?: () => void;
 }
 
 function availabilitySummary(attendees: Attendee[]): string {
@@ -86,6 +87,7 @@ export function RecommendationCard({
   optionalAttendees,
   variant,
   onConfirm,
+  onRequestRecheck,
 }: RecommendationCardProps) {
   const [optionalExpanded, setOptionalExpanded] = useState(false);
   // 선택 참석자의 불참은 회의 시간 결정에 영향이 없으므로, 상단 안내는 필수 불참만 다룬다
@@ -139,8 +141,13 @@ export function RecommendationCard({
       </div>
 
       <div className="recommendation-card__actions">
+        {variant === 'fallback' && missingRequired.length > 0 && onRequestRecheck && (
+          <button type="button" className="button button--secondary" onClick={onRequestRecheck}>
+            재확인 요청
+          </button>
+        )}
         <button type="button" className="button button--primary" onClick={onConfirm}>
-          이 시간으로 확정하기
+          {variant === 'fallback' ? '이대로 확정' : '이 시간으로 확정하기'}
         </button>
       </div>
     </div>

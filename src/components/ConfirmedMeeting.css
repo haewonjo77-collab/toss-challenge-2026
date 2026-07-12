@@ -2,9 +2,10 @@
   width: 100%;
   max-width: 361px;
   padding: var(--space-lg);
-  background: #f7f8fa;
-  border: none;
+  background: var(--color-canvas);
+  border: 1px solid rgba(10, 10, 11, 0.06);
   border-radius: var(--radius-lg);
+  box-shadow: 0 18px 42px rgba(20, 24, 32, 0.08);
   box-sizing: border-box;
 }
 
@@ -13,11 +14,11 @@
   align-items: center;
   gap: var(--space-xs);
   padding: var(--space-xs) var(--space-sm);
-  border: 1px solid var(--color-accent-disabled);
+  border: 1px solid var(--color-hairline);
   border-radius: var(--radius-md);
   background: var(--color-canvas);
-  box-shadow: 0 4px 12px rgba(17, 17, 17, 0.08);
-  color: var(--color-accent-active);
+  box-shadow: none;
+  color: var(--color-body);
   margin-bottom: var(--space-md);
   animation: confirmed-alert-drop 260ms ease-out;
 }
@@ -29,8 +30,8 @@
   width: 28px;
   height: 28px;
   border-radius: var(--radius-full);
-  background: var(--color-accent-disabled);
-  color: var(--color-accent-active);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
   flex-shrink: 0;
 }
 
@@ -88,6 +89,9 @@
 .confirmed-meeting__message {
   color: var(--color-ink);
   margin: 0 0 var(--space-xs);
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.25;
 }
 
 .confirmed-meeting__time {

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { RecommendationCard } from '../components/RecommendationCard';
 import { RecommendationTabBar } from '../components/RecommendationTabBar';
+import { useToast } from '../components/Toast';
 import { useMeeting } from '../context/MeetingContext';
 import { recommendTimes } from '../data/recommendation';
 import { listRangeDays } from '../data/schedule';
@@ -11,6 +12,7 @@ import './RecommendationPage.css';
 export function RecommendationPage() {
   const { title, attendees, responses, settings, confirmMeeting } = useMeeting();
   const navigate = useNavigate();
+  const { show } = useToast();
   const [activeLabel, setActiveLabel] = useState<string | null>(null);
   useScreenMeasure('화면③ 추천 결과');
 
@@ -92,6 +94,17 @@ export function RecommendationPage() {
     navigate('/confirmed', { state: { confirmationNotice: true } });
   };
 
+  const requestRecheck = (option = active) => {
+    const names = option.requiredAttendees
+      .filter((attendee) => attendee.status !== 'full')
+      .map((attendee) => `${attendee.name}님`);
+    show(
+      names.length > 0
+        ? `${names.join(', ')}에게 재확인 요청을 보냈어요`
+        : '재확인 요청을 보냈어요',
+    );
+  };
+
   return (
     <div className="recommendation-page">
       <div className="recommendation-page__mobile">
@@ -116,6 +129,7 @@ export function RecommendationPage() {
           optionalAttendees={active.optionalAttendees}
           variant={active.isFallback ? 'fallback' : 'primary'}
           onConfirm={() => confirm(active)}
+          onRequestRecheck={() => requestRecheck(active)}
         />
       </div>
 
@@ -136,6 +150,7 @@ export function RecommendationPage() {
             optionalAttendees={option.optionalAttendees}
             variant={option.isFallback ? 'fallback' : 'primary'}
             onConfirm={() => confirm(option)}
+            onRequestRecheck={() => requestRecheck(option)}
           />
         ))}
       </div>

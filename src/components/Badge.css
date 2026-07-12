@@ -1,21 +1,22 @@
 .badge {
   display: inline-flex;
   align-items: center;
+  min-height: 24px;
   padding: 4px 10px;
   border-radius: var(--radius-pill);
   font-family: var(--font-family);
   font-size: 12px;
+  font-weight: 800;
   line-height: 1.4;
 }
 
 .badge--required {
-  background: var(--color-accent-disabled);
-  color: var(--color-accent-active);
-  font-weight: 700;
+  background: var(--color-accent);
+  color: var(--color-on-accent);
 }
 
 .badge--optional {
   background: var(--color-surface-strong);
-  color: var(--color-body);
-  font-weight: 500;
+  color: var(--color-muted);
+  font-weight: 800;
 }

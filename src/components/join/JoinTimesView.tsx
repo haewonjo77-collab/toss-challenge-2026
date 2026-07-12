@@ -361,7 +361,7 @@ export function JoinTimesView({
   };
 
   return (
-    <div className="card">
+    <div className="join join--times">
       <section className="join__meeting-info" aria-label="회의 정보">
         <p className="join__meeting-copy text-body-md">
           <strong>조해원님</strong>이 <strong>&apos;{meetingTitle}&apos;</strong> 시간을 맞추고

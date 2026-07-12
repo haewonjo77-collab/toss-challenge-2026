@@ -24,14 +24,16 @@
   padding: 0;
   background: var(--color-canvas);
   border: 1px solid var(--color-hairline);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   cursor: pointer;
   font-family: var(--font-family);
   font-size: 12px;
+  font-weight: 700;
   color: var(--color-body);
 }
 
 .time-grid__cell--unavailable {
-  background: var(--color-surface-strong);
-  border-color: var(--color-surface-strong);
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-on-accent);
 }

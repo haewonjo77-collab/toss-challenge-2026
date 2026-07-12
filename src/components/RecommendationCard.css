@@ -2,15 +2,19 @@
   width: 100%;
   max-width: 361px;
   padding: var(--space-lg);
-  background: #f7f8fa;
-  border: none;
+  background: var(--color-canvas);
+  border: 1px solid rgba(10, 10, 11, 0.06);
   border-radius: var(--radius-lg);
+  box-shadow: 0 18px 42px rgba(20, 24, 32, 0.08);
   box-sizing: border-box;
 }
 
 .recommendation-card__time {
   color: var(--color-ink);
-  margin: 0 0 var(--space-sm);
+  margin: 0 0 var(--space-md);
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.25;
 }
 
 .recommendation-card__section-head {
@@ -32,6 +36,7 @@
 
 .recommendation-card__section-count {
   color: var(--color-muted);
+  font-weight: 800;
 }
 
 .recommendation-card__list {
@@ -44,10 +49,13 @@
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-  min-height: 56px;
-  padding: var(--space-xs) 0;
-  border-top: 1px solid var(--color-hairline);
+  min-height: 52px;
+  padding: var(--space-xs) var(--space-md);
+  border-top: none;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-soft);
   color: var(--color-ink);
+  margin-top: var(--space-xs);
 }
 
 .recommendation-card__list--optional .recommendation-card__avatar-item {
@@ -82,7 +90,7 @@
   flex-shrink: 0;
   padding: 4px 10px;
   border-radius: var(--radius-pill);
-  border: 1px solid var(--color-hairline);
+  border: none;
   background: var(--color-canvas);
   color: var(--color-body);
   white-space: nowrap;
@@ -106,16 +114,18 @@
 .recommendation-card__divider {
   border: none;
   border-top: 1px solid var(--color-hairline);
-  margin: var(--space-md) 0;
+  margin: var(--space-lg) 0;
 }
 
 .recommendation-card__notice {
-  color: var(--color-body);
-  margin: 0 0 var(--space-md);
+  color: var(--color-muted);
+  margin: 0 0 var(--space-lg);
+  font-weight: 700;
 }
 
 .recommendation-card__notice--strong {
-  font-weight: 700;
+  color: var(--color-ink);
+  font-weight: 800;
 }
 
 /* 필수 불참이 아닌 경우(선택만 불참·전원 가능) — 경고가 아닌 정보 톤 */
@@ -126,7 +136,7 @@
 .recommendation-card__actions {
   display: flex;
   gap: var(--space-sm);
-  margin-top: var(--space-lg);
+  margin-top: var(--space-xl);
 }
 
 .recommendation-card__actions .button {

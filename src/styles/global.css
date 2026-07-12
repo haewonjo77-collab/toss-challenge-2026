@@ -23,7 +23,7 @@ body {
   justify-content: center;
   height: 44px;
   padding: 12px 20px;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   font-family: var(--font-family);
   font-size: 15px;
   font-weight: 600;
@@ -43,6 +43,7 @@ body {
 
 .button--primary:disabled {
   background: var(--color-accent-disabled);
+  color: var(--color-muted);
   cursor: default;
 }
 
@@ -54,11 +55,11 @@ body {
 
 .text-input {
   height: 44px;
-  padding: 10px 14px;
+  padding: 10px 16px;
   border: 1px solid var(--color-hairline);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   font-family: var(--font-family);
-  font-size: 16px;
+  font-size: 15px;
   color: var(--color-ink);
   background: var(--color-canvas);
 }
@@ -80,9 +81,10 @@ body {
   width: 100%;
   max-width: 361px;
   padding: var(--space-lg);
-  background: #f7f8fa;
-  border: none;
+  background: var(--color-canvas);
+  border: 1px solid rgba(10, 10, 11, 0.06);
   border-radius: var(--radius-lg);
+  box-shadow: 0 18px 42px rgba(20, 24, 32, 0.08);
   box-sizing: border-box;
 }
 
@@ -103,7 +105,7 @@ body {
   inset: 0;
   display: flex;
   align-items: flex-end;
-  background: rgba(17, 17, 17, 0.4);
+  background: rgba(10, 10, 11, 0.36);
   z-index: 10;
 }
 

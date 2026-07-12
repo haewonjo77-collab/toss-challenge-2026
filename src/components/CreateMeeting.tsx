@@ -49,6 +49,7 @@ export function CreateMeeting({
   const patchSettings = (partial: Partial<MeetingSettings>) =>
     setSettings((prev) => ({ ...prev, ...partial }));
   const [memberQuery, setMemberQuery] = useState('');
+  const [memberSearchOpen, setMemberSearchOpen] = useState(false);
   const [activeMemberIndex, setActiveMemberIndex] = useState(0);
   const [titleError, setTitleError] = useState(false);
   const [timeSheetOpen, setTimeSheetOpen] = useState(false);
@@ -174,16 +175,17 @@ export function CreateMeeting({
   };
 
   const normalizedMemberQuery = memberQuery.trim().toLowerCase();
-  const searchResults = useMemo(
-    () =>
-      normalizedMemberQuery
-        ? organizationMembers
-            .filter((member) => memberMatchesQuery(member, normalizedMemberQuery))
-            .sort((a, b) => Number(b.id === 'org-jo-haewon') - Number(a.id === 'org-jo-haewon'))
-            .slice(0, 8)
-        : [],
-    [normalizedMemberQuery],
-  );
+  const searchResults = useMemo(() => {
+    const baseResults = normalizedMemberQuery
+      ? organizationMembers.filter((member) => memberMatchesQuery(member, normalizedMemberQuery))
+      : organizationMembers;
+
+    return baseResults
+      .slice()
+      .sort((a, b) => a.name.localeCompare(b.name, 'ko-KR'))
+      .slice(0, 8);
+  }, [normalizedMemberQuery]);
+  const showMemberResults = memberSearchOpen || normalizedMemberQuery.length > 0;
   const selectedIds = new Set(attendees.map((attendee) => attendee.id));
   const allSearchResultsSelected =
     searchResults.length > 0 && searchResults.every((member) => selectedIds.has(member.id));
@@ -195,12 +197,12 @@ export function CreateMeeting({
   useEffect(() => {
     if (!shouldScrollActiveMemberRef.current) return;
     shouldScrollActiveMemberRef.current = false;
-    if (!normalizedMemberQuery || searchResults.length === 0) return;
+    if (!showMemberResults || searchResults.length === 0) return;
     const activeOption = document.querySelector(
       `[data-member-result-index="${activeMemberIndex}"]`,
     );
     activeOption?.scrollIntoView({ block: 'nearest' });
-  }, [activeMemberIndex, normalizedMemberQuery, searchResults.length]);
+  }, [activeMemberIndex, searchResults.length, showMemberResults]);
 
   const toggleMember = (member: OrganizationMember) => {
     setAttendees((prev) =>
@@ -266,7 +268,10 @@ export function CreateMeeting({
       </div>
 
       <div className="create-meeting__add">
-        <label className="create-meeting__member-search" aria-label="참석자 검색">
+        <label
+          className="create-meeting__member-search"
+          aria-label="참석자 검색"
+        >
           <span className="create-meeting__member-search-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" focusable="false">
               <circle cx="11" cy="11" r="7" />
@@ -278,6 +283,10 @@ export function CreateMeeting({
             value={memberQuery}
             onChange={(event) => {
               setMemberQuery(event.target.value);
+              setActiveMemberIndex(0);
+            }}
+            onFocus={() => {
+              setMemberSearchOpen(true);
               setActiveMemberIndex(0);
             }}
             onKeyDown={handleMemberSearchKeyDown}
@@ -301,7 +310,7 @@ export function CreateMeeting({
             </button>
           )}
         </label>
-        {normalizedMemberQuery && (
+        {showMemberResults && (
           <div className="create-meeting__member-results" aria-label="조직 멤버 검색 결과">
             {searchResults.length > 0 ? (
               <>
@@ -560,7 +569,7 @@ export function CreateMeeting({
             </button>
             <p className="create-meeting__sheet-title text-title-md">참석자가 고를 시간대</p>
             <p className="create-meeting__sheet-hint text-body-md">
-              가능 시간대의 시작과 끝을 정해주세요
+              가능한 시간대의 시작과 끝을 정해주세요
             </p>
             <div className="create-meeting__time-selects">
               <label className="create-meeting__time-select text-caption">

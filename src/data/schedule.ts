@@ -63,27 +63,27 @@ export function selectedDatesForRange(
 }
 
 // 이번 주/다음 주는 "오늘부터 해당 주(월요일 시작) 끝(일요일)까지"를 뜻한다 — 롤링 7일 범위가 아니다.
+// rangeStart/rangeEnd는 표시용 경계이므로 주말 제외 시 실제 후보일(selectedDates) 양끝에 맞춰 줄어들어야
+// 한다 — 그렇지 않으면 주말 포함 체크박스를 꺼도 날짜 범위 텍스트(예: 7/12~7/19)가 그대로 남는 버그가 있었다.
 export function thisWeekRange(includeWeekends: boolean, base: Date = new Date()): DateRange {
   const today = new Date(base.getFullYear(), base.getMonth(), base.getDate());
   const end = addDays(mondayOfWeek(base, 0), 6);
-  const rangeStart = toISODate(today);
-  const rangeEnd = toISODate(end);
+  const selectedDates = selectedDatesForRange(toISODate(today), toISODate(end), includeWeekends);
   return {
-    rangeStart,
-    rangeEnd,
-    selectedDates: selectedDatesForRange(rangeStart, rangeEnd, includeWeekends),
+    rangeStart: selectedDates[0] ?? toISODate(today),
+    rangeEnd: selectedDates[selectedDates.length - 1] ?? toISODate(end),
+    selectedDates,
   };
 }
 
 export function nextWeekRange(includeWeekends: boolean, base: Date = new Date()): DateRange {
   const today = new Date(base.getFullYear(), base.getMonth(), base.getDate());
   const end = addDays(mondayOfWeek(base, 1), 6);
-  const rangeStart = toISODate(today);
-  const rangeEnd = toISODate(end);
+  const selectedDates = selectedDatesForRange(toISODate(today), toISODate(end), includeWeekends);
   return {
-    rangeStart,
-    rangeEnd,
-    selectedDates: selectedDatesForRange(rangeStart, rangeEnd, includeWeekends),
+    rangeStart: selectedDates[0] ?? toISODate(today),
+    rangeEnd: selectedDates[selectedDates.length - 1] ?? toISODate(end),
+    selectedDates,
   };
 }
 
