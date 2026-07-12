@@ -7,6 +7,8 @@ import { DURATION_OPTIONS, formatClockLabel } from '../data/time';
 import { isWeekend, nextWeekRange, parseISODate, selectedDatesForRange, thisWeekRange } from '../data/schedule';
 import { defaultMeetingSettings } from '../context/MeetingContext';
 import type { MeetingSettings } from '../context/MeetingContext';
+import { loadFavoriteGroups, upsertMeetingGroup } from '../data/favorites';
+import type { FavoriteGroup } from '../data/favorites';
 import './CreateMeeting.css';
 
 const DAY_TIME_OPTIONS = Array.from({ length: 31 }, (_, index) => 7 * 60 + index * 30);
@@ -48,8 +50,27 @@ export function CreateMeeting({
   const [selectedRangeMode, setSelectedRangeMode] = useState<RangeMode | null>('next');
   const [rememberAttendees, setRememberAttendees] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [favoriteGroups, setFavoriteGroups] = useState<FavoriteGroup[]>(() => loadFavoriteGroups());
   const titleInputRef = useRef<HTMLInputElement>(null);
   const shouldScrollActiveMemberRef = useRef(false);
+
+  // 저장 토글이 켜져 있는 동안 회의명+참석자 목록을 실시간으로 칩에 반영
+  useEffect(() => {
+    if (!rememberAttendees) return;
+    if (title.trim() === '' || attendees.length === 0) return;
+    setFavoriteGroups(upsertMeetingGroup(title, attendees));
+  }, [rememberAttendees, title, attendees]);
+
+  const loadFavoriteGroup = (group: FavoriteGroup) => {
+    setAttendees(
+      group.attendees.map((favorite, index) => ({
+        id: `fav-${group.id}-${index}-${Date.now()}`,
+        name: favorite.name,
+        role: favorite.role,
+        team: favorite.team,
+      })),
+    );
+  };
 
   // 제목 미입력 시 disabled로 침묵하는 대신, 클릭에 반응해 이유를 보여주고 입력 위치로 데려간다
   const handleSubmit = async () => {
@@ -290,6 +311,20 @@ export function CreateMeeting({
             </button>
           )}
         </label>
+        {favoriteGroups.length > 0 && (
+          <div className="create-meeting__favorite-groups" aria-label="저장된 참석자 그룹">
+            {favoriteGroups.map((group) => (
+              <button
+                key={group.id}
+                type="button"
+                className="create-meeting__favorite-chip text-caption"
+                onClick={() => loadFavoriteGroup(group)}
+              >
+                {group.name} · {group.attendees.length}명
+              </button>
+            ))}
+          </div>
+        )}
         {normalizedMemberQuery && (
           <div className="create-meeting__member-results" aria-label="조직 멤버 검색 결과">
             {searchResults.length > 0 ? (
@@ -503,7 +538,7 @@ export function CreateMeeting({
             </svg>
           </span>
           <span className="create-meeting__option-copy">
-            <span className="create-meeting__option-title">이 회의 참석자 저장</span>
+            <span className="create-meeting__option-title">참석자 세트로 저장</span>
             <span className="create-meeting__option-hint text-caption">
               다음 회의에서 바로 불러올 수 있어요
             </span>

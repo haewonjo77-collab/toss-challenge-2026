@@ -47,6 +47,22 @@ function upsertGroup(groups: FavoriteGroup[], group: FavoriteGroup): FavoriteGro
   return [group, ...rest].slice(0, 8);
 }
 
+// "이 회의 참석자 저장" 토글이 켜져 있는 동안 회의명을 키로 실시간 upsert —
+// 팀별로 쪼개는 rememberAttendeeGroups와 달리 회의 하나당 칩 하나를 유지한다.
+export function upsertMeetingGroup(title: string, attendees: InvitedAttendee[]): FavoriteGroup[] {
+  const meetingName = title.trim();
+  const validAttendees = attendees.filter((attendee) => attendee.name.trim() !== '');
+  if (meetingName === '' || validAttendees.length === 0) return loadFavoriteGroups();
+
+  const next = upsertGroup(loadFavoriteGroups(), {
+    id: `meeting-${meetingName}`,
+    name: meetingName,
+    attendees: validAttendees.map(normalizeAttendee),
+  });
+  saveFavoriteGroups(next);
+  return next;
+}
+
 export function rememberAttendeeGroups(attendees: InvitedAttendee[]): FavoriteGroup[] {
   const saved = loadFavoriteGroups();
   const validAttendees = attendees.filter((attendee) => attendee.name.trim() !== '');

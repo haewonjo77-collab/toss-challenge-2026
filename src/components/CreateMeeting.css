@@ -247,6 +247,23 @@
   flex-shrink: 0;
 }
 
+/* 검색창 바로 아래 — 저장된 참석자 그룹 칩 (탭하면 그룹 전원이 참석자 목록에 채워짐) */
+.create-meeting__favorite-groups {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+
+.create-meeting__favorite-chip {
+  height: 32px;
+  padding: 0 var(--space-sm);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-pill);
+  background: var(--color-canvas);
+  color: var(--color-body);
+  cursor: pointer;
+}
+
 .create-meeting__member-results,
 .create-meeting__selected-list {
   display: flex;
