@@ -6,7 +6,11 @@
 - GitHub: https://github.com/haewonjo77-collab/toss-challenge-2026
 - 형태: 모바일 중심 웹 프로토타입
 - 기술: React, TypeScript, Vite
-
+- 주요 진입점:
+```
+- `/`: 주최자 회의 생성 플로우
+- `/join`: 참석자 응답 플로우
+```
 ## 문제 정의
 
 7명을 대상으로 한 UT와 3번의 개선 사이클에서 가장 크게 드러난 문제는 “빈 시간을 모으는 속도”가 아니라 “확정 가능한 시간인지 판단할 근거 부족”이었다.
@@ -95,8 +99,3 @@ npm run dev
 ```bash
 npm run build
 ```
-
-주요 진입점:
-
-- `/`: 주최자 회의 생성 플로우
-- `/join`: 참석자 응답 플로우
