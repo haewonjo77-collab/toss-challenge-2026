@@ -3,7 +3,7 @@
   min-height: 100dvh;
   display: flex;
   padding: var(--space-lg);
-  background: #eef1f5;
+  background: var(--color-canvas);
   box-sizing: border-box;
 }
 
@@ -15,7 +15,7 @@
   max-width: 100%;
   max-height: 100%;
   margin: auto;
-  background: var(--color-surface-soft);
+  background: var(--color-canvas);
   border-radius: 34px;
   box-shadow:
     0 0 0 8px #111827,
@@ -48,8 +48,8 @@
 .back-bar {
   display: flex;
   align-items: center;
-  padding: var(--space-xs) var(--space-md) var(--space-xxs);
-  background: var(--color-surface-soft);
+  padding: var(--space-lg) var(--space-md) var(--space-xxs);
+  background: var(--color-canvas);
   flex-shrink: 0;
 }
 
@@ -66,8 +66,8 @@
 .phone-frame__screen {
   flex: 1;
   overflow-y: auto;
-  padding: var(--space-sm) var(--space-md) var(--space-xl);
-  background: var(--color-surface-soft);
+  padding: 0;
+  background: var(--color-canvas);
   box-sizing: border-box;
   scrollbar-width: none;
   -ms-overflow-style: none;

@@ -2,15 +2,16 @@
   position: relative;
   width: 100%;
   max-width: 361px;
+  margin: 0 auto;
 }
 
 .waiting-room {
   width: 100%;
   padding: var(--space-lg);
   background: var(--color-canvas);
-  border: 1px solid rgba(10, 10, 11, 0.06);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 18px 42px rgba(20, 24, 32, 0.08);
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
   box-sizing: border-box;
 }
 
@@ -83,7 +84,7 @@
 
 .waiting-page__alert {
   position: absolute;
-  top: 0;
+  top: calc(var(--space-lg) * -1);
   left: var(--space-md);
   right: var(--space-md);
   z-index: 4;

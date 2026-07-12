@@ -67,7 +67,7 @@ export function WaitingRoom({
               <path d="M7 3v4M17 3v4M5 8h14M5 5h14v16H5z" />
             </svg>
           </span>
-          내 일정도 추가하기
+          내 일정 등록하기
         </button>
       )}
 

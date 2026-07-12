@@ -2,17 +2,21 @@
   width: 100%;
 }
 
+.recommendation-page__mobile {
+  width: 100%;
+  max-width: 361px;
+  margin: 0 auto;
+}
+
 .recommendation-page__desktop {
   display: none;
 }
 
 .recommendation-page__fallback,
 .recommendation-page__empty {
+  padding: var(--space-lg) var(--space-lg) var(--space-md);
   margin-bottom: var(--space-md);
-}
-
-.recommendation-page__fallback {
-  padding: 0 var(--space-xs);
+  box-sizing: border-box;
 }
 
 .recommendation-page__fallback p,

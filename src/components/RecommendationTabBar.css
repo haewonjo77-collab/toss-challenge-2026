@@ -7,8 +7,9 @@
   gap: var(--space-xs);
   overflow-x: auto;
   background: var(--color-surface-soft);
-  padding: var(--space-xs) 0 var(--space-md);
+  padding: var(--space-xs) var(--space-lg) var(--space-md);
   margin-bottom: var(--space-xs);
+  box-sizing: border-box;
 }
 
 .recommendation-tabs__tab {

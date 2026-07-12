@@ -1,7 +1,7 @@
 .role-toggle {
   display: inline-flex;
   padding: 3px;
-  background: var(--color-surface-soft);
+  background: #eef1f4;
   border-radius: var(--radius-pill);
   flex-shrink: 0;
 }
@@ -13,7 +13,7 @@
   border: 1px solid transparent;
   border-radius: var(--radius-pill);
   background: transparent;
-  color: var(--color-muted);
+  color: var(--color-body);
   font-family: var(--font-family);
   font-size: 12px;
   font-weight: 800;

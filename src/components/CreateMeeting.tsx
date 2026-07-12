@@ -267,7 +267,13 @@ export function CreateMeeting({
         <span className="create-meeting__count text-caption">{attendees.length}명</span>
       </div>
 
-      <div className="create-meeting__add">
+      <div
+        className="create-meeting__add"
+        onBlur={(event) => {
+          if (event.currentTarget.contains(event.relatedTarget)) return;
+          setMemberSearchOpen(false);
+        }}
+      >
         <label
           className="create-meeting__member-search"
           aria-label="참석자 검색"
@@ -478,7 +484,7 @@ export function CreateMeeting({
           className="create-meeting__time-range text-body-md"
           onClick={() => setTimeSheetOpen(true)}
         >
-          <span className="create-meeting__time-range-label text-caption">가능 시간대</span>
+          <span className="create-meeting__time-range-label text-caption">시간대</span>
           <span>{timeRangeLabel} 사이</span>
         </button>
       </div>

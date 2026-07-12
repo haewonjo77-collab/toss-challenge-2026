@@ -67,7 +67,7 @@
 }
 
 .range-calendar__day--selected {
-  background: var(--color-accent);
+  background: var(--color-accent-active);
   color: var(--color-on-accent);
 }
 

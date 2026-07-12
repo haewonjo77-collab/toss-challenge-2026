@@ -6,6 +6,9 @@
 .join--times {
   width: 100%;
   max-width: 361px;
+  margin: 0 auto;
+  padding: var(--space-lg);
+  box-sizing: border-box;
 }
 
 .join__organizer {
@@ -40,10 +43,10 @@
 
 .join__meeting-info {
   padding: var(--space-lg);
-  border: 1px solid rgba(10, 10, 11, 0.06);
+  border: 1px solid var(--color-hairline);
   border-radius: var(--radius-lg);
   background: var(--color-canvas);
-  box-shadow: 0 14px 34px rgba(20, 24, 32, 0.07);
+  box-shadow: none;
   margin-bottom: var(--space-xl);
 }
 
@@ -122,10 +125,10 @@
   align-items: center;
   gap: var(--space-sm);
   padding: var(--space-xs) var(--space-sm);
-  border: 1px solid rgba(10, 10, 11, 0.06);
+  border: 1px solid var(--color-hairline);
   border-radius: var(--radius-lg);
   background: var(--color-canvas);
-  box-shadow: 0 14px 34px rgba(20, 24, 32, 0.06);
+  box-shadow: none;
   text-align: left;
   cursor: pointer;
 }
@@ -372,10 +375,10 @@
 }
 
 .join__day-panel {
-  border: 1px solid rgba(10, 10, 11, 0.06);
+  border: 1px solid var(--color-hairline);
   border-radius: var(--radius-lg);
   background: var(--color-canvas);
-  box-shadow: 0 14px 34px rgba(20, 24, 32, 0.06);
+  box-shadow: none;
   overflow: hidden;
 }
 

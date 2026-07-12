@@ -40,9 +40,11 @@ function shouldShowStatusBadge(status: Attendee['status']): boolean {
 function AttendeeList({
   attendees,
   role,
+  onRequestRecheck,
 }: {
   attendees: Attendee[];
   role: 'required' | 'optional';
+  onRequestRecheck?: () => void;
 }) {
   return (
     <div className={`recommendation-card__list recommendation-card__list--${role}`}>
@@ -60,7 +62,18 @@ function AttendeeList({
           >
             <AttendanceIcon status={attendee.status} />
             <span className="recommendation-card__avatar-copy">
-              <span className="recommendation-card__avatar-name text-body-md">{attendee.name}</span>
+              <span className="recommendation-card__avatar-name-row">
+                <span className="recommendation-card__avatar-name text-body-md">{attendee.name}</span>
+                {unavailableRequired && onRequestRecheck && (
+                  <button
+                    type="button"
+                    className="recommendation-card__recheck text-caption"
+                    onClick={onRequestRecheck}
+                  >
+                    재확인 요청
+                  </button>
+                )}
+              </span>
               {attendee.team && (
                 <span className="recommendation-card__avatar-team text-caption">
                   {attendee.team}
@@ -118,7 +131,13 @@ export function RecommendationCard({
             {availabilitySummary(requiredAttendees)}
           </span>
         </div>
-        <AttendeeList attendees={requiredAttendees} role="required" />
+        <AttendeeList
+          attendees={requiredAttendees}
+          role="required"
+          onRequestRecheck={
+            variant === 'fallback' && missingRequired.length > 0 ? onRequestRecheck : undefined
+          }
+        />
       </div>
 
       <hr className="recommendation-card__divider" />
@@ -134,18 +153,13 @@ export function RecommendationCard({
           <span className="recommendation-card__section-count text-caption">
             {optionalExpanded
               ? availabilitySummary(optionalAttendees)
-              : `선택 ${optionalAvailableCount}가능 · 보기`}
+              : `선택 ${optionalAvailableCount}명 가능 · 보기`}
           </span>
         </button>
         {optionalExpanded && <AttendeeList attendees={optionalAttendees} role="optional" />}
       </div>
 
       <div className="recommendation-card__actions">
-        {variant === 'fallback' && missingRequired.length > 0 && onRequestRecheck && (
-          <button type="button" className="button button--secondary" onClick={onRequestRecheck}>
-            재확인 요청
-          </button>
-        )}
         <button type="button" className="button button--primary" onClick={onConfirm}>
           {variant === 'fallback' ? '이대로 확정' : '이 시간으로 확정하기'}
         </button>
