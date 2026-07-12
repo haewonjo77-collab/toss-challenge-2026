@@ -4,6 +4,7 @@ export interface Attendee {
   id: string;
   name: string;
   status: AttendanceStatus;
+  team?: string;
 }
 
 export type AttendeeRole = 'required' | 'optional';

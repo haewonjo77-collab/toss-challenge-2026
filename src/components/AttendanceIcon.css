@@ -2,8 +2,45 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  font-size: 14px;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
   line-height: 1;
-  color: var(--color-ink);
+}
+
+.attendance-icon svg {
+  width: 22px;
+  height: 22px;
+  display: block;
+}
+
+.attendance-icon__circle {
+  fill: currentColor;
+  fill-opacity: 0.08;
+  stroke: currentColor;
+  stroke-width: 1.8;
+}
+
+.attendance-icon__mark {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.2;
+}
+
+.attendance-icon__pie {
+  fill: currentColor;
+}
+
+.attendance-icon--full {
+  color: var(--color-success);
+}
+
+.attendance-icon--none {
+  color: var(--color-danger);
+}
+
+.attendance-icon--partial {
+  color: #f59e0b;
 }

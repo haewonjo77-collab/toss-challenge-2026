@@ -8,6 +8,68 @@
   box-sizing: border-box;
 }
 
+.confirmed-meeting__alert {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-sm);
+  border: 1px solid var(--color-accent-disabled);
+  border-radius: var(--radius-md);
+  background: var(--color-canvas);
+  box-shadow: 0 4px 12px rgba(17, 17, 17, 0.08);
+  color: var(--color-accent-active);
+  margin-bottom: var(--space-md);
+  animation: confirmed-alert-drop 260ms ease-out;
+}
+
+.confirmed-meeting__alert-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  background: var(--color-accent-disabled);
+  color: var(--color-accent-active);
+  flex-shrink: 0;
+}
+
+.confirmed-meeting__alert-icon svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+}
+
+.confirmed-meeting__alert-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.confirmed-meeting__alert-title {
+  color: var(--color-ink);
+  font-weight: 700;
+}
+
+.confirmed-meeting__alert-message {
+  color: var(--color-muted);
+}
+
+@keyframes confirmed-alert-drop {
+  from {
+    transform: translateY(-8px);
+  }
+
+  to {
+    transform: translateY(0);
+  }
+}
+
 /* 확정 완료 상태 마커 — 공유 버튼이 secondary로 내려가면서 이 화면의 accent 1군데를 담당 */
 .confirmed-meeting__check {
   display: flex;

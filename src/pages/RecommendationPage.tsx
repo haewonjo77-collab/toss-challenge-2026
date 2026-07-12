@@ -26,34 +26,32 @@ export function RecommendationPage() {
     settings.includeWeekends,
     settings.selectedDates,
   );
-  const ranked = recommendTimes(
+  const recommendedOptions = recommendTimes(
     attendees,
     settings.durationMinutes,
     rangeDays,
     settings.dayStartMinutes,
     settings.dayEndMinutes,
-  )
-    .slice(0, 4)
-    .map((option, index) => ({ ...option, rankLabel: index === 0 ? '추천' : `대안 ${index}` }));
+  ).slice(0, 2);
+  const hasPerfectRecommendation = recommendedOptions[0] && !recommendedOptions[0].isFallback;
+  const ranked = recommendedOptions.map((option, index) => ({
+    ...option,
+    rankLabel: hasPerfectRecommendation
+      ? index === 0
+        ? '추천'
+        : `대안 ${index}`
+      : `대안 ${index + 1}`,
+  }));
+  const visibleOptions = hasPerfectRecommendation ? ranked.slice(0, 1) : ranked;
   const fallbackName = ranked[0]?.requiredAttendees.find((attendee) => attendee.status !== 'full')?.name;
-  const fallbackCount = fallbackName
-    ? ranked.filter(
-        (option) =>
-          option.isFallback &&
-          option.requiredAttendees.filter((attendee) => attendee.status !== 'full').length === 1 &&
-          option.requiredAttendees.some(
-            (attendee) => attendee.name === fallbackName && attendee.status !== 'full',
-          ),
-      ).length
-    : 0;
-  const active = ranked.find((option) => option.timeLabel === activeLabel) ?? ranked[0];
+  const active = visibleOptions.find((option) => option.timeLabel === activeLabel) ?? visibleOptions[0];
 
   if (!active) {
     return (
       <div className="recommendation-page">
         <div className="recommendation-page__empty card">
-          <p className="text-title-md">추천할 수 있는 시간이 없어요</p>
-          <p className="text-body-sm">회의 가능 기간이나 시간대를 넓혀 다시 확인해주세요</p>
+          <p className="text-title-lg">추천할 시간이 없어요</p>
+          <p className="text-body-md">후보 날짜나 시간을 더 넓혀주세요</p>
         </div>
       </div>
     );
@@ -65,35 +63,28 @@ export function RecommendationPage() {
       requiredAttendees: option.requiredAttendees,
       optionalAttendees: option.optionalAttendees,
     });
-    navigate('/confirmed');
+    navigate('/confirmed', { state: { confirmationNotice: true } });
   };
 
   // 재확인 요청은 필수 참석자 중 불가 응답자에게만 전송된다는 것을 토스트로 명시
-  const requestRecheck = (option = active) => {
-    const missingRequired = option.requiredAttendees
-      .filter((attendee) => attendee.status === 'none')
-      .map((attendee) => attendee.name);
-    show(
-      missingRequired.length > 0
-        ? `${missingRequired.join(', ')}님에게 재확인 요청을 보냈어요`
-        : '재확인 요청을 보냈어요',
-    );
+  const requestRecheck = (attendeeName: string) => {
+    show(`${attendeeName}님에게 재요청을 보냈어요`);
   };
 
   return (
     <div className="recommendation-page">
       <div className="recommendation-page__mobile">
         {active.isFallback && fallbackName && (
-          <div className="recommendation-page__fallback card">
-            <p className="text-title-sm">필수 참석자 전원이 가능한 시간은 없어요</p>
-            <p className="text-body-sm">
-              {fallbackName}님만 다시 확인하면 확정할 수 있는 시간이 {fallbackCount}개 있어요
+          <div className="recommendation-page__fallback">
+            <p className="text-title-lg">
+              필수 전원이 겹치는 시간은 없지만, {visibleOptions.length}가지 방법을 찾았어요
             </p>
+            <p className="text-body-md">대안마다 빠지는 사람이 달라요</p>
           </div>
         )}
-        {ranked.length > 1 && (
+        {!hasPerfectRecommendation && visibleOptions.length > 1 && (
           <RecommendationTabBar
-            options={ranked.map((option) => ({ key: option.timeLabel, label: option.rankLabel }))}
+            options={visibleOptions.map((option) => ({ key: option.timeLabel, label: option.rankLabel }))}
             activeKey={active.timeLabel}
             onSelect={setActiveLabel}
           />
@@ -104,28 +95,28 @@ export function RecommendationPage() {
           optionalAttendees={active.optionalAttendees}
           variant={active.isFallback ? 'fallback' : 'primary'}
           onConfirm={() => confirm(active)}
-          onRequestRecheck={() => requestRecheck(active)}
+          onRequestRecheck={(attendee) => requestRecheck(attendee.name)}
         />
       </div>
 
       <div className="recommendation-page__desktop">
         {ranked[0]?.isFallback && fallbackName && (
-          <div className="recommendation-page__fallback recommendation-page__fallback--desktop card">
-            <p className="text-title-sm">필수 참석자 전원이 가능한 시간은 없어요</p>
-            <p className="text-body-sm">
-              {fallbackName}님만 다시 확인하면 확정할 수 있는 시간이 {fallbackCount}개 있어요
+          <div className="recommendation-page__fallback recommendation-page__fallback--desktop">
+            <p className="text-title-lg">
+              필수 전원이 겹치는 시간은 없지만, {visibleOptions.length}가지 방법을 찾았어요
             </p>
+            <p className="text-body-md">대안마다 빠지는 사람이 달라요</p>
           </div>
         )}
-        {ranked.map((option) => (
+        {visibleOptions.map((option) => (
           <RecommendationCard
             key={option.timeLabel}
-            timeLabel={`${option.rankLabel} · ${option.timeLabel}`}
+            timeLabel={hasPerfectRecommendation ? option.timeLabel : `${option.rankLabel} · ${option.timeLabel}`}
             requiredAttendees={option.requiredAttendees}
             optionalAttendees={option.optionalAttendees}
             variant={option.isFallback ? 'fallback' : 'primary'}
             onConfirm={() => confirm(option)}
-            onRequestRecheck={() => requestRecheck(option)}
+            onRequestRecheck={(attendee) => requestRecheck(attendee.name)}
           />
         ))}
       </div>

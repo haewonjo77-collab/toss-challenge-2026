@@ -1,4 +1,4 @@
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { ConfirmedMeeting } from '../components/ConfirmedMeeting';
 import { useToast } from '../components/Toast';
 import { useMeeting } from '../context/MeetingContext';
@@ -9,6 +9,12 @@ export function ConfirmedPage() {
   const { title, settings, confirmed, resetMeeting } = useMeeting();
   const { show } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
+  const showConfirmationNotice =
+    typeof location.state === 'object' &&
+    location.state !== null &&
+    'confirmationNotice' in location.state &&
+    location.state.confirmationNotice === true;
   useScreenMeasure('화면④ 확정');
 
   if (!confirmed) return <Navigate to="/" replace />;
@@ -20,7 +26,8 @@ export function ConfirmedPage() {
       durationText={durationLabel(settings.durationMinutes)}
       requiredAttendees={confirmed.requiredAttendees}
       optionalAttendees={confirmed.optionalAttendees}
-      onShare={() => show('참석자에게 보낼 링크가 복사됐어요')}
+      showConfirmationNotice={showConfirmationNotice}
+      onShare={() => show('확정된 회의 링크가 복사됐어요')}
       onNewMeeting={() => {
         resetMeeting();
         navigate('/');

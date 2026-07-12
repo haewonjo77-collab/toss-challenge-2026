@@ -43,6 +43,8 @@ interface MeetingContextValue {
   responses: ResponseStatus[];
   confirmed: ConfirmedResult | null;
   createMeeting: (title: string, attendees: InvitedAttendee[], settings: MeetingSettings) => void;
+  addAttendee: (name: string, team?: string) => InvitedAttendee;
+  updateAttendeeRole: (id: string, role: InvitedAttendee['role']) => void;
   markNextResponded: () => { name: string; remainingCount: number } | null;
   confirmMeeting: (result: ConfirmedResult) => void;
   resetMeeting: () => void;
@@ -70,15 +72,36 @@ export function MeetingProvider({ children }: { children: ReactNode }) {
     setTitle(newTitle);
     setAttendees(newAttendees);
     setSettings(newSettings);
-    // 참석자 플로우가 범위 밖이라 마지막 2명을 미응답으로 시작, 화면 ②에서 도착을 시뮬레이션
     setResponses(
-      newAttendees.map((attendee, index) => ({
+      newAttendees.map((attendee) => ({
         id: attendee.id,
         name: attendee.name,
-        responded: index < newAttendees.length - 2,
+        responded: false,
       })),
     );
     setConfirmed(null);
+  };
+
+  const updateAttendeeRole = (id: string, role: InvitedAttendee['role']) => {
+    setAttendees((prev) =>
+      prev.map((attendee) => (attendee.id === id ? { ...attendee, role } : attendee)),
+    );
+  };
+
+  const addAttendee = (name: string, team?: string) => {
+    const attendee: InvitedAttendee = {
+      id: `wait-${Date.now()}`,
+      name,
+      role: 'required',
+      team: team || undefined,
+    };
+    setAttendees((prev) => [...prev, attendee]);
+    setResponses((prev) => {
+      const nextResponses = [...prev, { id: attendee.id, name: attendee.name, responded: false }];
+      responsesRef.current = nextResponses;
+      return nextResponses;
+    });
+    return attendee;
   };
 
   const markNextResponded = () => {
@@ -118,6 +141,8 @@ export function MeetingProvider({ children }: { children: ReactNode }) {
         responses,
         confirmed,
         createMeeting,
+        addAttendee,
+        updateAttendeeRole,
         markNextResponded,
         confirmMeeting,
         resetMeeting,

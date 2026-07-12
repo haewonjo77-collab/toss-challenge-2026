@@ -11,6 +11,7 @@ import {
 import './RangeCalendar.css';
 
 const WEEKDAY_HEADERS = ['월', '화', '수', '목', '금', '토', '일'];
+const WEEKDAY_HEADERS_WITH_WEEKENDS = ['일', '월', '화', '수', '목', '금', '토'];
 
 interface RangeCalendarProps {
   rangeStart: string; // 'YYYY-MM-DD'
@@ -46,9 +47,11 @@ export function RangeCalendar({
   const todayKey = todayStart.getTime();
 
   const monthEnd = new Date(viewMonth.getFullYear(), viewMonth.getMonth() + 1, 0);
-  const weekdayHeaders = includeWeekends ? WEEKDAY_HEADERS : WEEKDAY_HEADERS.slice(0, 5);
+  const weekdayHeaders = includeWeekends ? WEEKDAY_HEADERS_WITH_WEEKENDS : WEEKDAY_HEADERS.slice(0, 5);
   const weeks: Date[][] = [];
-  let cursor = mondayOfWeek(viewMonth, 0);
+  let cursor = includeWeekends
+    ? new Date(viewMonth.getFullYear(), viewMonth.getMonth(), 1 - viewMonth.getDay())
+    : mondayOfWeek(viewMonth, 0);
   while (cursor <= monthEnd) {
     const weekStart = cursor;
     weeks.push(
@@ -81,15 +84,11 @@ export function RangeCalendar({
 
   const applyDragTo = (targetISO: string) => {
     if (!anchorRef.current || lastTargetRef.current === targetISO) return;
+    if (dragModeRef.current === 'remove') return;
     const span = datesBetween(anchorRef.current, targetISO);
-    const spanSet = new Set(span);
-    const nextDates =
-      dragModeRef.current === 'add'
-        ? [...baseSelectionRef.current, ...span]
-        : baseSelectionRef.current.filter((date) => !spanSet.has(date));
     changedByDragRef.current = true;
     lastTargetRef.current = targetISO;
-    emitDates(nextDates);
+    emitDates([...baseSelectionRef.current, ...span]);
   };
 
   const targetDateFromPoint = (clientX: number, clientY: number) => {
@@ -124,17 +123,8 @@ export function RangeCalendar({
     if (changedByDragRef.current) {
       applyDragTo(targetISO);
     } else if (dragModeRef.current === 'remove') {
-      if (
-        clickAnchorRef.current?.mode === 'remove' &&
-        clickAnchorRef.current.iso !== anchorRef.current
-      ) {
-        const spanSet = new Set(datesBetween(clickAnchorRef.current.iso, anchorRef.current));
-        emitDates(selectedDates.filter((date) => !spanSet.has(date)));
-        clickAnchorRef.current = null;
-      } else {
-        emitDates(selectedDates.filter((date) => date !== anchorRef.current));
-        clickAnchorRef.current = { iso: anchorRef.current, mode: 'remove' };
-      }
+      emitDates(selectedDates.filter((date) => date !== anchorRef.current));
+      clickAnchorRef.current = null;
     } else {
       if (clickAnchorRef.current?.mode === 'add' && clickAnchorRef.current.iso !== anchorRef.current) {
         emitDates([...selectedDates, ...datesBetween(clickAnchorRef.current.iso, anchorRef.current)]);

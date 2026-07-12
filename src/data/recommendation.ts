@@ -23,6 +23,7 @@ const CANDIDATE_PATTERNS: CandidatePattern[] = [
   {
     startMinutes: 14 * 60,
     availability: { 'opt-2': 'partial', 'opt-3': 'none' },
+    requiredNoneIndexes: [0],
     optionalPartialIndexes: [1],
     optionalNoneIndexes: [2],
   },
@@ -35,18 +36,19 @@ const CANDIDATE_PATTERNS: CandidatePattern[] = [
   {
     startMinutes: 15 * 60,
     availability: { 'req-2': 'none', 'opt-2': 'partial' },
-    requiredNoneIndexes: [1],
+    requiredNoneIndexes: [2],
     optionalPartialIndexes: [1],
   },
   {
     startMinutes: 10 * 60,
     availability: { 'req-4': 'none', 'opt-2': 'none', 'opt-3': 'none' },
-    requiredNoneIndexes: [0, 3],
+    requiredNoneIndexes: [3],
     optionalNoneIndexes: [1, 2],
   },
   {
     startMinutes: 16 * 60,
     availability: { 'opt-1': 'none', 'opt-2': 'none', 'opt-3': 'none' },
+    requiredNoneIndexes: [0],
     optionalNoneIndexes: [0, 1, 2],
   },
 ];
@@ -89,16 +91,17 @@ export function recommendTimes(
   dayEndMinutes = 18 * 60,
 ): Recommendation[] {
   const latestStart = Math.max(dayStartMinutes, dayEndMinutes - durationMinutes);
+  const requiredSource = attendees.filter((a) => a.role === 'required');
+  const optionalSource = attendees.filter((a) => a.role === 'optional');
 
   const scored = CANDIDATE_PATTERNS.map((pattern, index) => {
     // 범위 안에서 후보를 날짜별로 분산 (기존 화~금 분포와 동일하게 2번째 날부터)
     const day = rangeDays[Math.min(index + 1, rangeDays.length - 1)];
     const startMinutes = Math.min(Math.max(pattern.startMinutes, dayStartMinutes), latestStart);
-    const requiredSource = attendees.filter((a) => a.role === 'required');
-    const optionalSource = attendees.filter((a) => a.role === 'optional');
     const toAttendee = (attendee: InvitedAttendee, roleIndex: number): Attendee => ({
       id: attendee.id,
       name: attendee.name,
+      team: attendee.team,
       status: statusAt(pattern, attendee, roleIndex),
     });
     const requiredAttendees = requiredSource.map(toAttendee);

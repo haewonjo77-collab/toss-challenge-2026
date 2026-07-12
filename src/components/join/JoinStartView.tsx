@@ -1,9 +1,10 @@
-import { useState } from 'react';
-import { ResponseList } from '../ResponseList';
+import { useEffect, useMemo } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useMeeting } from '../../context/MeetingContext';
 import { useJoin } from '../../context/JoinContext';
 import { initialInvitedAttendees } from '../../data/mockAttendees';
 import type { ResponseStatus } from '../../data/mockAttendees';
+import { organizationMembers } from '../../data/organizationMembers';
 import './join.css';
 
 interface JoinStartViewProps {
@@ -15,72 +16,55 @@ const ORGANIZER_PROFILE = {
 };
 
 export function JoinStartView({ onAdvance }: JoinStartViewProps) {
-  const { title, responses } = useMeeting();
+  const location = useLocation();
+  const { title, attendees, responses } = useMeeting();
   const { startJoin } = useJoin();
-  const [name, setName] = useState('');
 
   // 초대 링크 단독 접속 시나리오 — 주최자 세션이 없으면 mock 제목 사용
-  const meetingTitle = title || '디자인팀';
+  const meetingTitle = title || '디자인팀 회의';
 
-  // 가설 A(오픈폴): 응답 제출 전에도 현재 응답 현황을 공개해 참여를 유도한다.
-  // 주최자 세션이 있으면 실제 응답 데이터, 없으면 mock 로스터(마지막 2명 미응답 규칙) 사용.
-  const roster: ResponseStatus[] =
-    responses.length > 0
-      ? responses
+  // 주최자가 등록한 참석자 목록을 초대 링크의 이름 선택지로 그대로 사용한다.
+  // 응답 여부만 responses에서 덧씌우고, 단독 접속 목업에서는 기존 기본 명단을 사용한다.
+  const roster: ResponseStatus[] = useMemo(() => {
+    const responseById = new Map(responses.map((response) => [response.id, response.responded]));
+    return attendees.length > 0
+      ? attendees.map((attendee) => ({
+          id: attendee.id,
+          name: attendee.name,
+          responded: responseById.get(attendee.id) ?? false,
+        }))
       : initialInvitedAttendees.map((attendee, index) => ({
           id: attendee.id,
           name: attendee.name,
           responded: index < initialInvitedAttendees.length - 2,
         }));
+  }, [attendees, responses]);
   const respondedCount = roster.filter((member) => member.responded).length;
-  const remainingCount = roster.length - respondedCount;
 
-  const start = () => {
-    const trimmed = name.trim();
-    if (!trimmed) return;
-    startJoin(trimmed);
+  useEffect(() => {
+    const attendeeId = new URLSearchParams(location.search).get('attendee');
+    const linkedMember =
+      roster.find((member) => member.id === attendeeId) ??
+      organizationMembers.find((member) => member.id === attendeeId);
+    const fallbackMember = roster.find((member) => !member.responded) ?? roster[0];
+    const participantName = linkedMember?.name ?? fallbackMember?.name ?? '조해원';
+
+    startJoin(participantName);
     onAdvance();
-  };
+  }, [location.search, onAdvance, roster, startJoin]);
 
   return (
     <div className="card">
       <p className="join__eyebrow text-caption">회의 초대</p>
       <div className="join__organizer">
-        <p className="join__organizer-title text-body-sm">
-          {ORGANIZER_PROFILE.name}님이 회의 일정을 조율하고 있어요
+        <p className="join__organizer-title text-body-md">
+          {ORGANIZER_PROFILE.name}님이 회의 시간을 맞추고 있어요
         </p>
       </div>
-      <p className="join__title text-title-lg">'{meetingTitle}' 회의에 초대됐어요</p>
+      <p className="join__title text-title-lg">'{meetingTitle}'에 초대됐어요</p>
       <p className="join__progress text-caption">
-        지금까지 {roster.length}명 중 {respondedCount}명이 응답했어요
+        {roster.length}명 중 {respondedCount}명이 안 되는 시간을 골랐어요
       </p>
-      <input
-        className="text-input join__name-input"
-        value={name}
-        onChange={(event) => setName(event.target.value)}
-        onKeyDown={(event) => {
-          if (event.nativeEvent.isComposing) return;
-          if (event.key === 'Enter') start();
-        }}
-        placeholder="이름"
-      />
-      <button
-        type="button"
-        className="button button--primary join__cta"
-        disabled={name.trim() === ''}
-        onClick={start}
-      >
-        시작하기
-      </button>
-      <div className="join__response-preview">
-        <div className="join__response-preview-head">
-          <p className="join__response-preview-title text-title-sm">응답 현황</p>
-          <p className="join__response-preview-count text-caption">
-            {respondedCount} 응답 · {remainingCount} 대기
-          </p>
-        </div>
-        <ResponseList responses={roster} />
-      </div>
     </div>
   );
 }

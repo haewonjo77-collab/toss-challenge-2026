@@ -1,18 +1,16 @@
-import { useRef, useState } from 'react';
-import { Avatar } from './Avatar';
-import { RoleToggle } from './RoleToggle';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { RangeCalendar } from './RangeCalendar';
-import type { AttendeeRole, InvitedAttendee } from '../data/mockAttendees';
-import { DURATION_OPTIONS, formatClock24Label } from '../data/time';
+import type { InvitedAttendee } from '../data/mockAttendees';
+import { organizationMembers } from '../data/organizationMembers';
+import type { OrganizationMember } from '../data/organizationMembers';
+import { DURATION_OPTIONS, formatClockLabel } from '../data/time';
 import { isWeekend, nextWeekRange, parseISODate, selectedDatesForRange, thisWeekRange } from '../data/schedule';
 import { defaultMeetingSettings } from '../context/MeetingContext';
 import type { MeetingSettings } from '../context/MeetingContext';
-import { useLongPressDrag } from '../utils/useLongPressDrag';
 import './CreateMeeting.css';
 
 const DAY_TIME_OPTIONS = Array.from({ length: 31 }, (_, index) => 7 * 60 + index * 30);
 type RangeMode = 'this' | 'next' | 'custom';
-export type InviteDelivery = 'share' | 'copy';
 
 function dateListsEqual(a: string[], b: string[]) {
   if (a.length !== b.length) return false;
@@ -27,7 +25,6 @@ interface CreateMeetingProps {
     title: string,
     attendees: InvitedAttendee[],
     settings: MeetingSettings,
-    delivery: InviteDelivery,
     rememberAttendees: boolean,
   ) => boolean | Promise<boolean>;
 }
@@ -43,20 +40,19 @@ export function CreateMeeting({
   const [settings, setSettings] = useState<MeetingSettings>(initialSettings ?? defaultMeetingSettings());
   const patchSettings = (partial: Partial<MeetingSettings>) =>
     setSettings((prev) => ({ ...prev, ...partial }));
-  const [newName, setNewName] = useState('');
-  const [newTeam, setNewTeam] = useState('');
+  const [memberQuery, setMemberQuery] = useState('');
+  const [activeMemberIndex, setActiveMemberIndex] = useState(0);
   const [titleError, setTitleError] = useState(false);
   const [timeSheetOpen, setTimeSheetOpen] = useState(false);
   const [customRangeOpen, setCustomRangeOpen] = useState(false);
-  const [selectedRangeMode, setSelectedRangeMode] = useState<RangeMode | null>(null);
-  const [inviteSheetOpen, setInviteSheetOpen] = useState(false);
+  const [selectedRangeMode, setSelectedRangeMode] = useState<RangeMode | null>('next');
   const [rememberAttendees, setRememberAttendees] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const titleInputRef = useRef<HTMLInputElement>(null);
-  const nameInputRef = useRef<HTMLInputElement>(null);
+  const shouldScrollActiveMemberRef = useRef(false);
 
   // 제목 미입력 시 disabled로 침묵하는 대신, 클릭에 반응해 이유를 보여주고 입력 위치로 데려간다
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (submitting) return;
     if (title.trim() === '') {
       setTitleError(true);
@@ -64,23 +60,15 @@ export function CreateMeeting({
       titleInputRef.current?.focus({ preventScroll: true });
       return;
     }
-    setInviteSheetOpen(true);
-  };
-
-  const sendInvite = async (delivery: InviteDelivery) => {
-    if (submitting) return;
     setSubmitting(true);
     try {
-      const completed = await onSubmit(title.trim(), attendees, settings, delivery, rememberAttendees);
-      if (completed) setInviteSheetOpen(false);
+      await onSubmit(title.trim(), attendees, settings, rememberAttendees);
     } finally {
       setSubmitting(false);
     }
   };
 
-  const requiredCount = attendees.filter((attendee) => attendee.role === 'required').length;
-  const optionalCount = attendees.length - requiredCount;
-  const timeRangeLabel = `${formatClock24Label(settings.dayStartMinutes)}–${formatClock24Label(
+  const timeRangeLabel = `${formatClockLabel(settings.dayStartMinutes)}–${formatClockLabel(
     settings.dayEndMinutes,
   )}`;
   const thisWeek = thisWeekRange(settings.includeWeekends);
@@ -100,6 +88,7 @@ export function CreateMeeting({
     setSelectedRangeMode(mode);
     if (mode === 'custom') {
       setCustomRangeOpen(true);
+      patchSettings({ selectedDates: [] });
       return;
     }
 
@@ -168,80 +157,233 @@ export function CreateMeeting({
     }));
   };
 
-  // 함수형 업데이트 — 드래그 중 연속 이벤트가 리렌더보다 빠를 때 이전 변경 유실 방지
-  const changeRole = (id: string, role: AttendeeRole) => {
-    setAttendees((prev) =>
-      prev.map((attendee) =>
-        attendee.id === id && attendee.role !== role ? { ...attendee, role } : attendee,
-      ),
-    );
-  };
-
-  // 세그먼트 드래그: 누른 세그먼트의 값을 지나가는 참석자 행에 그대로 적용한다.
-  // TimeGrid와 달리 드래그 후 클릭이 다시 발생해도 같은 값이 적용될 뿐이라 클릭 억제가 필요 없다.
-  const roleDrag = useLongPressDrag();
-
-  const handleOptionPointerDown = (
-    id: string,
-    role: AttendeeRole,
-    event: React.PointerEvent<HTMLButtonElement>,
-  ) => {
-    roleDrag.startPress(
-      event,
-      () => changeRole(id, role),
-      (moveEvent) => {
-        const row = (
-          document.elementFromPoint(moveEvent.clientX, moveEvent.clientY) as HTMLElement | null
-        )?.closest('[data-attendee-id]') as HTMLElement | null;
-        const rowId = row?.dataset.attendeeId;
-        if (rowId) changeRole(rowId, role);
-      },
-    );
-  };
-
   const removeAttendee = (id: string) => {
     setAttendees(attendees.filter((attendee) => attendee.id !== id));
   };
 
-  const addAttendeeWithTeam = (teamOverride?: string) => {
-    const name = newName.trim();
-    if (!name) return;
-    const team = (teamOverride ?? newTeam).trim();
-    // 기본값 필수 — 대부분의 초대가 필수 인원이므로, '선택'으로 낮추는 액션만 요구되게 한다
-    setAttendees((prev) => [
-      ...prev,
-      { id: `new-${Date.now()}`, name, role: 'required', team: team || undefined },
-    ]);
-    setNewName('');
-    setNewTeam('');
-    // 연속 입력 편의 — 추가 버튼 클릭으로 빠진 포커스를 이름 입력으로 되돌려
-    // 리스트가 길어져도 다시 스크롤해 입력창을 찾지 않아도 되게 한다
-    nameInputRef.current?.focus();
+  const normalizedMemberQuery = memberQuery.trim().toLowerCase();
+  const searchResults = useMemo(
+    () =>
+      normalizedMemberQuery
+        ? organizationMembers
+            .filter((member) => {
+              return (
+                member.name.toLowerCase().includes(normalizedMemberQuery) ||
+                member.team.toLowerCase().includes(normalizedMemberQuery)
+              );
+            })
+            .sort((a, b) => Number(b.id === 'org-jo-haewon') - Number(a.id === 'org-jo-haewon'))
+            .slice(0, 8)
+        : [],
+    [normalizedMemberQuery],
+  );
+  const selectedIds = new Set(attendees.map((attendee) => attendee.id));
+  const allSearchResultsSelected =
+    searchResults.length > 0 && searchResults.every((member) => selectedIds.has(member.id));
+
+  useEffect(() => {
+    if (!shouldScrollActiveMemberRef.current) return;
+    shouldScrollActiveMemberRef.current = false;
+    if (!normalizedMemberQuery || searchResults.length === 0) return;
+    const activeOption = document.querySelector(
+      `[data-member-result-index="${activeMemberIndex}"]`,
+    );
+    activeOption?.scrollIntoView({ block: 'nearest' });
+  }, [activeMemberIndex, normalizedMemberQuery, searchResults.length]);
+
+  const toggleMember = (member: OrganizationMember) => {
+    setAttendees((prev) =>
+      prev.some((attendee) => attendee.id === member.id)
+        ? prev.filter((attendee) => attendee.id !== member.id)
+        : [
+            ...prev,
+            {
+              id: member.id,
+              name: member.name,
+              role: 'required',
+              team: member.team,
+            },
+          ],
+    );
   };
 
-  const addAttendee = () => {
-    addAttendeeWithTeam();
+  const toggleSearchResults = () => {
+    if (searchResults.length === 0) return;
+    setAttendees((prev) => {
+      if (searchResults.every((member) => prev.some((attendee) => attendee.id === member.id))) {
+        const resultIds = new Set(searchResults.map((member) => member.id));
+        return prev.filter((attendee) => !resultIds.has(attendee.id));
+      }
+      const existingIds = new Set(prev.map((attendee) => attendee.id));
+      const nextAttendees = searchResults
+        .filter((member) => !existingIds.has(member.id))
+        .map((member) => ({
+          id: member.id,
+          name: member.name,
+          role: 'required' as const,
+          team: member.team,
+        }));
+      return [...prev, ...nextAttendees];
+    });
   };
 
-  const handleAddKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    // 한글 IME 조합 중 Enter는 조합 확정 키이므로 무시 (조합 미종료 상태에서 추가되면 이름이 분리됨)
-    if (event.nativeEvent.isComposing) return;
-    if (event.key === 'Enter') addAttendee();
+  const handleMemberSearchKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.nativeEvent.isComposing || searchResults.length === 0) return;
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      shouldScrollActiveMemberRef.current = true;
+      setActiveMemberIndex((index) => (index + 1) % searchResults.length);
+      return;
+    }
+    if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      shouldScrollActiveMemberRef.current = true;
+      setActiveMemberIndex((index) => (index - 1 + searchResults.length) % searchResults.length);
+      return;
+    }
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      toggleMember(searchResults[activeMemberIndex] ?? searchResults[0]);
+    }
   };
 
-  const sameTeamSuggestions = Array.from(
-    new Set(attendees.map((attendee) => attendee.team).filter((team): team is string => !!team)),
-  )
-    .filter((team) => team !== newTeam.trim())
-    .slice(0, 4);
+  const attendeeSection = (
+    <div className="create-meeting__field">
+      <div className="create-meeting__section-head">
+        <span className="text-title-sm">참석자</span>
+        <span className="create-meeting__count text-caption">{attendees.length}명</span>
+      </div>
+
+      <div className="create-meeting__add">
+        <label className="create-meeting__member-search" aria-label="참석자 검색">
+          <span className="create-meeting__member-search-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" focusable="false">
+              <circle cx="11" cy="11" r="7" />
+              <path d="m16.5 16.5 4 4" />
+            </svg>
+          </span>
+          <input
+            type="text"
+            value={memberQuery}
+            onChange={(event) => {
+              setMemberQuery(event.target.value);
+              setActiveMemberIndex(0);
+            }}
+            onKeyDown={handleMemberSearchKeyDown}
+            placeholder="이름이나 부서 입력"
+            autoComplete="off"
+            autoCapitalize="off"
+            autoCorrect="off"
+            spellCheck={false}
+          />
+          {memberQuery && (
+            <button
+              type="button"
+              className="create-meeting__member-search-clear"
+              aria-label="검색어 지우기"
+              onClick={() => {
+                setMemberQuery('');
+                setActiveMemberIndex(0);
+              }}
+            >
+              ×
+            </button>
+          )}
+        </label>
+        {normalizedMemberQuery && (
+          <div className="create-meeting__member-results" aria-label="조직 멤버 검색 결과">
+            {searchResults.length > 0 ? (
+              <>
+                <div className="create-meeting__member-results-head">
+                  <span className="create-meeting__member-results-title text-caption">
+                    선택할 사람 {searchResults.length}명
+                  </span>
+                  <label className="create-meeting__member-select-all text-caption">
+                    <input
+                      type="checkbox"
+                      checked={allSearchResultsSelected}
+                      onChange={toggleSearchResults}
+                    />
+                    전체 선택
+                  </label>
+                </div>
+                {searchResults.map((member, index) => {
+                  const checked = selectedIds.has(member.id);
+                  return (
+                    <label
+                      key={member.id}
+                      data-member-result-index={index}
+                      className={`create-meeting__member-result${
+                        checked ? ' create-meeting__member-result--selected' : ''
+                      }${
+                        index === activeMemberIndex ? ' create-meeting__member-result--active' : ''
+                      }`}
+                      onMouseEnter={() => setActiveMemberIndex(index)}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={() => toggleMember(member)}
+                      />
+                      <span className="create-meeting__member-copy">
+                        <span className="create-meeting__member-name text-body-sm">
+                          {member.name}
+                        </span>
+                        <span className="create-meeting__member-meta text-caption">
+                          {member.team}
+                        </span>
+                      </span>
+                    </label>
+                  );
+                })}
+              </>
+            ) : (
+              <p className="create-meeting__member-empty text-caption">
+                일치하는 사람이 없어요
+              </p>
+            )}
+          </div>
+        )}
+        {attendees.length > 0 && (
+          <div className="create-meeting__selected-list" aria-label="선택한 참석자">
+            {attendees.map((attendee) => (
+              <div key={attendee.id} className="create-meeting__selected-row">
+                <span className="create-meeting__selected-copy">
+                  <span className="create-meeting__selected-name text-body-sm">
+                    {attendee.name}
+                  </span>
+                  {attendee.team && (
+                    <span className="create-meeting__selected-team text-caption">
+                      {attendee.team}
+                    </span>
+                  )}
+                </span>
+                <button
+                  type="button"
+                  className="create-meeting__remove"
+                  aria-label={`${attendee.name} 제거`}
+                  onClick={() => removeAttendee(attendee.id)}
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
 
   return (
     <div className="create-meeting">
       <p className="create-meeting__title text-title-lg">회의 만들기</p>
+      <p className="create-meeting__subtitle text-body-md">
+        <strong>해원님</strong>, 누구와 만날까요?
+      </p>
 
       <div className="create-meeting__field">
-        <label className="create-meeting__label text-caption" htmlFor="meeting-title">
-          회의 제목
+        <label className="create-meeting__label text-title-sm" htmlFor="meeting-title">
+          회의 이름
         </label>
         <input
           id="meeting-title"
@@ -252,33 +394,17 @@ export function CreateMeeting({
             setTitle(event.target.value);
             if (titleError) setTitleError(false);
           }}
-          placeholder="예: 디자인팀"
+          placeholder="예: 디자인팀 회의"
         />
-        {titleError && <p className="create-meeting__error text-body-sm">회의 제목을 입력해주세요</p>}
+        {titleError && <p className="create-meeting__error text-body-sm">회의 이름을 입력해주세요</p>}
       </div>
 
-      <div className="create-meeting__field">
-        <label className="create-meeting__label text-caption" htmlFor="meeting-duration">
-          회의 시간
-        </label>
-        <select
-          id="meeting-duration"
-          className="text-input create-meeting__input"
-          value={settings.durationMinutes}
-          onChange={(event) => changeDuration(Number(event.target.value))}
-        >
-          {DURATION_OPTIONS.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-      </div>
+      {attendeeSection}
 
       <div className="create-meeting__field">
         <div className="create-meeting__section-head">
-          <span className="create-meeting__label create-meeting__label--inline text-caption">
-            회의 가능 범위
+          <span className="create-meeting__label create-meeting__label--inline text-title-sm">
+            후보 날짜
           </span>
           <label className="create-meeting__weekend text-caption">
             <input
@@ -289,7 +415,7 @@ export function CreateMeeting({
             주말 포함
           </label>
         </div>
-        <div className="create-meeting__range-options" role="group" aria-label="회의 가능 기간">
+        <div className="create-meeting__range-options" role="group" aria-label="후보 날짜">
           {[
             ['this', '이번 주'],
             ['next', '다음 주'],
@@ -324,114 +450,74 @@ export function CreateMeeting({
           className="create-meeting__time-range text-body-md"
           onClick={() => setTimeSheetOpen(true)}
         >
-          <span className="create-meeting__time-range-label text-caption">시간대</span>
-          <span>{timeRangeLabel}</span>
+          <span className="create-meeting__time-range-label text-caption">가능 시간대</span>
+          <span>{timeRangeLabel} 사이</span>
         </button>
       </div>
 
       <div className="create-meeting__field">
-        <div className="create-meeting__section-head">
-          <span className="text-title-sm">참석자</span>
-          <span className="create-meeting__count text-caption">
-            필수 {requiredCount}명 · 선택 {optionalCount}명
-          </span>
-        </div>
-
-        {attendees.map((attendee) => (
-          <div key={attendee.id} className="create-meeting__row" data-attendee-id={attendee.id}>
-            <Avatar name={attendee.name} />
-            <span className="create-meeting__person">
-              <span className="create-meeting__name text-body-md">{attendee.name}</span>
-              {attendee.team && <span className="create-meeting__team text-caption">{attendee.team}</span>}
-            </span>
-            <RoleToggle
-              value={attendee.role}
-              onChange={(role) => changeRole(attendee.id, role)}
-              onOptionPointerDown={(role, event) => handleOptionPointerDown(attendee.id, role, event)}
-              onOptionPointerMove={roleDrag.movePress}
-            />
-            <button
-              type="button"
-              className="create-meeting__remove"
-              aria-label={`${attendee.name} 제거`}
-              onClick={() => removeAttendee(attendee.id)}
-            >
-              ×
-            </button>
-          </div>
-        ))}
-
-        <div className="create-meeting__add">
-          {sameTeamSuggestions.length > 0 && (
-            <div className="create-meeting__team-shortcuts">
-              <span className="create-meeting__team-shortcuts-label text-caption">같은 부서</span>
-              <div className="create-meeting__team-chips">
-                {sameTeamSuggestions.map((team) => (
-                  <button
-                    key={team}
-                    type="button"
-                    className="create-meeting__team-chip text-caption"
-                    onClick={() => {
-                      if (newName.trim()) {
-                        addAttendeeWithTeam(team);
-                        return;
-                      }
-                      setNewTeam(team);
-                      nameInputRef.current?.focus();
-                    }}
-                  >
-                    {team}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-          <div className="create-meeting__add-fields">
-            <input
-              type="text"
-              ref={nameInputRef}
-              className="text-input create-meeting__add-input"
-              value={newName}
-              onChange={(event) => setNewName(event.target.value)}
-              onKeyDown={handleAddKeyDown}
-              placeholder="참석자 이름"
-              autoComplete="off"
-              autoCapitalize="off"
-              autoCorrect="off"
-              spellCheck={false}
-            />
-            <input
-              type="text"
-              className="text-input create-meeting__add-input"
-              value={newTeam}
-              onChange={(event) => setNewTeam(event.target.value)}
-              onKeyDown={handleAddKeyDown}
-              placeholder="부서/팀 (선택)"
-              autoComplete="off"
-              autoCapitalize="off"
-              autoCorrect="off"
-              spellCheck={false}
-            />
-          </div>
-          <button
-            type="button"
-            className="button button--secondary create-meeting__add-button"
-            disabled={newName.trim() === ''}
-            onClick={addAttendee}
-          >
-            참석자 추가
-          </button>
-        </div>
+        <label className="create-meeting__label text-title-sm" htmlFor="meeting-duration">
+          회의 길이
+        </label>
+        <select
+          id="meeting-duration"
+          className="text-input create-meeting__input"
+          value={settings.durationMinutes}
+          onChange={(event) => changeDuration(Number(event.target.value))}
+        >
+          {DURATION_OPTIONS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
       </div>
 
-      <label className="create-meeting__notification text-caption">
-        <input
-          type="checkbox"
-          checked={settings.responseNotificationsEnabled}
-          onChange={(event) => patchSettings({ responseNotificationsEnabled: event.target.checked })}
-        />
-        응답 알림 받기
-      </label>
+      <div className="create-meeting__options">
+        <p className="create-meeting__options-title text-title-sm">추가 옵션</p>
+        <label className="create-meeting__option-row text-body-sm">
+          <span className="create-meeting__option-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" focusable="false">
+              <path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
+              <path d="M10 21h4" />
+            </svg>
+          </span>
+          <span className="create-meeting__option-copy">
+            <span className="create-meeting__option-title">응답하면 알려주기</span>
+          </span>
+          <span className="create-meeting__switch">
+            <input
+              type="checkbox"
+              checked={settings.responseNotificationsEnabled}
+              onChange={(event) =>
+                patchSettings({ responseNotificationsEnabled: event.target.checked })
+              }
+            />
+            <span className="create-meeting__switch-track" aria-hidden="true" />
+          </span>
+        </label>
+        <label className="create-meeting__option-row text-body-sm">
+          <span className="create-meeting__option-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" focusable="false">
+              <path d="M6 4h12v17l-6-4-6 4z" />
+            </svg>
+          </span>
+          <span className="create-meeting__option-copy">
+            <span className="create-meeting__option-title">다음에도 이 참석자 쓰기</span>
+            <span className="create-meeting__option-hint text-caption">
+              다음 회의에서 바로 불러올 수 있어요
+            </span>
+          </span>
+          <span className="create-meeting__switch">
+            <input
+              type="checkbox"
+              checked={rememberAttendees}
+              onChange={(event) => setRememberAttendees(event.target.checked)}
+            />
+            <span className="create-meeting__switch-track" aria-hidden="true" />
+          </span>
+        </label>
+      </div>
 
       <button
         type="button"
@@ -439,58 +525,8 @@ export function CreateMeeting({
         disabled={attendees.length === 0 || submitting}
         onClick={handleSubmit}
       >
-        {submitting ? '초대 링크 준비 중' : '초대 링크 보내기'}
+        {submitting ? '초대 링크 준비 중' : '초대 링크 공유하기'}
       </button>
-
-      {inviteSheetOpen && (
-        <div className="modal-overlay" onClick={() => setInviteSheetOpen(false)}>
-          <div className="modal-sheet" onClick={(event) => event.stopPropagation()}>
-            <button
-              type="button"
-              className="modal-sheet__close"
-              aria-label="닫기"
-              onClick={() => setInviteSheetOpen(false)}
-            >
-              ✕
-            </button>
-            <p className="create-meeting__sheet-title text-title-md">초대 링크를 보낼까요?</p>
-            <p className="create-meeting__sheet-hint text-body-sm">
-              참석자는 링크에서 안 되는 시간을 표시해요
-            </p>
-            <label className="create-meeting__remember text-body-sm">
-              <input
-                type="checkbox"
-                checked={rememberAttendees}
-                onChange={(event) => setRememberAttendees(event.target.checked)}
-              />
-              <span>
-                <span className="create-meeting__remember-title">이 회의 참석자 저장</span>
-                <span className="create-meeting__remember-hint text-caption">
-                  다음 회의에서 같은 참석자를 다시 불러올 수 있어요
-                </span>
-              </span>
-            </label>
-            <div className="create-meeting__invite-actions">
-              <button
-                type="button"
-                className="button button--primary"
-                onClick={() => sendInvite('share')}
-                disabled={submitting}
-              >
-                초대 링크 공유
-              </button>
-              <button
-                type="button"
-                className="button button--secondary"
-                onClick={() => sendInvite('copy')}
-                disabled={submitting}
-              >
-                링크 복사
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {timeSheetOpen && (
         <div className="modal-overlay" onClick={() => setTimeSheetOpen(false)}>
@@ -503,10 +539,13 @@ export function CreateMeeting({
             >
               ✕
             </button>
-            <p className="create-meeting__sheet-title text-title-md">시간대</p>
+            <p className="create-meeting__sheet-title text-title-md">참석자가 고를 시간대</p>
+            <p className="create-meeting__sheet-hint text-body-md">
+              가능 시간대의 시작과 끝을 정해주세요
+            </p>
             <div className="create-meeting__time-selects">
               <label className="create-meeting__time-select text-caption">
-                시작
+                시작 시간
                 <select
                   className="text-input"
                   value={settings.dayStartMinutes}
@@ -516,13 +555,13 @@ export function CreateMeeting({
                     (option) => option + settings.durationMinutes <= settings.dayEndMinutes,
                   ).map((option) => (
                     <option key={option} value={option}>
-                      {formatClock24Label(option)}
+                      {formatClockLabel(option)}
                     </option>
                   ))}
                 </select>
               </label>
               <label className="create-meeting__time-select text-caption">
-                종료
+                끝 시간
                 <select
                   className="text-input"
                   value={settings.dayEndMinutes}
@@ -532,7 +571,7 @@ export function CreateMeeting({
                     (option) => option >= settings.dayStartMinutes + settings.durationMinutes,
                   ).map((option) => (
                     <option key={option} value={option}>
-                      {formatClock24Label(option)}
+                      {formatClockLabel(option)}
                     </option>
                   ))}
                 </select>
@@ -543,7 +582,7 @@ export function CreateMeeting({
               className="button button--primary create-meeting__sheet-cta"
               onClick={() => setTimeSheetOpen(false)}
             >
-              적용
+              저장
             </button>
           </div>
         </div>

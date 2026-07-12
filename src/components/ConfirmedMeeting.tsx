@@ -8,6 +8,7 @@ interface ConfirmedMeetingProps {
   durationText: string;
   requiredAttendees: Attendee[];
   optionalAttendees: Attendee[];
+  showConfirmationNotice?: boolean;
   onShare: () => void;
   onNewMeeting: () => void;
 }
@@ -22,17 +23,36 @@ export function ConfirmedMeeting({
   durationText,
   requiredAttendees,
   optionalAttendees,
+  showConfirmationNotice = false,
   onShare,
   onNewMeeting,
 }: ConfirmedMeetingProps) {
   return (
     <div className="confirmed-meeting">
+      {showConfirmationNotice && (
+        <div className="confirmed-meeting__alert" role="status">
+          <span className="confirmed-meeting__alert-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" focusable="false">
+              <path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
+              <path d="M10 21h4" />
+            </svg>
+          </span>
+          <span className="confirmed-meeting__alert-copy">
+            <span className="confirmed-meeting__alert-title text-body-md">
+              회의 시간이 확정됐어요
+            </span>
+            <span className="confirmed-meeting__alert-message text-caption">
+              참석자에게 확정 알림을 보냈어요
+            </span>
+          </span>
+        </div>
+      )}
       <div className="confirmed-meeting__check" aria-hidden="true">
         ✓
       </div>
-      <p className="confirmed-meeting__message text-title-md">회의가 확정되었어요</p>
-      <p className="confirmed-meeting__time text-title-lg">{timeLabel}</p>
-      <p className="confirmed-meeting__summary text-body-sm">
+      <p className="confirmed-meeting__message text-title-lg">회의 시간이 확정됐어요</p>
+      <p className="confirmed-meeting__time text-title-md">{timeLabel}</p>
+      <p className="confirmed-meeting__summary text-body-md">
         {meetingTitle} · {durationText}
       </p>
 
@@ -59,7 +79,7 @@ export function ConfirmedMeeting({
       </div>
 
       <button type="button" className="button button--secondary confirmed-meeting__cta" onClick={onShare}>
-        참석자에게 공유하기
+        참석자에게 다시 공유하기
       </button>
       {/* accent는 상단 확정 체크 마커 1군데 유지 — 새 플로우 진입 버튼도 secondary */}
       <button

@@ -11,9 +11,17 @@
   margin-bottom: var(--space-md);
 }
 
+.recommendation-page__fallback {
+  padding: 0 var(--space-xs);
+}
+
 .recommendation-page__fallback p,
 .recommendation-page__empty p {
   margin: 0;
+}
+
+.recommendation-page__fallback p:first-child {
+  color: var(--color-ink);
 }
 
 .recommendation-page__fallback p + p,

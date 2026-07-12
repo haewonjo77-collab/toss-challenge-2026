@@ -1,6 +1,5 @@
 import { useNavigate } from 'react-router-dom';
 import { CreateMeeting } from '../components/CreateMeeting';
-import type { InviteDelivery } from '../components/CreateMeeting';
 import { useToast } from '../components/Toast';
 import { useMeeting } from '../context/MeetingContext';
 import { rememberAttendeeGroups } from '../data/favorites';
@@ -14,7 +13,7 @@ export function CreateMeetingPage() {
 
   const invitePayload = (meetingTitle: string) => {
     const joinUrl = `${window.location.origin}/join`;
-    const text = `${meetingTitle} 회의 가능 시간을 표시해주세요`;
+    const text = `${meetingTitle}에서 안 되는 시간을 골라주세요`;
     return { joinUrl, text };
   };
 
@@ -23,7 +22,7 @@ export function CreateMeetingPage() {
     try {
       if (navigator.share) {
         await navigator.share({ title: meetingTitle, text, url: joinUrl });
-        show('초대 링크가 공유됐어요');
+        show('초대 링크를 공유했어요');
         return true;
       }
       if (navigator.clipboard) {
@@ -34,22 +33,6 @@ export function CreateMeetingPage() {
       show('초대 링크를 준비했어요');
       return true;
     } catch {
-      return false;
-    }
-  };
-
-  const copyInvite = async (meetingTitle: string) => {
-    const { joinUrl } = invitePayload(meetingTitle);
-    try {
-      if (navigator.clipboard) {
-        await navigator.clipboard.writeText(joinUrl);
-        show('초대 링크가 복사됐어요');
-        return true;
-      }
-      show('초대 링크를 준비했어요');
-      return true;
-    } catch {
-      show('초대 링크 복사를 다시 시도해주세요');
       return false;
     }
   };
@@ -59,14 +42,8 @@ export function CreateMeetingPage() {
       initialTitle={title}
       initialAttendees={attendees.length > 0 ? attendees : undefined}
       initialSettings={settings}
-      onSubmit={async (
-        newTitle,
-        newAttendees,
-        newSettings,
-        delivery: InviteDelivery,
-        rememberAttendees,
-      ) => {
-        const sent = delivery === 'share' ? await shareInvite(newTitle) : await copyInvite(newTitle);
+      onSubmit={async (newTitle, newAttendees, newSettings, rememberAttendees) => {
+        const sent = await shareInvite(newTitle);
         if (!sent) return false;
         if (rememberAttendees) rememberAttendeeGroups(newAttendees);
         createMeeting(newTitle, newAttendees, newSettings);

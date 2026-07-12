@@ -41,76 +41,51 @@
   color: var(--color-ink);
 }
 
-.recommendation-card__avatar-item .avatar {
-  border: 2px solid transparent;
-  flex-shrink: 0;
-}
-
-.recommendation-card__list--required .recommendation-card__avatar-item .avatar {
-  background: var(--color-accent-disabled);
-  color: var(--color-accent-active);
-  font-weight: 700;
-}
-
 .recommendation-card__list--optional .recommendation-card__avatar-item {
   color: var(--color-muted);
 }
 
-.recommendation-card__list--optional .recommendation-card__avatar-item .avatar {
-  background: var(--color-surface-soft);
-  color: var(--color-muted);
-}
-
-.recommendation-card__avatar-item--partial .avatar {
-  border-color: var(--color-accent);
-}
-
-.recommendation-card__avatar-item--none .avatar {
-  border-color: var(--color-muted);
-}
-
-.recommendation-card__avatar-item--danger .avatar {
-  border-color: var(--color-danger);
-}
-
 .recommendation-card__avatar-item--danger .recommendation-card__avatar-name {
-  color: var(--color-danger);
+  color: var(--color-ink);
   text-decoration: line-through;
 }
 
-.recommendation-card__avatar-name {
+.recommendation-card__avatar-copy {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.recommendation-card__avatar-name {
   color: inherit;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.recommendation-card__avatar-status {
-  flex-shrink: 0;
-  padding: 3px 10px;
-  border-radius: var(--radius-pill);
-  border: none;
-  background: var(--color-surface-strong);
-  color: var(--color-ink);
-  white-space: nowrap;
-  font-weight: 700;
+.recommendation-card__avatar-team {
+  color: var(--color-muted);
+  margin-top: 2px;
 }
 
-.recommendation-card__avatar-status--full {
-  background: var(--color-success-soft);
-  color: var(--color-success);
+.recommendation-card__avatar-status {
+  flex-shrink: 0;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-hairline);
+  background: var(--color-canvas);
+  color: var(--color-body);
+  white-space: nowrap;
+  font-family: var(--font-family);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
 }
 
 .recommendation-card__avatar-status--partial {
-  border: 1px solid var(--color-accent-disabled);
-  background: var(--color-canvas);
-  color: var(--color-accent-active);
-}
-
-.recommendation-card__list--optional .recommendation-card__avatar-item--partial .avatar {
-  border-color: var(--color-hairline);
+  background: var(--color-surface-soft);
+  color: var(--color-body);
 }
 
 .recommendation-card__list--optional .recommendation-card__avatar-status--partial {
@@ -119,15 +94,17 @@
   color: var(--color-muted);
 }
 
-.recommendation-card__avatar-status--none {
-  background: var(--color-surface-soft);
-  color: var(--color-muted);
-}
-
-.recommendation-card__avatar-item--danger .recommendation-card__avatar-status--none {
+.recommendation-card__recheck {
+  flex-shrink: 0;
+  min-height: 28px;
+  padding: 0 var(--space-xs);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-pill);
   background: var(--color-canvas);
-  border: 1px solid var(--color-danger);
-  color: var(--color-danger);
+  color: var(--color-accent);
+  cursor: pointer;
+  font-family: var(--font-family);
+  font-weight: 700;
 }
 
 .recommendation-card__divider {
@@ -137,8 +114,12 @@
 }
 
 .recommendation-card__notice {
-  color: var(--color-danger);
+  color: var(--color-body);
   margin: 0 0 var(--space-md);
+}
+
+.recommendation-card__notice--strong {
+  font-weight: 700;
 }
 
 /* 필수 불참이 아닌 경우(선택만 불참·전원 가능) — 경고가 아닌 정보 톤 */
@@ -153,7 +134,7 @@
 }
 
 .recommendation-card__actions .button {
-  flex: 1;
+  width: 100%;
 }
 
 @media (min-width: 768px) {
