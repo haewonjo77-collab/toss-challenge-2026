@@ -270,7 +270,7 @@ export function CreateMeeting({
               setActiveMemberIndex(0);
             }}
             onKeyDown={handleMemberSearchKeyDown}
-            placeholder="이름이나 부서 입력"
+            placeholder="이름, 부서, 프로젝트 검색"
             autoComplete="off"
             autoCapitalize="off"
             autoCorrect="off"
@@ -483,7 +483,7 @@ export function CreateMeeting({
             </svg>
           </span>
           <span className="create-meeting__option-copy">
-            <span className="create-meeting__option-title">응답하면 알려주기</span>
+            <span className="create-meeting__option-title">참석자 응답 시 알림</span>
           </span>
           <span className="create-meeting__switch">
             <input
@@ -503,7 +503,7 @@ export function CreateMeeting({
             </svg>
           </span>
           <span className="create-meeting__option-copy">
-            <span className="create-meeting__option-title">다음에도 이 참석자 쓰기</span>
+            <span className="create-meeting__option-title">이 회의 참석자 저장</span>
             <span className="create-meeting__option-hint text-caption">
               다음 회의에서 바로 불러올 수 있어요
             </span>
