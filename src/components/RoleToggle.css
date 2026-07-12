@@ -1,7 +1,7 @@
 .role-toggle {
   display: inline-flex;
   padding: 3px;
-  background: #eef1f4;
+  background: var(--color-hairline);
   border-radius: var(--radius-pill);
   flex-shrink: 0;
 }
@@ -21,18 +21,11 @@
   cursor: pointer;
 }
 
-.role-toggle__option--selected {
-  background: var(--color-accent);
-  border-color: var(--color-accent);
-  color: var(--color-on-accent);
-}
-
-.role-toggle__option--selected:first-child {
+.role-toggle__option--selected,
+.role-toggle__option--selected:first-child,
+.role-toggle__option--selected:last-child {
+  background: #4e535c;
+  border-color: #4e535c;
   color: var(--color-on-accent);
   font-weight: 800;
-}
-
-.role-toggle__option--selected:last-child {
-  background: var(--color-accent);
-  color: var(--color-on-accent);
 }
