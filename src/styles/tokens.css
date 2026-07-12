@@ -15,6 +15,10 @@
   --color-success: #0f7a4f;
   --color-success-soft: #e6f5ee;
   --color-danger: #e5484d;
+  --color-warning: #ea580c;
+  --color-navy: #16213e;
+  --color-navy-active: #0f1830;
+  --color-navy-soft: #e7ebf3;
 
   /* Typography */
   --font-family: Pretendard, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif;

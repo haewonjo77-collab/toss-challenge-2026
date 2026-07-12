@@ -111,9 +111,9 @@ export function RecommendationPage() {
         {active.isFallback && fallbackName && (
           <div className="recommendation-page__fallback">
             <p className="text-title-lg">
-              모두 가능한 시간은 없지만, 대안 {visibleOptions.length}개를 찾았어요
+              필수 전원이 겹치는 시간은 없지만, {visibleOptions.length}가지 방법을 찾았어요
             </p>
-            <p className="text-body-md">대안별로 어려운 참석자가 달라요</p>
+            <p className="text-body-md">대안마다 빠지는 사람이 달라요</p>
           </div>
         )}
         {!hasPerfectRecommendation && visibleOptions.length > 1 && (
@@ -137,9 +137,9 @@ export function RecommendationPage() {
         {ranked[0]?.isFallback && fallbackName && (
           <div className="recommendation-page__fallback recommendation-page__fallback--desktop">
             <p className="text-title-lg">
-              모두 가능한 시간은 없지만, 대안 {visibleOptions.length}개를 찾았어요
+              필수 전원이 겹치는 시간은 없지만, {visibleOptions.length}가지 방법을 찾았어요
             </p>
-            <p className="text-body-md">대안별로 어려운 참석자가 달라요</p>
+            <p className="text-body-md">대안마다 빠지는 사람이 달라요</p>
           </div>
         )}
         {visibleOptions.map((option) => (

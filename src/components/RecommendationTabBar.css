@@ -16,7 +16,7 @@
   flex-shrink: 0;
   min-height: 34px;
   padding: 6px 16px;
-  border: none;
+  border: 1px solid var(--color-hairline);
   border-radius: var(--radius-pill);
   background: var(--color-canvas);
   color: var(--color-muted);
@@ -27,7 +27,8 @@
 }
 
 .recommendation-tabs__tab--active {
-  background: var(--color-accent);
+  border-color: var(--color-navy);
+  background: var(--color-navy);
   color: var(--color-on-accent);
   font-weight: 800;
 }

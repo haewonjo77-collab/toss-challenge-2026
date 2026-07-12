@@ -16,21 +16,18 @@
 
 .attendance-icon__circle {
   fill: currentColor;
-  fill-opacity: 0.08;
-  stroke: currentColor;
-  stroke-width: 1.8;
 }
 
 .attendance-icon__mark {
   fill: none;
-  stroke: currentColor;
+  stroke: var(--color-canvas);
   stroke-linecap: round;
   stroke-linejoin: round;
-  stroke-width: 2.2;
+  stroke-width: 2.4;
 }
 
 .attendance-icon__pie {
-  fill: currentColor;
+  fill: var(--color-canvas);
 }
 
 .attendance-icon--full {

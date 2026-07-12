@@ -11,7 +11,7 @@
 }
 
 .badge--required {
-  background: var(--color-accent);
+  background: var(--color-navy);
   color: var(--color-on-accent);
 }
 
