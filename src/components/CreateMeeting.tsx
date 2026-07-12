@@ -378,7 +378,7 @@ export function CreateMeeting({
     <div className="create-meeting">
       <p className="create-meeting__title text-title-lg">회의 만들기</p>
       <p className="create-meeting__subtitle text-body-md">
-        <strong>해원님</strong>, 누구와 만날까요?
+        <strong>해원님</strong>, 참석자를 선택해주세요
       </p>
 
       <div className="create-meeting__field">
@@ -525,7 +525,7 @@ export function CreateMeeting({
         disabled={attendees.length === 0 || submitting}
         onClick={handleSubmit}
       >
-        {submitting ? '초대 링크 준비 중' : '초대 링크 공유하기'}
+        {submitting ? '초대 보내는 중' : '초대 보내기'}
       </button>
 
       {timeSheetOpen && (

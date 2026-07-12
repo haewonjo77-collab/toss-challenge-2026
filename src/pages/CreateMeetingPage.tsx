@@ -11,30 +11,11 @@ export function CreateMeetingPage() {
   const { show } = useToast();
   useScreenMeasure('화면① 회의 만들기');
 
-  const invitePayload = (meetingTitle: string) => {
-    const joinUrl = `${window.location.origin}/join`;
-    const text = `${meetingTitle}에서 안 되는 시간을 골라주세요`;
-    return { joinUrl, text };
-  };
-
-  const shareInvite = async (meetingTitle: string) => {
-    const { joinUrl, text } = invitePayload(meetingTitle);
-    try {
-      if (navigator.share) {
-        await navigator.share({ title: meetingTitle, text, url: joinUrl });
-        show('초대 링크를 공유했어요');
-        return true;
-      }
-      if (navigator.clipboard) {
-        await navigator.clipboard.writeText(joinUrl);
-        show('초대 링크가 복사됐어요');
-        return true;
-      }
-      show('초대 링크를 준비했어요');
-      return true;
-    } catch {
-      return false;
-    }
+  // 참석자는 앱 푸시로 초대를 받는 전제라 공유 시트를 열 필요가 없음 —
+  // 탭 즉시 발송 확인 상태로 전환한다 (iOS 네이티브 공유 시트 제거)
+  const notifyInvite = (attendeeCount: number) => {
+    show(`${attendeeCount}명에게 알림을 보냈어요`);
+    return true;
   };
 
   return (
@@ -42,9 +23,8 @@ export function CreateMeetingPage() {
       initialTitle={title}
       initialAttendees={attendees.length > 0 ? attendees : undefined}
       initialSettings={settings}
-      onSubmit={async (newTitle, newAttendees, newSettings, rememberAttendees) => {
-        const sent = await shareInvite(newTitle);
-        if (!sent) return false;
+      onSubmit={(newTitle, newAttendees, newSettings, rememberAttendees) => {
+        notifyInvite(newAttendees.length);
         if (rememberAttendees) rememberAttendeeGroups(newAttendees);
         createMeeting(newTitle, newAttendees, newSettings);
         navigate('/waiting');
