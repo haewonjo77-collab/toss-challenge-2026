@@ -57,7 +57,7 @@
   background: transparent;
   font-family: var(--font-family);
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-ink);
   cursor: pointer;
   /* 날짜 드래그가 스크롤로 새지 않도록 — TimeGrid 셀과 동일한 정책 */
@@ -81,7 +81,7 @@
 }
 
 .range-calendar__day--today {
-  font-weight: 700;
+  font-weight: 600;
   text-decoration: underline;
 }
 

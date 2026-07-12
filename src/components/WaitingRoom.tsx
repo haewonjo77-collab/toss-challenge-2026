@@ -13,6 +13,7 @@ interface WaitingRoomProps {
   onViewRecommendation: () => void;
   onRegisterHostTime?: () => void;
   onNotifyPending?: () => void | Promise<void>;
+  hideRosterEditing?: boolean;
 }
 
 export function WaitingRoom({
@@ -22,6 +23,7 @@ export function WaitingRoom({
   onViewRecommendation,
   onRegisterHostTime,
   onNotifyPending,
+  hideRosterEditing = false,
 }: WaitingRoomProps) {
   const respondedCount = attendees.filter((attendee) => attendee.responded).length;
   const remainingCount = attendees.length - respondedCount;
@@ -54,7 +56,11 @@ export function WaitingRoom({
         )}
       </div>
 
-      <ResponseList responses={attendees} onChangeRole={onChangeRole} onAddAttendee={onAddAttendee} />
+      <ResponseList
+        responses={attendees}
+        onChangeRole={hideRosterEditing ? undefined : onChangeRole}
+        onAddAttendee={hideRosterEditing ? undefined : onAddAttendee}
+      />
 
       {onRegisterHostTime && (
         <button

@@ -23,9 +23,9 @@ body {
   justify-content: center;
   height: 44px;
   padding: 12px 20px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   font-family: var(--font-family);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   line-height: 1;
   border: none;
@@ -55,11 +55,11 @@ body {
 
 .text-input {
   height: 44px;
-  padding: 10px 16px;
+  padding: 10px 14px;
   border: 1px solid var(--color-hairline);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   font-family: var(--font-family);
-  font-size: 15px;
+  font-size: 16px;
   color: var(--color-ink);
   background: var(--color-canvas);
 }
@@ -106,7 +106,7 @@ body {
   inset: 0;
   display: flex;
   align-items: flex-end;
-  background: rgba(10, 10, 11, 0.36);
+  background: rgba(17, 17, 17, 0.36);
   z-index: 10;
 }
 
@@ -115,7 +115,7 @@ body {
   width: 100%;
   max-height: 85%;
   background: var(--color-canvas);
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
   padding: 48px var(--space-md) var(--space-lg);
   box-sizing: border-box;
   overflow-y: auto;

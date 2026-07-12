@@ -67,30 +67,21 @@ function slotsFromEvents(
     });
 }
 
+// 요일마다 돌아가며 적용하는 사내 일정 패턴 — 실제 회사 캘린더처럼 대부분의 날짜에 무언가
+// 걸려 있어야, 후보 기간이 길어질 때 "모든 시간 가능"인 빈 날짜가 과도하게 노출되지 않는다.
+const DAILY_INTERNAL_PATTERNS: Array<Pick<BusyEvent, 'startMinutes' | 'endMinutes' | 'title'>> = [
+  { startMinutes: 9 * 60, endMinutes: 10 * 60, title: '데일리 스탠드업' },
+  { startMinutes: 13 * 60, endMinutes: 15 * 60, title: '다른 미팅' },
+  { startMinutes: 10 * 60, endMinutes: 11 * 60, title: '집중근무시간' },
+  { startMinutes: 16 * 60, endMinutes: 18 * 60, title: '휴가' },
+  { startMinutes: 11 * 60, endMinutes: 12 * 60, title: '주간 회의' },
+];
+
 function internalBusyEventsForRange(rangeDays: Date[]): BusyEvent[] {
-  const firstDay = rangeDays[0];
-  const middleDay = rangeDays[Math.min(2, rangeDays.length - 1)];
-  const lastDay = rangeDays[Math.min(4, rangeDays.length - 1)];
-  return [
-    firstDay && {
-      date: toISODate(firstDay),
-      startMinutes: 9 * 60,
-      endMinutes: 11 * 60,
-      title: '집중근무시간',
-    },
-    middleDay && {
-      date: toISODate(middleDay),
-      startMinutes: 13 * 60,
-      endMinutes: 15 * 60,
-      title: '다른 미팅',
-    },
-    lastDay && {
-      date: toISODate(lastDay),
-      startMinutes: 16 * 60,
-      endMinutes: 18 * 60,
-      title: '휴가',
-    },
-  ].filter(Boolean) as BusyEvent[];
+  return rangeDays.map((day, index) => {
+    const pattern = DAILY_INTERNAL_PATTERNS[index % DAILY_INTERNAL_PATTERNS.length];
+    return { date: toISODate(day), ...pattern };
+  });
 }
 
 function formatIntervalSummary(intervals: UnavailableInterval[]) {

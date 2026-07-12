@@ -8,5 +8,10 @@ export function JoinTimesPage() {
 
   if (!participantName) return <Navigate to="/join" replace />;
 
-  return <JoinTimesView onAdvance={() => navigate('/join/done')} />;
+  return (
+    <JoinTimesView
+      advanceOnConfirm
+      onAdvance={() => navigate('/waiting', { state: { attendeeView: true } })}
+    />
+  );
 }

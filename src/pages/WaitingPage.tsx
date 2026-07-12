@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { WaitingRoom } from '../components/WaitingRoom';
 import { useToast } from '../components/Toast';
 import { useJoin } from '../context/JoinContext';
@@ -26,6 +26,8 @@ export function WaitingPage() {
   const { startJoin } = useJoin();
   const { show } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
+  const isAttendeeView = (location.state as { attendeeView?: boolean } | null)?.attendeeView === true;
   const [responseNotice, setResponseNotice] = useState<ResponseNotice | null>(null);
   const [simulatedResponseCount, setSimulatedResponseCount] = useState(0);
   const hasPending = responses.some((response) => !response.responded);
@@ -120,6 +122,7 @@ export function WaitingPage() {
         onViewRecommendation={() => navigate('/recommendation')}
         onRegisterHostTime={registerHostTime}
         onNotifyPending={notifyPending}
+        hideRosterEditing={isAttendeeView}
       />
     </div>
   );
