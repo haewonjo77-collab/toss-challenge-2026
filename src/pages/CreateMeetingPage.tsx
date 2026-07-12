@@ -2,7 +2,6 @@ import { useNavigate } from 'react-router-dom';
 import { CreateMeeting } from '../components/CreateMeeting';
 import { useToast } from '../components/Toast';
 import { useMeeting } from '../context/MeetingContext';
-import { rememberAttendeeGroups } from '../data/favorites';
 import { useScreenMeasure } from '../utils/measure';
 
 export function CreateMeetingPage() {
@@ -23,9 +22,10 @@ export function CreateMeetingPage() {
       initialTitle={title}
       initialAttendees={attendees.length > 0 ? attendees : undefined}
       initialSettings={settings}
-      onSubmit={(newTitle, newAttendees, newSettings, rememberAttendees) => {
+      onSubmit={(newTitle, newAttendees, newSettings) => {
+        // 참석자 그룹 저장은 화면 ①의 토글이 켜져 있는 동안 upsertMeetingGroup으로
+        // 실시간 처리되므로, 제출 시점에 별도로 다시 저장할 필요가 없다.
         notifyInvite(newAttendees.length);
-        if (rememberAttendees) rememberAttendeeGroups(newAttendees);
         createMeeting(newTitle, newAttendees, newSettings);
         navigate('/waiting');
         return true;

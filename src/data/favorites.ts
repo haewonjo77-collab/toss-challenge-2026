@@ -1,6 +1,8 @@
 import type { InvitedAttendee } from './mockAttendees';
 
-const FAVORITE_GROUPS_KEY = 'toss-meeting-favorite-groups';
+// v2 — 부서별로 쪼개던 이전 저장 방식(rememberAttendeeGroups)이 남긴 칩을
+// 정리하기 위해 키를 교체 (기존 키의 데이터는 더 이상 읽지 않아 자연히 사라짐)
+const FAVORITE_GROUPS_KEY = 'toss-meeting-favorite-groups-v2';
 
 export interface FavoriteAttendee {
   name: string;
@@ -47,8 +49,8 @@ function upsertGroup(groups: FavoriteGroup[], group: FavoriteGroup): FavoriteGro
   return [group, ...rest].slice(0, 8);
 }
 
-// "이 회의 참석자 저장" 토글이 켜져 있는 동안 회의명을 키로 실시간 upsert —
-// 팀별로 쪼개는 rememberAttendeeGroups와 달리 회의 하나당 칩 하나를 유지한다.
+// "참석자 세트로 저장" 토글이 켜져 있는 동안 회의명을 키로 실시간 upsert —
+// 회의 하나당 칩 하나를 유지한다 (부서별로 쪼개던 이전 방식은 제거).
 export function upsertMeetingGroup(title: string, attendees: InvitedAttendee[]): FavoriteGroup[] {
   const meetingName = title.trim();
   const validAttendees = attendees.filter((attendee) => attendee.name.trim() !== '');
@@ -59,32 +61,6 @@ export function upsertMeetingGroup(title: string, attendees: InvitedAttendee[]):
     name: meetingName,
     attendees: validAttendees.map(normalizeAttendee),
   });
-  saveFavoriteGroups(next);
-  return next;
-}
-
-export function rememberAttendeeGroups(attendees: InvitedAttendee[]): FavoriteGroup[] {
-  const saved = loadFavoriteGroups();
-  const validAttendees = attendees.filter((attendee) => attendee.name.trim() !== '');
-  if (validAttendees.length === 0) return saved;
-
-  let next = upsertGroup(saved, {
-    id: 'all',
-    name: '최근 회의 전체',
-    attendees: validAttendees.map(normalizeAttendee),
-  });
-
-  const teams = Array.from(new Set(validAttendees.map((attendee) => attendee.team).filter(Boolean)));
-  teams.forEach((team) => {
-    const teamName = team as string;
-    const members = validAttendees.filter((attendee) => attendee.team === teamName);
-    next = upsertGroup(next, {
-      id: `team-${teamName}`,
-      name: teamName,
-      attendees: members.map(normalizeAttendee),
-    });
-  });
-
   saveFavoriteGroups(next);
   return next;
 }
